@@ -6,7 +6,8 @@ use tempfile::Builder;
 
 #[derive(Clap, Debug)]
 struct Cli {
-    dependencies: Vec<String>,
+    #[clap(parse(from_str = parse_dependency))]
+    dependencies: Vec<(String, Option<String>)>,
 }
 
 fn main() -> Result<()> {
@@ -33,8 +34,11 @@ fn main() -> Result<()> {
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(&tmp_dir.path().join("Cargo.toml"))?;
-    for s in cli.dependencies.iter() {
-        writeln!(toml, "{} = \"*\"", s)?;
+    for (s, v) in cli.dependencies.iter() {
+        match &v {
+            Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
+            None => writeln!(toml, "{} = \"*\"", s)?,
+        }
     }
     drop(toml);
 
@@ -59,4 +63,9 @@ fn get_shell() -> String {
             Help would be appreciated =D"
         )
     }
+}
+
+fn parse_dependency(s: &str) -> (String, Option<String>) {
+    let mut it = s.splitn(2, '=').map(|x| x.to_string());
+    (it.next().unwrap(), it.next())
 }
