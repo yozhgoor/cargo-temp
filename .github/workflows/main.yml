@@ -1,0 +1,25 @@
+name: main
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: 0 0 1 * *
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+
+      - uses: Swatinem/rust-cache@v1
+
+      - name: cargo test
+        uses: action-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace
