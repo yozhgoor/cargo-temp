@@ -19,7 +19,7 @@ Create a new temporary project:
 * With no additional dependencies:
     `$ cargo-temp`
 
-* With two dependencies:
+* With multiple dependencies:
     `$ cargo-temp rand tokio`
 
 * With a dependency that have a fixed version:
