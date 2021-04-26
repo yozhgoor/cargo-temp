@@ -55,10 +55,20 @@ fn main() -> Result<()> {
     }
     drop(toml);
 
-    process::Command::new(get_shell())
+    let shell = process::Command::new(get_shell())
         .current_dir(&tmp_dir)
         .status()
         .context("Cannot start shell")?;
+
+    if shell.success() {
+        match tmp_dir.path().join("TO_DELETE").is_file() {
+            true => println!("Directory as been deleted"),
+            false => {
+                let path = tmp_dir.into_path();
+                println!("Directory path: {:?}", path)
+            }
+        }
+    }
 
     Ok(())
 }
