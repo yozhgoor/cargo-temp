@@ -31,6 +31,16 @@ fn main() -> Result<()> {
         bail!("Cargo command failed");
     }
 
+    let mut delete_file = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&tmp_dir.path().join("to_delete.txt"))?;
+    writeln!(
+        delete_file,
+        "Delete this file if you want to save this project"
+    )?;
+    drop(delete_file);
+
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(&tmp_dir.path().join("Cargo.toml"))?;
