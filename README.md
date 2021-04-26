@@ -16,9 +16,7 @@ Create a new project:
     `$ cargo-temp`
 
 * With two dependencies:
-
-`$ cargo-temp rand serde`
+    `$ cargo-temp rand serde`
 
 * With a dependency that have a fixed version:
-
-`$ cargo-temp anyhow=1.0`
+    `$ cargo-temp anyhow=1.0`
