@@ -55,7 +55,7 @@ fn main() -> Result<()> {
     }
     drop(toml);
 
-    let shell = process::Command::new(get_shell())
+    process::Command::new(get_shell())
         .current_dir(&tmp_dir)
         .status()
         .context("Cannot start shell")?;
