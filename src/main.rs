@@ -4,12 +4,17 @@ use std::io::Write;
 use std::{fs, process};
 use tempfile::Builder;
 
-/// This tool allow you to create a new Rust temporary project into your cache directory.
-/// We create a new directory in your cache and set up the dependencies given.
-/// When you stop to use the project, the directories will be deleted.
+/// This tool allow you to create a new Rust temporary project in a temporary directory.
+///
+/// The dependencies can be provided in arguments (e.g. `cargo-temp anyhow tokio`).
+/// When the shell is exited, the temporary directory is deleted
+/// unless you removed the file `TO_DELETE`
 #[derive(Clap, Debug)]
 struct Cli {
-    /// This argument is the dependencies given by the user to be add to Cargo.toml
+    /// Dependencies to add to `Cargo.toml`.
+    ///
+    /// The default version used is `*` but this can be replaced using `=`.
+    /// E.g. `cargo-temp anyhow==1.0.13`
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<(String, Option<String>)>,
 }
@@ -53,7 +58,6 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-/// This function retrieves the shell of the user
 fn get_shell() -> String {
     #[cfg(unix)]
     {
