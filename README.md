@@ -18,6 +18,6 @@ Create a new project, with two dependencies (as foo and bar):
 
 `$ cargo-temp foo bar`
 
-Create a new project, with a dependency with fixed version:
+Create a new project, with a dependency who have a fixed version:
 
 `$ cargo-temp foo=3.2`

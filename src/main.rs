@@ -4,8 +4,12 @@ use std::io::Write;
 use std::{fs, process};
 use tempfile::Builder;
 
+/// This tool allow you to create a new Rust temporary project into your cache directory.
+/// We create a new directory in your cache and set up the dependencies given
+/// When you stop to use the project, the directories will be deleted
 #[derive(Clap, Debug)]
 struct Cli {
+    /// This argument is the dependencies given by the user to be add to Cargo.toml
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<(String, Option<String>)>,
 }
@@ -16,7 +20,6 @@ fn main() -> Result<()> {
     let cache_dir = dirs::cache_dir()
         .context("Could not get cache directory")?
         .join(env!("CARGO_PKG_NAME"));
-
     let _ = fs::create_dir_all(&cache_dir);
 
     let tmp_dir = Builder::new().prefix("tmp-").tempdir_in(&cache_dir)?;
@@ -50,6 +53,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+/// This function retrieve the shell of the user
 fn get_shell() -> String {
     #[cfg(unix)]
     {
