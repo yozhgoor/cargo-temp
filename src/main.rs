@@ -5,8 +5,8 @@ use std::{fs, process};
 use tempfile::Builder;
 
 /// This tool allow you to create a new Rust temporary project into your cache directory.
-/// We create a new directory in your cache and set up the dependencies given
-/// When you stop to use the project, the directories will be deleted
+/// We create a new directory in your cache and set up the dependencies given.
+/// When you stop to use the project, the directories will be deleted.
 #[derive(Clap, Debug)]
 struct Cli {
     /// This argument is the dependencies given by the user to be add to Cargo.toml
@@ -53,7 +53,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-/// This function retrieve the shell of the user
+/// This function retrieves the shell of the user
 fn get_shell() -> String {
     #[cfg(unix)]
     {

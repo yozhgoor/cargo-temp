@@ -1,6 +1,6 @@
 # cargo-temp
 
-A CLI tool for linux (actually) that allow you to create a temporary new rust project using cargo with already installed dependencies.
+A CLI tool for linux (currently) that allow you to create a temporary new rust project using cargo with already installed dependencies.
 
 ## Features
 
@@ -10,14 +10,15 @@ We will use a config file that allow you to decide where you want to generate yo
 
 ## Usage
 
-Create a new project, with no additional dependencies:
+Create a new project:
 
-`$ cargo-temp`
+* With no additional dependencies:
+    `$ cargo-temp`
 
-Create a new project, with two dependencies (as foo and bar):
+* With two dependencies:
 
-`$ cargo-temp foo bar`
+`$ cargo-temp rand serde`
 
-Create a new project, with a dependency who have a fixed version:
+* With a dependency that have a fixed version:
 
-`$ cargo-temp foo=3.2`
+`$ cargo-temp anyhow=1.0`
