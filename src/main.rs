@@ -60,13 +60,11 @@ fn main() -> Result<()> {
         .status()
         .context("Cannot start shell")?;
 
-    if shell.success() {
-        match tmp_dir.path().join("TO_DELETE").is_file() {
-            true => println!("Directory as been deleted"),
-            false => {
-                let path = tmp_dir.into_path();
-                println!("Directory path: {:?}", path)
-            }
+    match tmp_dir.path().join("TO_DELETE").is_file() {
+        true => println!("Directory as been deleted"),
+        false => {
+            let path = tmp_dir.into_path();
+            println!("Directory path: {:?}", path)
         }
     }
 
