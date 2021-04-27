@@ -29,6 +29,8 @@ fn main() -> Result<()> {
 
     let tmp_dir = Builder::new().prefix("tmp-").tempdir_in(&cache_dir)?;
 
+    let tmp_dir_path = &tmp_dir.path();
+
     if !process::Command::new("cargo")
         .current_dir(&tmp_dir)
         .arg("init")
@@ -40,13 +42,13 @@ fn main() -> Result<()> {
     }
 
     fs::write(
-        tmp_dir.path().join("TO_DELETE"),
+        tmp_dir_path.join("TO_DELETE"),
         "Delete this file if you want to preserve this project",
     )?;
 
     let mut toml = fs::OpenOptions::new()
         .append(true)
-        .open(&tmp_dir.path().join("Cargo.toml"))?;
+        .open(tmp_dir_path.join("Cargo.toml"))?;
     for (s, v) in cli.dependencies.iter() {
         match &v {
             Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
@@ -60,7 +62,7 @@ fn main() -> Result<()> {
         .status()
         .context("Cannot start shell")?;
 
-    if !tmp_dir.path().join("TO_DELETE").is_file() {
+    if !tmp_dir_path.join("TO_DELETE").exists() {
         println!("Project preserved at: {}", tmp_dir.into_path().display());
     }
 
