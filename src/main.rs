@@ -60,11 +60,8 @@ fn main() -> Result<()> {
         .status()
         .context("Cannot start shell")?;
 
-    if tmp_dir.path().join("TO_DELETE").is_file() {
-        println!("Directory as been deleted");
-    } else {
-        let path = tmp_dir.into_path();
-        println!("Directory path: {:?}", path);
+    if !tmp_dir.path().join("TO_DELETE").is_file() {
+        println!("Project preserved at: {}", tmp_dir.into_path().display());
     }
 
     Ok(())
