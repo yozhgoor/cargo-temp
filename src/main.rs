@@ -19,9 +19,23 @@ struct Cli {
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<(String, Option<String>)>,
 }
+
 #[derive(Serialize, Deserialize)]
 struct Config {
     temporary_project_path: String,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        let cache_dir = dirs::cache_dir().context("Could not get cache directory");
+        Config {
+            temporary_project_path: cache_dir
+                .unwrap()
+                .to_str()
+                .expect("Could not convert cache path into str")
+                .to_string(),
+        }
+    }
 }
 
 fn main() -> Result<()> {
@@ -32,27 +46,17 @@ fn main() -> Result<()> {
         .join(env!("CARGO_PKG_NAME"));
     let _ = fs::create_dir_all(&config_dir);
 
-    let config: Config = match fs::read(&config_dir.join("config.toml")) {
+    let config_file_path = config_dir.join("config.toml");
+
+    let config: Config = match fs::read(&config_file_path) {
         Ok(file) => toml::de::from_slice(&file[..])?,
         Err(_) => {
-            let _ = fs::File::create(&config_dir.join("config.toml"))?;
-            let cache_dir = dirs::cache_dir().context("Could not get cache directory")?;
-            fs::write(
-                &config_dir.join("config.toml"),
-                toml::ser::to_string(&Config {
-                    temporary_project_path: format!(
-                        "{}",
-                        cache_dir.as_path().display().to_string()
-                    ),
-                })?,
-            )?;
-            let file = fs::read(&config_dir.join("config.toml"))?;
+            let config = Config::default();
+            fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
 
-            toml::de::from_slice(&file[..])?
+            config
         }
     };
-
-    let _ = fs::create_dir_all(&config.temporary_project_path);
 
     let tmp_dir = Builder::new()
         .prefix("tmp-")
