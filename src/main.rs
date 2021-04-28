@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use clap::Clap;
+use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::{fs, process};
 use tempfile::Builder;
@@ -19,8 +20,24 @@ struct Cli {
     dependencies: Vec<(String, Option<String>)>,
 }
 
+#[derive(Serialize, Deserialize)]
+struct Config {
+    build_dir: &'static str,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config { build_dir: "" }
+    }
+}
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
+
+    let config_dir = dirs::config_dir()
+        .context("Could not get cache directory")?
+        .join(env!("CARGO_PKG_NAME"));
+    let _ = fs::create_dir_all(&config_dir);
 
     let cache_dir = dirs::cache_dir()
         .context("Could not get cache directory")?
