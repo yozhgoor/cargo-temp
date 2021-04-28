@@ -22,13 +22,13 @@ struct Cli {
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-    build_dir: String,
+    temporary_project_path: String,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Config {
-            build_dir: "~/.cache/".to_string(),
+            temporary_project_path: "~/.cache/".to_string(),
         }
     }
 }
