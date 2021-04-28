@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use clap::Clap;
+use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::{fs, process};
 use tempfile::Builder;
@@ -19,15 +20,47 @@ struct Cli {
     dependencies: Vec<(String, Option<String>)>,
 }
 
+#[derive(Serialize, Deserialize)]
+struct Config {
+    temporary_project_path: String,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        let cache_dir = dirs::cache_dir().context("Could not get cache directory");
+        Config {
+            temporary_project_path: cache_dir
+                .unwrap()
+                .to_str()
+                .expect("Could not convert cache path into str")
+                .to_string(),
+        }
+    }
+}
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let cache_dir = dirs::cache_dir()
-        .context("Could not get cache directory")?
+    let config_dir = dirs::config_dir()
+        .context("Could not get config directory")?
         .join(env!("CARGO_PKG_NAME"));
-    let _ = fs::create_dir_all(&cache_dir);
+    let _ = fs::create_dir_all(&config_dir);
 
-    let tmp_dir = Builder::new().prefix("tmp-").tempdir_in(&cache_dir)?;
+    let config_file_path = config_dir.join("config.toml");
+
+    let config: Config = match fs::read(&config_file_path) {
+        Ok(file) => toml::de::from_slice(&file[..])?,
+        Err(_) => {
+            let config = Config::default();
+            fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
+
+            config
+        }
+    };
+
+    let tmp_dir = Builder::new()
+        .prefix("tmp-")
+        .tempdir_in(&config.temporary_project_path)?;
 
     if !process::Command::new("cargo")
         .current_dir(&tmp_dir)
