@@ -22,12 +22,14 @@ struct Cli {
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-    build_dir: &'static str,
+    build_dir: String,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        Config { build_dir: "" }
+        Config {
+            build_dir: "~/.cache/".to_string(),
+        }
     }
 }
 
@@ -35,7 +37,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     let config_dir = dirs::config_dir()
-        .context("Could not get cache directory")?
+        .context("Could not get config directory")?
         .join(env!("CARGO_PKG_NAME"));
     let _ = fs::create_dir_all(&config_dir);
 
