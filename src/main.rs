@@ -56,11 +56,17 @@ fn main() -> Result<()> {
         .success()
     {
         bail!("Cargo command failed");
-    }
+    };
+
+    let delete_file = tmp_dir.path().join("TO_DELETE");
+    fs::write(
+        &delete_file,
+        "Delete this file if you want to preserve this project",
+    )?;
 
     let mut toml = fs::OpenOptions::new()
         .append(true)
-        .open(&tmp_dir.path().join("Cargo.toml"))?;
+        .open(tmp_dir.path().join("Cargo.toml"))?;
     for (s, v) in cli.dependencies.iter() {
         match &v {
             Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
@@ -73,6 +79,10 @@ fn main() -> Result<()> {
         .current_dir(&tmp_dir)
         .status()
         .context("Cannot start shell")?;
+
+    if !delete_file.exists() {
+        println!("Project preserved at: {}", tmp_dir.into_path().display());
+    }
 
     Ok(())
 }
