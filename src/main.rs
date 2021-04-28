@@ -41,6 +41,12 @@ fn main() -> Result<()> {
         .join(env!("CARGO_PKG_NAME"));
     let _ = fs::create_dir_all(&config_dir);
 
+    let config_file = fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .read(true)
+        .open(&config_dir.join("config.toml"))?;
+
     let cache_dir = dirs::cache_dir()
         .context("Could not get cache directory")?
         .join(env!("CARGO_PKG_NAME"));
