@@ -41,11 +41,21 @@ fn main() -> Result<()> {
         .join(env!("CARGO_PKG_NAME"));
     let _ = fs::create_dir_all(&config_dir);
 
-    let config_file = fs::OpenOptions::new()
-        .create(true)
-        .write(true)
-        .read(true)
-        .open(&config_dir.join("config.toml"))?;
+    let config_file = match fs::read(&config_dir.join("config.toml")) {
+        Ok(file) => file,
+        Err(_) => {
+            let _ = fs::File::create(&config_dir.join("config.toml"))?;
+            let cache_dir = dirs::cache_dir().context("Could not get cache directory")?;
+            fs::write(
+                &config_dir.join("config.toml"),
+                format!("temporary-project-path = {}\n", cache_dir.display()),
+            )?;
+
+            let file = fs::read(&config_dir.join("config.toml"))?;
+
+            file
+        }
+    };
 
     let cache_dir = dirs::cache_dir()
         .context("Could not get cache directory")?
