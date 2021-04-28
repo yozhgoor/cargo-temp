@@ -39,7 +39,7 @@ fn main() -> Result<()> {
         bail!("Cargo command failed");
     };
 
-    let delete_file = tmp_dir.path().join("To_DELETE");
+    let delete_file = tmp_dir.path().join("TO_DELETE");
     fs::write(
         &delete_file,
         "Delete this file if you want to preserve this project",
