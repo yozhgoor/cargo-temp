@@ -2,7 +2,7 @@ use anyhow::{bail, Context, Result};
 use clap::Clap;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use std::{fs, process};
+use std::{env, fs, process};
 use tempfile::Builder;
 
 /// This tool allow you to create a new Rust temporary project in a temporary directory.
@@ -23,6 +23,7 @@ struct Cli {
 #[derive(Serialize, Deserialize)]
 struct Config {
     temporary_project_path: String,
+    target_directory_path: String,
 }
 
 impl Default for Config {
@@ -34,6 +35,7 @@ impl Default for Config {
                 .to_str()
                 .expect("Could not convert cache path into str")
                 .to_string(),
+            target_directory_path: env::var("CARGO_TARGET_DIR").unwrap(),
         }
     }
 }
