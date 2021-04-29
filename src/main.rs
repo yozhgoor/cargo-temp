@@ -23,7 +23,7 @@ struct Cli {
 #[derive(Serialize, Deserialize)]
 struct Config {
     temporary_project_path: String,
-    target_directory_path: String,
+    cargo_target_dir: Option<String>,
 }
 
 impl Default for Config {
@@ -35,7 +35,7 @@ impl Default for Config {
                 .to_str()
                 .expect("Could not convert cache path into str")
                 .to_string(),
-            target_directory_path: env::var("CARGO_TARGET_DIR").unwrap(),
+            cargo_target_dir: None,
         }
     }
 }
