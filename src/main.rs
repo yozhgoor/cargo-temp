@@ -2,7 +2,7 @@ use anyhow::{bail, Context, Result};
 use clap::Clap;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
-use std::{fs, process};
+use std::{env, fs, process};
 use tempfile::Builder;
 
 /// This tool allow you to create a new Rust temporary project in a temporary directory.
@@ -22,18 +22,21 @@ struct Cli {
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-    temporary_project_path: String,
+    temporary_project_dir: String,
+    cargo_target_dir: Option<String>,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        let cache_dir = dirs::cache_dir().context("Could not get cache directory");
+        let cache_dir = dirs::cache_dir()
+            .expect("Could not get cache directory")
+            .join(env!("CARGO_PKG_NAME"));
         Config {
-            temporary_project_path: cache_dir
-                .unwrap()
+            temporary_project_dir: cache_dir
                 .to_str()
                 .expect("Could not convert cache path into str")
                 .to_string(),
+            cargo_target_dir: None,
         }
     }
 }
@@ -60,7 +63,7 @@ fn main() -> Result<()> {
 
     let tmp_dir = Builder::new()
         .prefix("tmp-")
-        .tempdir_in(&config.temporary_project_path)?;
+        .tempdir_in(&config.temporary_project_dir)?;
 
     if !process::Command::new("cargo")
         .current_dir(&tmp_dir)
@@ -89,7 +92,15 @@ fn main() -> Result<()> {
     }
     drop(toml);
 
-    process::Command::new(get_shell())
+    let mut shell_process = process::Command::new(get_shell());
+
+    if env::var("CARGO_TARGET_DIR").is_err() {
+        if let Some(path) = config.cargo_target_dir {
+            shell_process.env("CARGO_TARGET_DIR", path);
+        }
+    }
+
+    shell_process
         .current_dir(&tmp_dir)
         .status()
         .context("Cannot start shell")?;
@@ -104,7 +115,7 @@ fn main() -> Result<()> {
 fn get_shell() -> String {
     #[cfg(unix)]
     {
-        std::env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())
+        env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())
     }
 
     #[cfg(not(unix))]
