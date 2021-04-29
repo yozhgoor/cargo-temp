@@ -91,7 +91,13 @@ fn main() -> Result<()> {
     }
     drop(toml);
 
-    process::Command::new(get_shell())
+    let mut shell_process = process::Command::new(get_shell());
+
+    if let Some(path) = config.cargo_target_dir {
+        shell_process.env("CARGO_TARGET_DIR", path);
+    }
+
+    shell_process
         .current_dir(&tmp_dir)
         .status()
         .context("Cannot start shell")?;
@@ -106,7 +112,7 @@ fn main() -> Result<()> {
 fn get_shell() -> String {
     #[cfg(unix)]
     {
-        std::env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())
+        env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())
     }
 
     #[cfg(not(unix))]
