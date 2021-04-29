@@ -29,8 +29,7 @@ struct Config {
 impl Default for Config {
     fn default() -> Self {
         let cache_dir = dirs::cache_dir()
-            .context("Could not get cache directory")
-            .unwrap()
+            .expect("Could not get cache directory")
             .join(env!("CARGO_PKG_NAME"));
         Config {
             temporary_project_dir: cache_dir
