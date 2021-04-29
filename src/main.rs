@@ -42,7 +42,10 @@ impl Default for Config {
 }
 
 fn main() -> Result<()> {
-    let cli = Cli::parse();
+    let mut args = env::args().peekable();
+    let command = args.next();
+    args.next_if(|x| x.as_str() == "temp");
+    let cli = Cli::parse_from(command.into_iter().chain(args));
 
     let config_dir = dirs::config_dir()
         .context("Could not get config directory")?
