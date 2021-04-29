@@ -22,16 +22,18 @@ struct Cli {
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-    temporary_project_path: String,
+    temporary_project_dir: String,
     cargo_target_dir: Option<String>,
 }
 
 impl Default for Config {
     fn default() -> Self {
-        let cache_dir = dirs::cache_dir().context("Could not get cache directory");
+        let cache_dir = dirs::cache_dir()
+            .context("Could not get cache directory")
+            .unwrap()
+            .join(env!("CARGO_PKG_NAME"));
         Config {
-            temporary_project_path: cache_dir
-                .unwrap()
+            temporary_project_dir: cache_dir
                 .to_str()
                 .expect("Could not convert cache path into str")
                 .to_string(),
@@ -62,7 +64,7 @@ fn main() -> Result<()> {
 
     let tmp_dir = Builder::new()
         .prefix("tmp-")
-        .tempdir_in(&config.temporary_project_path)?;
+        .tempdir_in(&config.temporary_project_dir)?;
 
     if !process::Command::new("cargo")
         .current_dir(&tmp_dir)
@@ -93,8 +95,10 @@ fn main() -> Result<()> {
 
     let mut shell_process = process::Command::new(get_shell());
 
-    if let Some(path) = config.cargo_target_dir {
-        shell_process.env("CARGO_TARGET_DIR", path);
+    if env::var("CARGO_TARGET_DIR").is_err() {
+        if let Some(path) = config.cargo_target_dir {
+            shell_process.env("CARGO_TARGET_DIR", path);
+        }
     }
 
     shell_process
