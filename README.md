@@ -1,6 +1,7 @@
 # cargo-temp
 
-A CLI tool for linux (currently) that allow you to create a new rust project in a temporary directory with already installed dependencies.
+A CLI tool for linux (currently) that allow you to create a new rust project in a temporary directory with
+already installed dependencies.
 
 ![Cargo-temp demo](t-rec.gif)
 
@@ -23,10 +24,13 @@ Create a new temporary project:
 
 ## Features
 
-If after a bit of play with you project you want to keep your work, just delete the `TO_DELETE` file.
-When you run `cargo-temp` for the first time he will create `cargo-temp/config.toml` in your config directory.
+If you change your mind and decide to keep the project you can just delete the `TO_DELETE` file and the directory
+will not be deleted when the shell exits.
 
-This file will contain one line a field `temporary-project-dir` and the value of this field is the path where `cargo-temp` will create your temporary project.
-The default path is your cache directory, but you can override it by simply change the value of the field.
+The config file is locate in `{CONFIG_DIR}`/cargo-temp/config.toml.
+When you run `cargo-temp` for the first time it will be created automatically
 
-We provide one another optional field `cargo_target_dir`, that allow you to override the path where the target directory of you temporary project will be created.
+Settings:
+
+* `temporary_project_dir`: path where the temporary projects are created (cache directory by default).
+* `cargo_target_dir`: cargo's target directory override (unset by default).
