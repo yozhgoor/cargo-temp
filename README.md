@@ -2,6 +2,8 @@
 
 A CLI tool for linux (currently) that allow you to create a new rust project in a temporary directory with already installed dependencies.
 
+![Cargo-temp demo](t-rec.gif)
+
 Only *nix OS are supported for now because a shell is ran while the project is being edited by the user.
 It would be nice to have this working on Windows.
 If you know how to this, please open an issue to tell us (or a PR.)
