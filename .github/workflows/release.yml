@@ -1,0 +1,84 @@
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Build release (Linux)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - run: strip target/release/cargo-temp
+      - uses: actions/upload-artifact@v2
+        with:
+          name: binary-linux
+          path: target/release/cargo-temp
+
+  build-osx-x86:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Build release (OSX)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - uses: actions/upload-artifact@v2
+        with:
+          name: binary-osx
+          path: target/release/cargo-temp
+
+  release:
+    needs: [build-linux, build-osx-x86]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary-linux
+          path: binary-linux
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary-osx
+          path: binary-osx
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: cargo-temp release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: binary-linux/cargo-temp
+          asset_name: cargo-temp-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
+          asset_content_type: application/x-pie-executable
+      - name: Upload Release Asset OSX
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: binary-osx/cargo-temp
+          asset_name: cargo-temp-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
+          asset_content_type: application/x-mach-binary
