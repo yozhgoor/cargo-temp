@@ -64,6 +64,8 @@ fn main() -> Result<()> {
         }
     };
 
+    let _ = fs::create_dir(&config.temporary_project_dir);
+
     let tmp_dir = Builder::new()
         .prefix("tmp-")
         .tempdir_in(&config.temporary_project_dir)?;
