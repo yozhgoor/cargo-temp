@@ -19,7 +19,7 @@ struct Cli {
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<(String, Option<String>)>,
     /// Name of the temporary crate.
-    #[clap(short = 'n', long = "name")]
+    #[clap(long = "name")]
     project_name: Option<String>,
 }
 

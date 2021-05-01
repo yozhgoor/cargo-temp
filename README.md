@@ -22,7 +22,7 @@ Create a new temporary project:
 * With a dependency that have a fixed version:
     `$ cargo-temp anyhow==1.0.13`
 
-To set the name of the project use `-n <name>` or `--name <name>`.
+To set the name of the project use `--name <name>`.
 The default is the name of the temporary directory.
 Ex: `$ cargo-temp seed --name seed-playground`
 
