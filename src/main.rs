@@ -18,6 +18,9 @@ struct Cli {
     /// E.g. `cargo-temp anyhow==1.0.13`
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<(String, Option<String>)>,
+    /// Name of the temporary crate.
+    #[clap(short = 'n', long = "name")]
+    project_name: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -70,9 +73,15 @@ fn main() -> Result<()> {
         .prefix("tmp-")
         .tempdir_in(&config.temporary_project_dir)?;
 
-    if !process::Command::new("cargo")
-        .current_dir(&tmp_dir)
-        .arg("init")
+    let mut cargo_process = process::Command::new("cargo");
+
+    cargo_process.current_dir(&tmp_dir).arg("init");
+
+    if let Some(name) = cli.project_name {
+        cargo_process.args(&["--name", name.as_str()]);
+    }
+
+    if !cargo_process
         .status()
         .context("Could not start cargo")?
         .success()
