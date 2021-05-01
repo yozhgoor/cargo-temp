@@ -79,6 +79,8 @@ fn main() -> Result<()> {
 
     if let Some(name) = cli.project_name {
         cargo_process.args(&["--name", name.as_str()]);
+    } else {
+        cargo_process.args(&["--name", "temporary-project"]);
     }
 
     if !cargo_process
