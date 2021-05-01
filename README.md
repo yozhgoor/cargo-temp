@@ -22,6 +22,10 @@ Create a new temporary project:
 * With a dependency that have a fixed version:
     `$ cargo-temp anyhow==1.0.13`
 
+To set the name of the project use `-n <name>` or `--name <name>`.
+The default is the name of the temporary directory.
+Ex: `$ cargo-temp seed --name seed-playground`
+
 ## Features
 
 If you change your mind and decide to keep the project you can just delete the `TO_DELETE` file and the directory
