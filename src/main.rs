@@ -5,9 +5,11 @@ use std::io::Write;
 use std::{env, fs, process};
 use tempfile::Builder;
 
-/// This tool allow you to create a new Rust temporary project in a temporary directory.
+/// This tool allow you to create a new Rust temporary project in
+/// a temporary directory.
 ///
-/// The dependencies can be provided in arguments (e.g. `cargo-temp anyhow tokio`).
+/// The dependencies can be provided in arguments
+/// (e.g. `cargo-temp anyhow tokio`).
 /// When the shell is exited, the temporary directory is deleted
 /// unless you removed the file `TO_DELETE`
 #[derive(Clap, Debug)]
@@ -72,6 +74,10 @@ fn main() -> Result<()> {
     let tmp_dir = Builder::new()
         .prefix("tmp-")
         .tempdir_in(&config.temporary_project_dir)?;
+    fs::rename(
+        tmp_dir.path(),
+        tmp_dir.path().to_str().unwrap().to_lowercase(),
+    )?;
 
     let mut cargo_process = process::Command::new("cargo");
 
@@ -79,8 +85,6 @@ fn main() -> Result<()> {
 
     if let Some(name) = cli.project_name {
         cargo_process.args(&["--name", name.as_str()]);
-    } else {
-        cargo_process.args(&["--name", "temporary-project"]);
     }
 
     if !cargo_process
