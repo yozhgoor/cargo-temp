@@ -52,11 +52,6 @@ jobs:
           path: binary-linux
       - run: |
           mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}
-        with:
-          name: binary-osx
-          path: binary-osx
-      - run: |
-        mv build-osx/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
@@ -64,4 +59,3 @@ jobs:
         with:
           files: |
             build-linux/*
-            build-osx/*
