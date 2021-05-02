@@ -1,10 +1,9 @@
-
 name: Release
 
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build-linux:
@@ -46,12 +45,19 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+      - name: Download linux artifact
+
       - uses: actions/download-artifact@v2
         with:
           name: binary-linux
           path: binary-linux
-      - run: |
-          mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}
+      - run: mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}
+      - name: Download osx artifact
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary-osx
+          path: binary-osx
+      - run: mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
@@ -59,3 +65,4 @@ jobs:
         with:
           files: |
             build-linux/*
+            build-osx/*
