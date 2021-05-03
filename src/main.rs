@@ -5,9 +5,11 @@ use std::io::Write;
 use std::{env, fs, process};
 use tempfile::Builder;
 
-/// This tool allow you to create a new Rust temporary project in a temporary directory.
+/// This tool allow you to create a new Rust temporary project in
+/// a temporary directory.
 ///
-/// The dependencies can be provided in arguments (e.g. `cargo-temp anyhow tokio`).
+/// The dependencies can be provided in arguments
+/// (e.g. `cargo-temp anyhow tokio`).
 /// When the shell is exited, the temporary directory is deleted
 /// unless you removed the file `TO_DELETE`
 #[derive(Clap, Debug)]
@@ -18,6 +20,9 @@ struct Cli {
     /// E.g. `cargo-temp anyhow==1.0.13`
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<(String, Option<String>)>,
+    /// Name of the temporary crate.
+    #[clap(long = "name")]
+    project_name: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -70,9 +75,26 @@ fn main() -> Result<()> {
         .prefix("tmp-")
         .tempdir_in(&config.temporary_project_dir)?;
 
-    if !process::Command::new("cargo")
-        .current_dir(&tmp_dir)
-        .arg("init")
+    let mut cargo_process = process::Command::new("cargo");
+
+    cargo_process.current_dir(&tmp_dir).arg("init");
+
+    if let Some(name) = cli.project_name {
+        cargo_process.args(&["--name", name.as_str()]);
+    } else {
+        cargo_process.args(&[
+            "--name",
+            &tmp_dir
+                .path()
+                .file_name()
+                .expect("Cannot retrieve temporary directory name")
+                .to_str()
+                .expect("Cannot convert temporary directory name into str")
+                .to_lowercase(),
+        ]);
+    }
+
+    if !cargo_process
         .status()
         .context("Could not start cargo")?
         .success()
