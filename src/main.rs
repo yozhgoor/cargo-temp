@@ -74,10 +74,6 @@ fn main() -> Result<()> {
     let tmp_dir = Builder::new()
         .prefix("tmp-")
         .tempdir_in(&config.temporary_project_dir)?;
-    fs::rename(
-        tmp_dir.path(),
-        tmp_dir.path().to_str().unwrap().to_lowercase(),
-    )?;
 
     let mut cargo_process = process::Command::new("cargo");
 
@@ -85,6 +81,17 @@ fn main() -> Result<()> {
 
     if let Some(name) = cli.project_name {
         cargo_process.args(&["--name", name.as_str()]);
+    } else {
+        cargo_process.args(&[
+            "--name",
+            &tmp_dir
+                .path()
+                .file_name()
+                .expect("Cannot retrieve temporary directory name")
+                .to_str()
+                .expect("Cannot convert temporary directory name into str")
+                .to_lowercase(),
+        ]);
     }
 
     if !cargo_process
