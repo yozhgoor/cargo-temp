@@ -15,7 +15,8 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --strip --target=x86_64-unknown-linux-musl
+          args: --release --target=x86_64-unknown-linux-musl
+        run: strip /target/release/x86_64-unknown-linux-musl/cargo-temp
       - uses: actions/upload-artifact@v2
         with:
           name: build-linux
