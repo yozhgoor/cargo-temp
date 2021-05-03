@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Build release (Linux)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target=x86_64-unknown-linux-musl
+        run: strip /target/release/x86_64-unknown-linux-musl/cargo-temp
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build-linux
+          path: |
+            target/x86_64-unknown-linux-musl/release/cargo-temp
+
+  build-osx-x86:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Build release (OSX)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target=x86_64-apple-darwin
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build osx-x86
+          path: |
+            target/x86_64-apple-darwin/release/cargo-temp
+
+  release:
+    needs: [build-linux, build-osx-x86]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary-linux
+          path: binary-linux
+      - run: mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}
+      - uses: actions/download-artifact@v2
+        with:
+          name: binary-osx
+          path: binary-osx
+      - run: mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            build-linux/*
+            build-osx/*
