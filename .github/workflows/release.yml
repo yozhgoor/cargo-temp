@@ -11,12 +11,16 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
+      - name: Install toolchain
+        uses: hecrj/setup-rust-action@v1
+        with:
+          targets: x86_64-unknown-linux-musl
       - name: Build release (Linux)
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release --target=x86_64-unknown-linux-musl
-        run: strip /target/release/x86_64-unknown-linux-musl/cargo-temp
+      - run: strip target/x86_64-unknown-linux-musl/release/cargo-temp
       - uses: actions/upload-artifact@v2
         with:
           name: build-linux
@@ -35,7 +39,7 @@ jobs:
           args: --release --target=x86_64-apple-darwin
       - uses: actions/upload-artifact@v2
         with:
-          name: build osx-x86
+          name: build-osx-x86
           path: |
             target/x86_64-apple-darwin/release/cargo-temp
 
@@ -48,14 +52,14 @@ jobs:
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
       - uses: actions/download-artifact@v2
         with:
-          name: binary-linux
-          path: binary-linux
-      - run: mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}
+          name: build-linux
+          path: build-linux
+      - run: mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
       - uses: actions/download-artifact@v2
         with:
-          name: binary-osx
-          path: binary-osx
-      - run: mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}
+          name: build-osx-x86
+          path: build-osx-x86
+      - run: mv build-osx-x86/cargo-temp build-osx-x86/cargo-temp-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
@@ -63,4 +67,4 @@ jobs:
         with:
           files: |
             build-linux/*
-            build-osx/*
+            build-osx-x86/*
