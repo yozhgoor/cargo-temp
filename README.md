@@ -9,6 +9,12 @@ Only \*nix OS are supported for now because a shell is ran while the project is 
 It would be nice to have this working on Windows.
 If you know how to achieve this, please open an issue to tell us (or a PR.)
 
+## Install
+
+Requires Rust 1.51.
+
+`cargo install cargo-temp`
+
 ## Usage
 
 Create a new temporary project:
