@@ -2,8 +2,15 @@
 name = "cargo-temp"
 version = "0.0.0"
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT OR Apache-2.0"
+description = "A CLI tool that allow you to create a temporary new rust project using cargo with already installed dependencies"
+repository = "https://github.com/yozhgoor/cargo-temp"
+homepage = "https://github.com/yozhgoor/cargo-temp"
+documentation = "https://docs.rs/cargo-temp"
+readme = "README.md"
+keywords = ["cargo", "temporary", "project", "cli", "dependencies"]
+categories = ["development-tools::cargo-plugins"]
+include = ["src/**/*.rs", "README.md", "LICENSE.Apache-2.0", "LICENSE.MIT"]
 
 [dependencies]
 anyhow = "1.0"
