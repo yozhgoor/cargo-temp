@@ -149,14 +149,6 @@ fn get_shell() -> String {
     {
         env::var("COMSPEC").unwrap_or_else(|_| "cmd".to_string())
     }
-
-    #[cfg(not(any(unix, windows)))]
-    {
-        compile_error!(
-            "Only *nix and Windows systems supported at the moment. \
-            Help would be appreciated =D"
-        )
-    }
 }
 
 fn parse_dependency(s: &str) -> (String, Option<String>) {
