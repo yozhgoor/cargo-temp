@@ -5,10 +5,6 @@ already installed dependencies.
 
 ![Cargo-temp demo](t-rec.gif)
 
-Only \*nix OS are supported for now because a shell is ran while the project is being edited by the user.
-It would be nice to have this working on Windows.
-If you know how to achieve this, please open an issue to tell us (or a PR.)
-
 ## Install
 
 Requires Rust 1.51.

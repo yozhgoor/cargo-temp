@@ -145,12 +145,9 @@ fn get_shell() -> String {
         env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())
     }
 
-    #[cfg(not(unix))]
+    #[cfg(windows)]
     {
-        compile_error!(
-            "Only unix systems supported at the moment. \
-            Help would be appreciated =D"
-        )
+        env::var("COMSPEC").unwrap_or_else(|_| "cmd".to_string())
     }
 }
 
