@@ -43,8 +43,24 @@ jobs:
           path: |
             target/x86_64-apple-darwin/release/cargo-temp
 
+    build-windows:
+      runs-on: windows-latest
+      steps:
+        - name: Checkout source
+          uses: actions/checkout@v2
+        - name: Build release (Windows)
+          uses: actions-rs/cargo@v1
+          with:
+            command: build
+            args: --release --target=x86_64-windows-pc-msvc
+          - uses: actions/upload-artifact@v2
+            with:
+              name: build-windows
+              path: |
+                target/x86_64-pc-windows-msvc/release/cargo-temp.exe
+
   release:
-    needs: [build-linux, build-osx-x86]
+    needs: [build-linux, build-osx-x86, build-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Get the version
@@ -60,6 +76,11 @@ jobs:
           name: build-osx-x86
           path: build-osx-x86
       - run: mv build-osx-x86/cargo-temp build-osx-x86/cargo-temp-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
+      - uses: actions/download-artifact@v2
+        with:
+          name: build-windows
+          path: build-windows
+      - run: mv build-windows/cargo-temp.exe build-windows/cargo-temp-${{ steps.get_version.outputs.VERSION }}-windows.exe
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
@@ -68,3 +89,4 @@ jobs:
           files: |
             build-linux/*
             build-osx-x86/*
+            build-windows/*
