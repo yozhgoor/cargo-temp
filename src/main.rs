@@ -60,7 +60,7 @@ fn main() -> Result<()> {
     let config_file_path = config_dir.join("config.toml");
 
     let config: Config = match fs::read(&config_file_path) {
-        Ok(file) => toml::de::from_slice(&file[..])?,
+        Ok(file) => toml::de::from_slice(&file)?,
         Err(_) => {
             let config = Config::default();
             fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
