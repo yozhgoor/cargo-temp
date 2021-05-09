@@ -60,7 +60,7 @@ fn main() -> Result<()> {
     let config_file_path = config_dir.join("config.toml");
 
     let config: Config = match fs::read(&config_file_path) {
-        Ok(file) => toml::de::from_slice(&file[..])?,
+        Ok(file) => toml::de::from_slice(&file)?,
         Err(_) => {
             let config = Config::default();
             fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
@@ -74,27 +74,19 @@ fn main() -> Result<()> {
     let tmp_dir = Builder::new()
         .prefix("tmp-")
         .tempdir_in(&config.temporary_project_dir)?;
+    let project_name = cli.project_name.unwrap_or_else(|| {
+        tmp_dir
+            .path()
+            .file_name()
+            .expect("Cannot retrieve temporary directory name")
+            .to_str()
+            .expect("Cannot convert temporary directory name into str")
+            .to_lowercase()
+    });
 
-    let mut cargo_process = process::Command::new("cargo");
-
-    cargo_process.current_dir(&tmp_dir).arg("init");
-
-    if let Some(name) = cli.project_name {
-        cargo_process.args(&["--name", name.as_str()]);
-    } else {
-        cargo_process.args(&[
-            "--name",
-            &tmp_dir
-                .path()
-                .file_name()
-                .expect("Cannot retrieve temporary directory name")
-                .to_str()
-                .expect("Cannot convert temporary directory name into str")
-                .to_lowercase(),
-        ]);
-    }
-
-    if !cargo_process
+    if !process::Command::new("cargo")
+        .current_dir(&tmp_dir)
+        .args(&["init", "--name", project_name.as_str()])
         .status()
         .context("Could not start cargo")?
         .success()
