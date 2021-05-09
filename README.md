@@ -37,3 +37,18 @@ When you run `cargo-temp` for the first time it will be created automatically
 * `temporary_project_dir`: path where the temporary projects are created (cache directory by default).
 * `cargo_target_dir`: cargo's target directory override (unset by default).
    This setting is ignored if `CARGO_TARGET_DIR` is already set.
+* `editor` and `editor_args`: path to an IDE to start instead of a shell and arguments for it (unset by default).
+
+  Example config to run VS Code on Unix:
+
+  ```toml
+  editor = "/usr/bin/code"
+  editor_args = [ "--wait", "--new-window" ]
+  ```
+
+  Example config to run VS Code on Windows:
+
+  ```toml
+  editor = "C:\\Program Files\\Microsoft VS Code\\Code.exe"
+  editor_args = [ "--wait", "--new-window" ]
+  ```
