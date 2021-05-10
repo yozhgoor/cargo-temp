@@ -119,8 +119,9 @@ fn main() -> Result<()> {
         None => process::Command::new(get_shell()),
         Some(editor) => {
             let mut ide_process = process::Command::new(editor);
-            ide_process.args(config.editor_args.iter().flatten());
-            ide_process.arg(tmp_dir.path());
+            ide_process
+                .args(config.editor_args.iter().flatten())
+                .arg(tmp_dir.path());
             ide_process
         }
     };
