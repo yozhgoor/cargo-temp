@@ -117,7 +117,7 @@ fn main() -> Result<()> {
 
     let mut shell_process = match config.editor {
         None => process::Command::new(get_shell()),
-        Some(editor) => {
+        Some(ref editor) => {
             let mut ide_process = process::Command::new(editor);
             ide_process
                 .args(config.editor_args.iter().flatten())
@@ -136,6 +136,13 @@ fn main() -> Result<()> {
         .current_dir(&tmp_dir)
         .status()
         .context("Cannot start shell")?;
+
+    #[cfg(windows)]
+    if config.editor.is_some() {
+        unsafe {
+            bindings::Windows::Win32::SystemServices::FreeConsole();
+        }
+    }
 
     if !delete_file.exists() {
         println!("Project preserved at: {}", tmp_dir.into_path().display());
