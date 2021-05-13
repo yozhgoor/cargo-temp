@@ -39,7 +39,7 @@ When you run `cargo-temp` for the first time it will be created automatically
    This setting is ignored if `CARGO_TARGET_DIR` is already set.
 * `editor` and `editor_args`: path to an IDE to start instead of a shell and arguments for it (unset by default).
 
-  Example config to run VS Code on Unix:
+### Example config to run VS Code on Unix
 
   ```toml
   editor = "/usr/bin/code"
