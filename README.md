@@ -46,7 +46,7 @@ When you run `cargo-temp` for the first time it will be created automatically
   editor_args = [ "--wait", "--new-window" ]
   ```
 
-  Example config to run VS Code on Windows:
+### Example config to run VS Code on Windows
 
   ```toml
   editor = "C:\\Program Files\\Microsoft VS Code\\Code.exe"
