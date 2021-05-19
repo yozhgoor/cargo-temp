@@ -2,6 +2,8 @@
 name = "cargo-temp-bindings"
 version = "0.0.0"
 edition = "2018"
+description = "Windows bindings for cargo-temp"
+licences = "MIT or Apache-2.0"
 
 [dependencies]
 windows = "0.9.1"
