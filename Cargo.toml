@@ -24,4 +24,4 @@ toml = "0.5"
 cargo-temp-bindings = { path = "cargo-temp-bindings" }
 
 [workspace]
-members = ['cargo-temp-bindings']
+members = ["cargo-temp-bindings"]
