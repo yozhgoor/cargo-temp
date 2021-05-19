@@ -29,6 +29,8 @@ struct Cli {
 struct Config {
     temporary_project_dir: String,
     cargo_target_dir: Option<String>,
+    editor: Option<String>,
+    editor_args: Option<Vec<String>>,
 }
 
 impl Default for Config {
@@ -42,6 +44,8 @@ impl Default for Config {
                 .expect("Could not convert cache path into str")
                 .to_string(),
             cargo_target_dir: None,
+            editor: None,
+            editor_args: None,
         }
     }
 }
@@ -111,7 +115,16 @@ fn main() -> Result<()> {
     }
     drop(toml);
 
-    let mut shell_process = process::Command::new(get_shell());
+    let mut shell_process = match config.editor {
+        None => process::Command::new(get_shell()),
+        Some(ref editor) => {
+            let mut ide_process = process::Command::new(editor);
+            ide_process
+                .args(config.editor_args.iter().flatten())
+                .arg(tmp_dir.path());
+            ide_process
+        }
+    };
 
     if env::var("CARGO_TARGET_DIR").is_err() {
         if let Some(path) = config.cargo_target_dir {
@@ -123,6 +136,13 @@ fn main() -> Result<()> {
         .current_dir(&tmp_dir)
         .status()
         .context("Cannot start shell")?;
+
+    #[cfg(windows)]
+    if config.editor.is_some() {
+        unsafe {
+            bindings::Windows::Win32::SystemServices::FreeConsole();
+        }
+    }
 
     if !delete_file.exists() {
         println!("Project preserved at: {}", tmp_dir.into_path().display());
