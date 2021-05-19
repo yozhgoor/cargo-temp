@@ -21,7 +21,7 @@ tempfile = "3"
 toml = "0.5"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-cargo-temp-bindings = { path = "cargo-temp-bindings", version = "0.0.0" }
+cargo-temp-bindings = { path = "cargo-temp-bindings", version = "^0.0.0" }
 
 [workspace]
 members = ["cargo-temp-bindings"]
