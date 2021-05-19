@@ -3,6 +3,9 @@ name = "cargo-temp-bindings"
 version = "0.0.0"
 edition = "2018"
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
 windows = "0.9.1"
 
