@@ -44,13 +44,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
-name = "bindings"
-version = "0.0.0"
-dependencies = [
- "windows",
-]
-
-[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -72,12 +65,19 @@ name = "cargo-temp"
 version = "0.1.2"
 dependencies = [
  "anyhow",
- "bindings",
+ "cargo-temp-bindings",
  "clap",
  "dirs",
  "serde",
  "tempfile",
  "toml",
+]
+
+[[package]]
+name = "cargo-temp-bindings"
+version = "0.0.0"
+dependencies = [
+ "windows",
 ]
 
 [[package]]
