@@ -140,7 +140,7 @@ fn main() -> Result<()> {
     #[cfg(windows)]
     if config.editor.is_some() {
         unsafe {
-           crate::cargo-temp-bindings::Windows::Win32::SystemServices::FreeConsole();
+           crate::cargo_temp_bindings::Windows::Win32::SystemServices::FreeConsole();
         }
     }
 
