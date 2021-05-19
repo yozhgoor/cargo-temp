@@ -27,7 +27,7 @@ jobs:
           path: |
             target/x86_64-unknown-linux-musl/release/cargo-temp
 
-  build-osx-x86:
+  build-osx:
     runs-on: macos-latest
     steps:
       - name: Checkout source
@@ -39,7 +39,7 @@ jobs:
           args: --release --target=x86_64-apple-darwin
       - uses: actions/upload-artifact@v2
         with:
-          name: build-osx-x86
+          name: build-osx
           path: |
             target/x86_64-apple-darwin/release/cargo-temp
 
@@ -60,7 +60,7 @@ jobs:
             target/x86_64-pc-windows-msvc/release/cargo-temp.exe
 
   release:
-    needs: [build-linux, build-osx-x86, build-windows]
+    needs: [build-linux, build-osx, build-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Get the version
@@ -73,9 +73,9 @@ jobs:
       - run: mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
       - uses: actions/download-artifact@v2
         with:
-          name: build-osx-x86
-          path: build-osx-x86
-      - run: mv build-osx-x86/cargo-temp build-osx-x86/cargo-temp-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
+          name: build-osx
+          path: build-osx
+      - run: mv build-osx/cargo-temp build-osx/cargo-temp-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
       - uses: actions/download-artifact@v2
         with:
           name: build-windows
@@ -88,5 +88,5 @@ jobs:
         with:
           files: |
             build-linux/*
-            build-osx-x86/*
+            build-osx/*
             build-windows/*
