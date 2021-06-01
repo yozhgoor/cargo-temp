@@ -20,9 +20,14 @@ struct Cli {
     /// E.g. `cargo-temp anyhow==1.0.13`
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<(String, Option<String>)>,
+
     /// Name of the temporary crate.
     #[clap(long = "name")]
     project_name: Option<String>,
+
+    /// Create a library instead of a binary.
+    #[clap(long)]
+    lib: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -88,13 +93,17 @@ fn main() -> Result<()> {
             .to_lowercase()
     });
 
-    if !process::Command::new("cargo")
+    let mut command = process::Command::new("cargo");
+
+    command
         .current_dir(&tmp_dir)
-        .args(&["init", "--name", project_name.as_str()])
-        .status()
-        .context("Could not start cargo")?
-        .success()
-    {
+        .args(&["init", "--name", project_name.as_str()]);
+
+    if cli.lib {
+        command.arg("--lib");
+    }
+
+    if !command.status().context("Could not start cargo")?.success() {
         bail!("Cargo command failed");
     };
 
