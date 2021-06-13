@@ -61,22 +61,7 @@ fn main() -> Result<()> {
     args.next_if(|x| x.as_str() == "temp");
     let cli = Cli::parse_from(command.into_iter().chain(args));
 
-    let config_dir = dirs::config_dir()
-        .context("Could not get config directory")?
-        .join(env!("CARGO_PKG_NAME"));
-    let _ = fs::create_dir_all(&config_dir);
-
-    let config_file_path = config_dir.join("config.toml");
-
-    let config: Config = match fs::read(&config_file_path) {
-        Ok(file) => toml::de::from_slice(&file)?,
-        Err(_) => {
-            let config = Config::default();
-            fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
-
-            config
-        }
-    };
+    let config = create_config_file();
 
     let _ = fs::create_dir(&config.temporary_project_dir);
 
@@ -175,4 +160,28 @@ fn get_shell() -> String {
 fn parse_dependency(s: &str) -> (String, Option<String>) {
     let mut it = s.splitn(2, '=').map(|x| x.to_string());
     (it.next().unwrap(), it.next())
+}
+
+fn create_config_file() -> Config {
+    #[cfg(windows)]
+    {
+        let config_dir = dirs::config_dir()
+            .context("Could not get config directory")?
+            .join(env!("CARGO_PKG_NAME"));
+        let _ = fs::create_dir_all(&config_dir);
+
+        let config_file_path = config_dir.join("config.toml");
+
+        let config: Config = match fs::read(&config_file_path) {
+            Ok(file) => toml::de::from_slice(&file)?,
+            Err(_) => {
+                let config = Config::default();
+                fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
+
+                config
+            }
+        };
+
+        config
+    }
 }
