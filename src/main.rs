@@ -38,12 +38,21 @@ struct Config {
     editor_args: Option<Vec<String>>,
 }
 
-impl Default for Config {
-    fn default() -> Self {
+impl Config {
+    pub fn new() -> Result<Self> {
+        #[cfg(unix)]
+        let cache_dir = {
+            let cache_dir = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"))
+                .context("Could not find HOME directory")?;
+
+            cache_dir.get_cache_home()
+        };
+        #[cfg(windows)]
         let cache_dir = dirs::cache_dir()
-            .expect("Could not get cache directory")
+            .context("Could not get cache directory")?
             .join(env!("CARGO_PKG_NAME"));
-        Config {
+
+        Ok(Config {
             temporary_project_dir: cache_dir
                 .to_str()
                 .expect("Could not convert cache path into str")
@@ -51,7 +60,7 @@ impl Default for Config {
             cargo_target_dir: None,
             editor: None,
             editor_args: None,
-        }
+        })
     }
 }
 
@@ -61,7 +70,7 @@ fn main() -> Result<()> {
     args.next_if(|x| x.as_str() == "temp");
     let cli = Cli::parse_from(command.into_iter().chain(args));
 
-    let config = create_config_file();
+    let config = create_config_file()?;
 
     let _ = fs::create_dir(&config.temporary_project_dir);
 
@@ -162,26 +171,32 @@ fn parse_dependency(s: &str) -> (String, Option<String>) {
     (it.next().unwrap(), it.next())
 }
 
-fn create_config_file() -> Config {
+fn create_config_file() -> Result<Config> {
+    #[cfg(unix)]
+    let config_file_path = {
+        let config_dir = xdg::BaseDirectories::with_prefix("cargo-temp")?;
+        config_dir.place_config_file("config.toml")?
+    };
     #[cfg(windows)]
-    {
+    let config_file_path = {
         let config_dir = dirs::config_dir()
             .context("Could not get config directory")?
             .join(env!("CARGO_PKG_NAME"));
         let _ = fs::create_dir_all(&config_dir);
 
-        let config_file_path = config_dir.join("config.toml");
+        config_dir.join("config.toml")
+    };
 
-        let config: Config = match fs::read(&config_file_path) {
-            Ok(file) => toml::de::from_slice(&file)?,
-            Err(_) => {
-                let config = Config::default();
-                fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
+    let config: Config = match fs::read(&config_file_path) {
+        Ok(file) => toml::de::from_slice(&file)?,
+        Err(_) => {
+            let config = Config::new()?;
+            fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
+            println!("Config file created at: {}", config_file_path.display());
 
-                config
-            }
-        };
+            config
+        }
+    };
 
-        config
-    }
+    Ok(config)
 }
