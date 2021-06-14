@@ -55,7 +55,7 @@ impl Config {
         Ok(Config {
             temporary_project_dir: cache_dir
                 .to_str()
-                .expect("Could not convert cache path into str")
+                .context("Could not convert cache path into str")?
                 .to_string(),
             cargo_target_dir: None,
             editor: None,
