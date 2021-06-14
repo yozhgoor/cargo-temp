@@ -52,7 +52,7 @@ impl Config {
             .context("Could not get cache directory")?
             .join(env!("CARGO_PKG_NAME"));
 
-        Ok(Config {
+        Ok(Self {
             temporary_project_dir: cache_dir
                 .to_str()
                 .context("Could not convert cache path into str")?
@@ -62,6 +62,36 @@ impl Config {
             editor_args: None,
         })
     }
+
+    pub fn get_or_create() -> Result<Self> {
+        #[cfg(unix)]
+        let config_file_path = {
+            let config_dir = xdg::BaseDirectories::with_prefix("cargo-temp")?;
+            config_dir.place_config_file("config.toml")?
+        };
+        #[cfg(windows)]
+        let config_file_path = {
+            let config_dir = dirs::config_dir()
+                .context("Could not get config directory")?
+                .join(env!("CARGO_PKG_NAME"));
+            let _ = fs::create_dir_all(&config_dir);
+
+            config_dir.join("config.toml")
+        };
+
+        let config: Self = match fs::read(&config_file_path) {
+            Ok(file) => toml::de::from_slice(&file)?,
+            Err(_) => {
+                let config = Self::new()?;
+                fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
+                println!("Config file created at: {}", config_file_path.display());
+
+                config
+            }
+        };
+
+        Ok(config)
+    }
 }
 
 fn main() -> Result<()> {
@@ -70,7 +100,7 @@ fn main() -> Result<()> {
     args.next_if(|x| x.as_str() == "temp");
     let cli = Cli::parse_from(command.into_iter().chain(args));
 
-    let config = create_config_file()?;
+    let config = Config::get_or_create()?;
 
     let _ = fs::create_dir(&config.temporary_project_dir);
 
@@ -81,9 +111,8 @@ fn main() -> Result<()> {
         tmp_dir
             .path()
             .file_name()
-            .expect("Cannot retrieve temporary directory name")
-            .to_str()
-            .expect("Cannot convert temporary directory name into str")
+            .unwrap()
+            .to_string_lossy()
             .to_lowercase()
     });
 
@@ -169,34 +198,4 @@ fn get_shell() -> String {
 fn parse_dependency(s: &str) -> (String, Option<String>) {
     let mut it = s.splitn(2, '=').map(|x| x.to_string());
     (it.next().unwrap(), it.next())
-}
-
-fn create_config_file() -> Result<Config> {
-    #[cfg(unix)]
-    let config_file_path = {
-        let config_dir = xdg::BaseDirectories::with_prefix("cargo-temp")?;
-        config_dir.place_config_file("config.toml")?
-    };
-    #[cfg(windows)]
-    let config_file_path = {
-        let config_dir = dirs::config_dir()
-            .context("Could not get config directory")?
-            .join(env!("CARGO_PKG_NAME"));
-        let _ = fs::create_dir_all(&config_dir);
-
-        config_dir.join("config.toml")
-    };
-
-    let config: Config = match fs::read(&config_file_path) {
-        Ok(file) => toml::de::from_slice(&file)?,
-        Err(_) => {
-            let config = Config::new()?;
-            fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
-            println!("Config file created at: {}", config_file_path.display());
-
-            config
-        }
-    };
-
-    Ok(config)
 }
