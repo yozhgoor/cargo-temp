@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use clap::Clap;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::{env, fs, process};
@@ -20,6 +21,10 @@ struct Cli {
     /// E.g. `cargo-temp anyhow==1.0.13`
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<(String, Option<String>)>,
+
+    /// repositories to add to `Cargo.toml`.
+    #[clap(parse(from_str = parse_repository))]
+    repositories: Vec<(String, Option<String>)>,
 
     /// Name of the temporary crate.
     #[clap(long = "name")]
@@ -198,4 +203,10 @@ fn get_shell() -> String {
 fn parse_dependency(s: &str) -> (String, Option<String>) {
     let mut it = s.splitn(2, '=').map(|x| x.to_string());
     (it.next().unwrap(), it.next())
+}
+
+fn parse_repository(s: &str) -> (String, Option<String>) {
+    let regex = Regex::new(
+    r"^(https?:\/\/[^@]+|[^@]+@[^:@]+:[^@]+)@[^@]+([^=]+$|$)"
+    ).unwrap();
 }
