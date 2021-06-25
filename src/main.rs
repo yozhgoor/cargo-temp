@@ -31,6 +31,7 @@ struct Cli {
     lib: bool,
 }
 
+/// This type represents the different formats of dependencies given by the user
 #[derive(Debug, PartialEq, Eq)]
 enum Dependency {
     CrateIo(String, Option<String>),
@@ -42,6 +43,7 @@ enum Dependency {
     },
 }
 
+/// This type represents the user's configuration of the program
 #[derive(Serialize, Deserialize)]
 struct Config {
     temporary_project_dir: String,
@@ -107,15 +109,15 @@ impl Config {
 }
 
 fn main() -> Result<()> {
+    // Parse the user input
     let mut args = env::args().peekable();
     let command = args.next();
     args.next_if(|x| x.as_str() == "temp");
     let cli = Cli::parse_from(command.into_iter().chain(args));
 
+    // Integrate cargo-temp with the user configuration
     let config = Config::get_or_create()?;
-
     let _ = fs::create_dir(&config.temporary_project_dir);
-
     let tmp_dir = Builder::new()
         .prefix("tmp-")
         .tempdir_in(&config.temporary_project_dir)?;
@@ -128,26 +130,26 @@ fn main() -> Result<()> {
             .to_lowercase()
     });
 
+    // Generate the temporary project
     let mut command = process::Command::new("cargo");
-
     command
         .current_dir(&tmp_dir)
         .args(&["init", "--name", project_name.as_str()]);
-
     if cli.lib {
         command.arg("--lib");
     }
-
     if !command.status().context("Could not start cargo")?.success() {
         bail!("Cargo command failed");
     };
 
+    // Generate the config file
     let delete_file = tmp_dir.path().join("TO_DELETE");
     fs::write(
         &delete_file,
         "Delete this file if you want to preserve this project",
     )?;
 
+    // Add dependencies to Cargo.toml from arguments given by the user
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(tmp_dir.path().join("Cargo.toml"))?;
@@ -176,6 +178,7 @@ fn main() -> Result<()> {
     }
     drop(toml);
 
+    // Start a new shell
     let mut shell_process = match config.editor {
         None => process::Command::new(get_shell()),
         Some(ref editor) => {
@@ -245,6 +248,7 @@ fn parse_dependency(s: &str) -> Dependency {
     }
 }
 
+// test related to the `parse_dependency` function
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -258,7 +262,7 @@ mod tests {
     }
 
     #[test]
-    fn with_version() {
+    fn dependency_with_version() {
         assert_eq!(
             parse_dependency("anyhow=1.0"),
             Dependency::CrateIo("anyhow".to_string(), Some("1.0".to_string()))
@@ -266,7 +270,7 @@ mod tests {
     }
 
     #[test]
-    fn with_minor_version() {
+    fn dependency_with_minor_version() {
         assert_eq!(
             parse_dependency("anyhow==1.1.0"),
             Dependency::CrateIo("anyhow".to_string(), Some("=1.1.0".to_string()))
@@ -274,7 +278,7 @@ mod tests {
     }
 
     #[test]
-    fn with_http_repository() {
+    fn repository_with_http() {
         assert_eq!(
             parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git"),
             Dependency::Repository {
@@ -287,7 +291,7 @@ mod tests {
     }
 
     #[test]
-    fn with_ssh_repository() {
+    fn repository_with_ssh_repository() {
         assert_eq!(
             parse_dependency("anyhow=ssh://git@github.com/dtolnay/anyhow.git"),
             Dependency::Repository {
@@ -300,7 +304,7 @@ mod tests {
     }
 
     #[test]
-    fn with_branch() {
+    fn repository_with_branch() {
         assert_eq!(
             parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#branch=main"),
             Dependency::Repository {
