@@ -20,7 +20,7 @@ struct Cli {
     /// The default version used is `*` but this can be replaced using `=`.
     /// E.g. `cargo-temp anyhow==1.0.13`
     #[clap(parse(from_str = parse_dependency))]
-    dependencies: Vec<(String, Option<String>)>,
+    dependencies: Vec<Dependency>,
 
     /// Name of the temporary crate.
     #[clap(long = "name")]
@@ -29,6 +29,17 @@ struct Cli {
     /// Create a library instead of a binary.
     #[clap(long)]
     lib: bool,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum Dependency {
+    CrateIo(String, Option<String>),
+    Repository {
+        name: String,
+        url: String,
+        branch: Option<String>,
+        rev: Option<String>,
+    },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -140,10 +151,27 @@ fn main() -> Result<()> {
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(tmp_dir.path().join("Cargo.toml"))?;
-    for (s, v) in cli.dependencies.iter() {
-        match &v {
-            Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
-            None => writeln!(toml, "{} = \"*\"", s)?,
+    for dependency in cli.dependencies.iter() {
+        match dependency {
+            Dependency::CrateIo(s, v) => match &v {
+                Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
+                None => writeln!(toml, "{} = \"*\"", s)?,
+            },
+            Dependency::Repository {
+                name,
+                url,
+                branch,
+                rev,
+            } => {
+                write!(toml, "{name} = {{ git = {url:?}", name = name, url = url)?;
+                if let Some(branch) = branch {
+                    write!(toml, ", branch = {:?}", branch)?;
+                }
+                if let Some(rev) = rev {
+                    write!(toml, ", rev = {:?}", rev)?;
+                }
+                writeln!(toml, " }}")?;
+            }
         }
     }
     drop(toml);
@@ -196,13 +224,24 @@ fn get_shell() -> String {
     }
 }
 
-fn parse_dependency(s: &str) -> (String, Option<String>) {
-    let regex = Regex::new(r"([^=]+)=(.+)").unwrap();
+fn parse_dependency(s: &str) -> Dependency {
+    let regex =
+        Regex::new(r"^([^=]+)=(((\w+://([^:@]+(:[^@]+)?@)?[^#]+)(#branch=(.+)|#rev=(.+))?)|.+)$")
+            .unwrap();
 
     if let Some(caps) = regex.captures(s) {
-        (caps[1].to_string(), Some(caps[2].to_string()))
+        if let Some(url) = caps.get(4) {
+            Dependency::Repository {
+                name: caps[1].to_string(),
+                url: url.as_str().to_string(),
+                branch: caps.get(8).map(|x| x.as_str().to_string()),
+                rev: caps.get(9).map(|x| x.as_str().to_string()),
+            }
+        } else {
+            Dependency::CrateIo(caps[1].to_string(), Some(caps[2].to_string()))
+        }
     } else {
-        (s.to_string(), None)
+        Dependency::CrateIo(s.to_string(), None)
     }
 }
 
@@ -212,14 +251,17 @@ mod tests {
 
     #[test]
     fn simple_dependency() {
-        assert_eq!(parse_dependency("anyhow"), ("anyhow".to_string(), None));
+        assert_eq!(
+            parse_dependency("anyhow"),
+            Dependency::CrateIo("anyhow".to_string(), None)
+        );
     }
 
     #[test]
     fn with_version() {
         assert_eq!(
             parse_dependency("anyhow=1.0"),
-            ("anyhow".to_string(), Some("1.0".to_string()))
+            Dependency::CrateIo("anyhow".to_string(), Some("1.0".to_string()))
         )
     }
 
@@ -227,7 +269,59 @@ mod tests {
     fn with_minor_version() {
         assert_eq!(
             parse_dependency("anyhow==1.1.0"),
-            ("anyhow".to_string(), Some("=1.1.0".to_string()))
+            Dependency::CrateIo("anyhow".to_string(), Some("=1.1.0".to_string()))
+        )
+    }
+
+    #[test]
+    fn with_http_repository() {
+        assert_eq!(
+            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git"),
+            Dependency::Repository {
+                name: "anyhow".to_string(),
+                url: "https://github.com/dtolnay/anyhow.git".to_string(),
+                branch: None,
+                rev: None,
+            }
+        )
+    }
+
+    #[test]
+    fn with_ssh_repository() {
+        assert_eq!(
+            parse_dependency("anyhow=ssh://git@github.com/dtolnay/anyhow.git"),
+            Dependency::Repository {
+                name: "anyhow".to_string(),
+                url: "ssh://git@github.com/dtolnay/anyhow.git".to_string(),
+                branch: None,
+                rev: None,
+            }
+        )
+    }
+
+    #[test]
+    fn with_branch() {
+        assert_eq!(
+            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#branch=main"),
+            Dependency::Repository {
+                name: "anyhow".to_string(),
+                url: "https://github.com/dtolnay/anyhow.git".to_string(),
+                branch: Some("main".to_string()),
+                rev: None,
+            }
+        )
+    }
+
+    #[test]
+    fn with_rev() {
+        assert_eq!(
+            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38"),
+            Dependency::Repository {
+                name: "anyhow".to_string(),
+                url: "https://github.com/dtolnay/anyhow.git".to_string(),
+                branch: None,
+                rev: Some("7e0f77a38".to_string()),
+            }
         )
     }
 }
