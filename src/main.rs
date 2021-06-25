@@ -22,10 +22,6 @@ struct Cli {
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<(String, Option<String>)>,
 
-    /// repositories to add to `Cargo.toml`.
-    #[clap(parse(from_str = parse_repository))]
-    repositories: Vec<(String, Option<String>)>,
-
     /// Name of the temporary crate.
     #[clap(long = "name")]
     project_name: Option<String>,
@@ -201,12 +197,37 @@ fn get_shell() -> String {
 }
 
 fn parse_dependency(s: &str) -> (String, Option<String>) {
-    let mut it = s.splitn(2, '=').map(|x| x.to_string());
-    (it.next().unwrap(), it.next())
+    let regex = Regex::new(r"([^=]+)=(.+)").unwrap();
+
+    if let Some(caps) = regex.captures(s) {
+        (caps[1].to_string(), Some(caps[2].to_string()))
+    } else {
+        (s.to_string(), None)
+    }
 }
 
-fn parse_repository(s: &str) -> (String, Option<String>) {
-    let regex = Regex::new(
-    r"^(https?:\/\/[^@]+|[^@]+@[^:@]+:[^@]+)@[^@]+([^=]+$|$)"
-    ).unwrap();
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simple_dependency() {
+        assert_eq!(parse_dependency("anyhow"), ("anyhow".to_string(), None));
+    }
+
+    #[test]
+    fn with_version() {
+        assert_eq!(
+            parse_dependency("anyhow=1.0"),
+            ("anyhow".to_string(), Some("1.0".to_string()))
+        )
+    }
+
+    #[test]
+    fn with_minor_version() {
+        assert_eq!(
+            parse_dependency("anyhow==1.1.0"),
+            ("anyhow".to_string(), Some("=1.1.0".to_string()))
+        )
+    }
 }
