@@ -248,11 +248,11 @@ fn parse_dependency(s: &str) -> Dependency {
     }
 }
 
-// test related to the `parse_dependency` function
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    // test related to the `parse_dependency` function
     #[test]
     fn simple_dependency() {
         assert_eq!(
