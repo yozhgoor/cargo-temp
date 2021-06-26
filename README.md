@@ -40,7 +40,7 @@ This will add the repository on the default branch by default. You can choose
 another branch or a revision:
 
 * Branch
-    `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=main`
+    `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master`
 
 * Revision
     `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38`
