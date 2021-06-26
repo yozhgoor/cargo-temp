@@ -1,6 +1,6 @@
 # cargo-temp
 
-A CLI tool that allow you to create a new rust project in a temporary directory
+A CLI tool that allows you to create a new rust project in a temporary directory
 with already installed dependencies.
 
 ![Cargo-temp demo](t-rec.gif)
@@ -40,7 +40,7 @@ This will add the repository on the default branch by default. You can choose
 another branch or a revision:
 
 * Branch
-    `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=main`
+    `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master`
 
 * Revision
     `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38`
@@ -75,8 +75,8 @@ environment variable is already set.
 
 ### editor (unset by default)
 
-You can use `editor` and `editor_args` as respectively the path to an IDE to
-start instead of a shell and arguments for it (unset by default).
+You can use `editor` to start an IDE instead of a shell
+and `editor_args` to provide its arguments (unset by default).
 
 * Example to run VS Code on Unix
 
