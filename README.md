@@ -73,13 +73,12 @@ environment variable is already set.
 
 `temporary_project_dir = "/home/name/repos/tmp"`
 
-### editor (unset by default)
+### editor
 
 You can use `editor` to start an IDE instead of a shell
-and `editor_args` to provide its arguments (unset by default).
+and `editor_args` to provide its arguments. These settings are unset by default.
 
 * Example to run VS Code on Unix
-
 ```toml
 editor = "/usr/bin/code"
 editor_args = [ "--wait", "--new-window" ]
