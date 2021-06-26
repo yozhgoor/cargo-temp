@@ -226,6 +226,8 @@ fn get_shell() -> String {
 }
 
 fn parse_dependency(s: &str) -> Dependency {
+    // This will change when `std::lazy` is released.
+    // See https://github.com/rust-lang/rust/issues/74465.
     static RE: once_cell::sync::OnceCell<regex::Regex> = once_cell::sync::OnceCell::new();
     let regex = RE.get_or_init(|| {
         Regex::new(
