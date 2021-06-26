@@ -176,7 +176,7 @@ fn main() -> Result<()> {
     }
     drop(toml);
 
-    // Start a new shell or an editor instead
+    // Prepare a new shell or an editor if its set in the config file
     let mut shell_process = match config.editor {
         None => process::Command::new(get_shell()),
         Some(ref editor) => {
