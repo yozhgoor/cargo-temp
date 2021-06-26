@@ -247,10 +247,9 @@ fn parse_dependency(s: &str) -> Dependency {
 }
 
 #[cfg(test)]
-mod tests {
+mod parse_dependency_tests {
     use super::*;
 
-    // test related to the `parse_dependency` function
     #[test]
     fn simple_dependency() {
         assert_eq!(
@@ -258,6 +257,7 @@ mod tests {
             Dependency::CrateIo("anyhow".to_string(), None)
         );
     }
+
     #[test]
     fn dependency_with_version() {
         assert_eq!(
@@ -265,6 +265,7 @@ mod tests {
             Dependency::CrateIo("anyhow".to_string(), Some("1.0".to_string()))
         )
     }
+
     #[test]
     fn dependency_with_minor_version() {
         assert_eq!(
@@ -272,6 +273,7 @@ mod tests {
             Dependency::CrateIo("anyhow".to_string(), Some("=1.1.0".to_string()))
         )
     }
+
     #[test]
     fn repository_with_http() {
         assert_eq!(
@@ -284,6 +286,7 @@ mod tests {
             }
         )
     }
+
     #[test]
     fn repository_with_ssh_repository() {
         assert_eq!(
@@ -296,6 +299,7 @@ mod tests {
             }
         )
     }
+
     #[test]
     fn repository_with_branch() {
         assert_eq!(
@@ -308,6 +312,7 @@ mod tests {
             }
         )
     }
+
     #[test]
     fn with_rev() {
         assert_eq!(
