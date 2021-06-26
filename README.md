@@ -1,6 +1,6 @@
 # cargo-temp
 
-A CLI tool that allow you to create a new rust project in a temporary directory
+A CLI tool that allows you to create a new rust project in a temporary directory
 with already installed dependencies.
 
 ![Cargo-temp demo](t-rec.gif)
