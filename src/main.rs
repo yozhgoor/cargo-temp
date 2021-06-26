@@ -107,7 +107,7 @@ impl Config {
 }
 
 fn main() -> Result<()> {
-    // Parse the user input
+    // Parse the command line input.
     let mut args = env::args().peekable();
     let command = args.next();
     args.next_if(|x| x.as_str() == "temp");
