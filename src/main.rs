@@ -226,9 +226,13 @@ fn get_shell() -> String {
 }
 
 fn parse_dependency(s: &str) -> Dependency {
-    let regex =
-        Regex::new(r"^([^=]+)=(((\w+://([^:@]+(:[^@]+)?@)?[^#]+)(#branch=(.+)|#rev=(.+))?)|.+)$")
-            .unwrap();
+    static RE: once_cell::sync::OnceCell<regex::Regex> = once_cell::sync::OnceCell::new();
+    let regex = RE.get_or_init(|| {
+        Regex::new(
+            r"^([^=]+)=(((\w+://([^:@]+(:[^@]+)?@)?[^#]+)(#branch=(.+)|#rev=(.+))?)|.+)$",
+        )
+        .unwrap()
+    });
 
     if let Some(caps) = regex.captures(s) {
         if let Some(url) = caps.get(4) {
