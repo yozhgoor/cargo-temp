@@ -71,7 +71,7 @@ Cargo's target directory override.
 This setting is unset by default and will be ignored if the `CARGO_TARGET_DIR`
 environment variable is already set.
 
-`temporary_project_dir = "home/name/repos/tmp"`
+`temporary_project_dir = "/home/name/repos/tmp"`
 
 ### editor (unset by default)
 
