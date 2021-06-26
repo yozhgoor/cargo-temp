@@ -115,7 +115,7 @@ fn main() -> Result<()> {
     args.next_if(|x| x.as_str() == "temp");
     let cli = Cli::parse_from(command.into_iter().chain(args));
 
-    // Integrate cargo-temp with the user configuration
+    // Read configuration from disk or generate a default one.
     let config = Config::get_or_create()?;
     let _ = fs::create_dir(&config.temporary_project_dir);
     let tmp_dir = Builder::new()
