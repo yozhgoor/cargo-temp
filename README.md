@@ -26,7 +26,7 @@ Create a new temporary project:
 
 ### Repositories
 
-You can add repositories to you Cargo.toml.
+You can add repositories to your `Cargo.toml`.
 
 Examples:
 
@@ -48,7 +48,8 @@ another branch or a revision:
 ## Features
 
 If you change your mind and decide to keep the project you can just delete the
-`TO_DELETE` file and the directory will not be deleted when the shell exits.
+`TO_DELETE` file and the directory will not be deleted when the shell or the
+editor exits.
 
 ## Settings
 

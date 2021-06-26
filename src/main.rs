@@ -31,7 +31,6 @@ struct Cli {
     lib: bool,
 }
 
-/// This type represents the different formats of dependencies given by the user
 #[derive(Debug, PartialEq, Eq)]
 enum Dependency {
     CrateIo(String, Option<String>),
@@ -43,7 +42,6 @@ enum Dependency {
     },
 }
 
-/// This type represents the user's configuration of the program
 #[derive(Serialize, Deserialize)]
 struct Config {
     temporary_project_dir: String,
@@ -142,7 +140,7 @@ fn main() -> Result<()> {
         bail!("Cargo command failed");
     };
 
-    // Generate the config file
+    // Generate the `TO_DELETE` file
     let delete_file = tmp_dir.path().join("TO_DELETE");
     fs::write(
         &delete_file,
@@ -178,7 +176,7 @@ fn main() -> Result<()> {
     }
     drop(toml);
 
-    // Start a new shell
+    // Start a new shell or an editor instead
     let mut shell_process = match config.editor {
         None => process::Command::new(get_shell()),
         Some(ref editor) => {
