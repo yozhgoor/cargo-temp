@@ -74,8 +74,8 @@ environment variable is already set.
 
 ### editor (unset by default)
 
-You can use `editor` and `editor_args` as respectively the path to an IDE to
-start instead of a shell and arguments for it (unset by default).
+You can use `editor` to start an IDE instead of a shell
+and `editor_args` to provide its arguments (unset by default).
 
 * Example to run VS Code on Unix
 
