@@ -1,5 +1,6 @@
 use anyhow::{bail, Context, Result};
 use clap::Clap;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
@@ -226,11 +227,14 @@ fn get_shell() -> String {
 }
 
 fn parse_dependency(s: &str) -> Dependency {
-    let regex =
+    // This will change when `std::lazy` is released.
+    // See https://github.com/rust-lang/rust/issues/74465.
+    static RE: Lazy<Regex> = Lazy::new(|| {
         Regex::new(r"^([^=]+)=(((\w+://([^:@]+(:[^@]+)?@)?[^#]+)(#branch=(.+)|#rev=(.+))?)|.+)$")
-            .unwrap();
+            .unwrap()
+    });
 
-    if let Some(caps) = regex.captures(s) {
+    if let Some(caps) = RE.captures(s) {
         if let Some(url) = caps.get(4) {
             Dependency::Repository {
                 name: caps[1].to_string(),

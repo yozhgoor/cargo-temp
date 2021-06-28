@@ -58,14 +58,14 @@ When you run `cargo-temp` for the first time it will be created automatically.
 We use the [XDG system](https://docs.rs/xdg/2.2.0/xdg/) for both Linux and OSX
 and the [Know Folder system](https://docs.rs/dirs-2/3.0.1/dirs_2/) on Windows.
 
-### `temporary_project_dir`
+### Temporary project directory
 
 The path where the temporary projects are created.
 Set on the cache directory by default.
 
 `temporary_project_dir = "/home/name/.cache/cargo-temp/"`
 
-### `cargo_target_dir`
+### Cargo target directory
 
 Cargo's target directory override.
 This setting is unset by default and will be ignored if the `CARGO_TARGET_DIR`
@@ -73,7 +73,7 @@ environment variable is already set.
 
 `temporary_project_dir = "/home/name/repos/tmp"`
 
-### editor
+### Editor
 
 You can use `editor` to start an IDE instead of a shell
 and `editor_args` to provide its arguments. These settings are unset by default.
