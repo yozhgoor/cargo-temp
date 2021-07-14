@@ -22,7 +22,7 @@ Create a new temporary project:
     `$ cargo-temp rand tokio`
 
 * With a dependency that have a fixed version:
-    `$ cargo-temp anyhow==1.0.13`
+    `$ cargo-temp anyhow=1.0.13`
 
 ### Repositories
 
