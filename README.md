@@ -19,12 +19,10 @@ Create a new temporary project:
     `$ cargo-temp`
 * With multiple dependencies:
     `$ cargo-temp rand tokio`
-* When specifying a version (You can use the 
-  [cargo's comparison requirements][comparison])
-    * `$ cargo-temp anyhow=1.0`
-    * `$ cargo-temp tokyo=<1.6`
-    * `$ cargo-temp tokyo=>1.8`
-    * `$ cargo-temp anyhow==1.0.13`
+* When specifying a version:
+    `$ cargo-temp anyhow=1.0`
+    * Using the [cargo's comparison requirements][comparison]:
+        `$ cargo-temp anyhow==1.0.13`
 
 ### Repositories
 
