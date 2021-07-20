@@ -17,14 +17,14 @@ Create a new temporary project:
 
 * With no additional dependencies:
     `$ cargo-temp`
-
 * With multiple dependencies:
     `$ cargo-temp rand tokio`
-* When specifying a version
-     `$ cargo-temp anyhow=1.0`       
-
-* With a dependency that have an exact version:
-    `$ cargo-temp anyhow=1.0.13`
+* When specifying a version (You can use the 
+  [cargo's comparison requirements][comparison])
+    * `$ cargo-temp anyhow=1.0`
+    * `$ cargo-temp tokyo=<1.6`
+    * `$ cargo-temp tokyo=>1.8`
+    * `$ cargo-temp anyhow==1.0.13`
 
 ### Repositories
 
@@ -38,8 +38,8 @@ Examples:
 * SSH
     `$ cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git`
 
-This will add the repository on the default branch by default. You can choose
-another branch or a revision:
+This will add the repository on the last commit of the main branch by default. 
+You can choose another branch or a revision:
 
 * Branch
     `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master`
@@ -57,8 +57,8 @@ editor exits.
 
 The config file is located at `{CONFIG_DIR}/cargo-temp/config.toml`.
 When you run `cargo-temp` for the first time it will be created automatically.
-We use the [XDG system](https://docs.rs/xdg/2.2.0/xdg/) for both Linux and OSX
-and the [Know Folder system](https://docs.rs/dirs-2/3.0.1/dirs_2/) on Windows.
+We use the [XDG system][xdg] for both Linux and OSX
+and the [Known Folder system][knownfolder] on Windows.
 
 ### Temporary project directory
 
@@ -91,3 +91,7 @@ editor_args = [ "--wait", "--new-window" ]
 editor = "C:\\Program Files\\Microsoft VS Code\\Code.exe"
 editor_args = [ "--wait", "--new-window" ]
 ```
+
+[comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
+[xdg]: https://docs.rs/xdg/2.2.0/xdg/
+[knownfolder]: https://docs.rs/dirs-2/3.0.1/dirs_2/
