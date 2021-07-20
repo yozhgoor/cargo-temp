@@ -21,7 +21,7 @@ Create a new temporary project:
 * With multiple dependencies:
     `$ cargo-temp rand tokio`
 
-* With a dependency that have a fixed version:
+* With a dependency that have an exact version:
     `$ cargo-temp anyhow=1.0.13`
 
 ### Repositories
