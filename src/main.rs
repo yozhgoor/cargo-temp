@@ -271,14 +271,6 @@ mod parse_dependency_tests {
     }
 
     #[test]
-    fn dependency_with_compatible_version() {
-        assert_eq!(
-            parse_dependency("anyhow=^1.1.0"),
-            Dependency::CrateIo("anyhow".to_string(), Some("^1.1.0".to_string()))
-        )
-    }
-
-    #[test]
     fn repository_with_http() {
         assert_eq!(
             parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git"),
