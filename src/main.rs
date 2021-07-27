@@ -19,7 +19,7 @@ struct Cli {
     /// Dependencies to add to `Cargo.toml`.
     ///
     /// The default version used is `*` but this can be replaced using `=`.
-    /// E.g. `cargo-temp anyhow==1.0.13`
+    /// E.g. `cargo-temp anyhow=1.0.13`
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<Dependency>,
 
@@ -267,14 +267,6 @@ mod parse_dependency_tests {
         assert_eq!(
             parse_dependency("anyhow=1.0"),
             Dependency::CrateIo("anyhow".to_string(), Some("1.0".to_string()))
-        )
-    }
-
-    #[test]
-    fn dependency_with_minor_version() {
-        assert_eq!(
-            parse_dependency("anyhow==1.1.0"),
-            Dependency::CrateIo("anyhow".to_string(), Some("=1.1.0".to_string()))
         )
     }
 
