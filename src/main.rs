@@ -23,13 +23,17 @@ struct Cli {
     #[clap(parse(from_str = parse_dependency))]
     dependencies: Vec<Dependency>,
 
+    /// Create a library instead of a binary.
+    #[clap(short, long)]
+    lib: bool,
+
     /// Name of the temporary crate.
     #[clap(long = "name")]
     project_name: Option<String>,
 
-    /// Create a library instead of a binary.
-    #[clap(long)]
-    lib: bool,
+    /// Create a git working tree
+    #[clap(long = "worktree")]
+    worktree_branch: Option<String>,
 }
 
 #[derive(Debug, PartialEq, Eq)]
