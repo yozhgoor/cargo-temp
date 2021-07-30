@@ -45,27 +45,6 @@ Using the [cargo's comparison requirements][comparison]:
   cargo-temp anyhow=<1.0.2
   ```
 
-### When creating a temporary git worktree
-
-You can create a git worktree from the current repository using:
-
-```bash
-cargo-temp --worktree
-```
-<!-- git worktree -d <temp_dir>] -->
-
-This will create a new working tree at the last commit of the current branch.
-You can specify a branch like this:
-
-```bash
-cargo-temp --worktree <branch>
-```
-<!-- git worktree <temp_dir> <branch>-->
-
-When you leave the shell (or you editor) with the `TO_DELETE_FILE` (See
-"Features" below), the working tree will be cleaned up (Equivalent to
-`git worktree prune`)
-
 ### Repositories
 
 You can add repositories to your *Cargo.toml*.
@@ -94,13 +73,36 @@ To choose a branch or a revision:
   cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38
   ```
 
-Without a branch or a revision, cargo will use the default branch of the repository.
+Without a branch or a revision, cargo will use the default branch of the
+repository.
 
 ## Features
+
+### The TO_DELETE file
 
 If you change your mind and decide to keep the project you can just delete the
 `TO_DELETE` file and the directory will not be deleted when the shell or the
 editor exits.
+
+### Git Working Tree
+
+You can create a git worktree from the current repository using:
+
+```bash
+cargo-temp --worktree
+```
+<!-- git worktree -d <temp_dir>] -->
+
+This will create a new working tree at the last commit of the current branch.
+You can specify a branch like this:
+
+```bash
+cargo-temp --worktree <branch>
+```
+<!-- git worktree <temp_dir> <branch>-->
+
+When exiting the shell (or your editor) the working tree will be cleaned up.
+Equivalent to `git worktree prune`
 
 ## Settings
 
@@ -125,7 +127,7 @@ This setting is unset by default and will be ignored if the `CARGO_TARGET_DIR`
 environment variable is already set.
 
 ```toml
-temporary_project_dir = "/home/name/repos/tmp"`
+temporary_project_dir = "/home/name/repos/tmp"
 ```
 
 ### Editor
