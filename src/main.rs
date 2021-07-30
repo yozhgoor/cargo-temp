@@ -40,19 +40,20 @@ struct Cli {
 enum Dependency {
     CrateIo(String, Option<String>),
     Repository {
-        name: String,
-        url: String,
         branch: Option<String>,
+        name: String,
         rev: Option<String>,
+        url: String,
     },
 }
 
 #[derive(Serialize, Deserialize)]
 struct Config {
-    temporary_project_dir: String,
     cargo_target_dir: Option<String>,
     editor: Option<String>,
     editor_args: Option<Vec<String>>,
+    git_worktree_dir: String,
+    temporary_project_dir: String,
 }
 
 impl Config {
@@ -69,14 +70,17 @@ impl Config {
             .context("Could not get cache directory")?
             .join(env!("CARGO_PKG_NAME"));
 
+        let cache_dir = cache_dir
+            .to_str()
+            .context("Could not convert cache path into str")?
+            .to_string();
+
         Ok(Self {
-            temporary_project_dir: cache_dir
-                .to_str()
-                .context("Could not convert cache path into str")?
-                .to_string(),
             cargo_target_dir: None,
             editor: None,
             editor_args: None,
+            git_worktree_dir: cache_dir.clone(),
+            temporary_project_dir: cache_dir.clone(),
         })
     }
 
