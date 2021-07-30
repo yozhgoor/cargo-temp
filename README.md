@@ -35,12 +35,36 @@ cargo-temp anyhow=1.0`
 
 Using the [cargo's comparison requirements][comparison]:
 
-* ```bash
+* Exact version:
+  ```bash
   cargo-temp anyhow==1.0.13
   ```
-* ```bash
+
+* Maximal version:
+  ```bash
   cargo-temp anyhow=<1.0.2
   ```
+
+### When creating a temporary git worktree
+
+You can create a git worktree from the current repository using:
+
+```bash
+cargo-temp --worktree
+```
+<!-- git worktree -d <temp_dir>] -->
+
+This will create a new working tree at the last commit of the current branch.
+You can specify a branch like this:
+
+```bash
+cargo-temp --worktree <branch>
+```
+<!-- git worktree <temp_dir> <branch>-->
+
+When you leave the shell (or you editor) with the `TO_DELETE_FILE` (See
+"Features" below), the working tree will be cleaned up (Equivalent to
+`git worktree prune`)
 
 ### Repositories
 
