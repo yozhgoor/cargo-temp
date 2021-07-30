@@ -80,7 +80,7 @@ impl Config {
             editor: None,
             editor_args: None,
             git_worktree_dir: cache_dir.clone(),
-            temporary_project_dir: cache_dir.clone(),
+            temporary_project_dir: cache_dir,
         })
     }
 
