@@ -15,36 +15,60 @@ Requires Rust 1.51.
 
 Create a new temporary project:
 
-* With no additional dependencies:
-    `$ cargo-temp`
-    
-* With multiple dependencies:
-    `$ cargo-temp rand tokio`
-    
-* When specifying a version:
-    `$ cargo-temp anyhow=1.0`
-    * Using the [cargo's comparison requirements][comparison]:
-        `$ cargo-temp anyhow==1.0.13`
+### With no additional dependencies:
+
+```bash
+cargo-temp
+```
+
+### With multiple dependencies:
+
+```bash
+cargo-temp rand tokio
+```
+
+### When specifying a version:
+
+```bash
+cargo-temp anyhow=1.0`
+```
+
+Using the [cargo's comparison requirements][comparison]:
+
+* ```bash
+  cargo-temp anyhow==1.0.13
+  ```
+* ```bash
+  cargo-temp anyhow=<1.0.2
+  ```
 
 ### Repositories
 
-You can add repositories to your `Cargo.toml`.
+You can add repositories to your *Cargo.toml*.
 
 Examples:
 
-* HTTP
-    `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git`
+* HTTP:
+  ```bash
+  cargo-temp anyhow=https://github.com/dtolnay/anyhow.git
+  ```
 
 * SSH
-    `$ cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git`
+  ```bash
+  cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
+  ```
 
 To choose a branch or a revision:
 
-* Branch
-    `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master`
+* Branch:
+  ```bash
+  cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master
+  ```
 
-* Revision
-    `$ cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38`
+* Revision:
+  ```bash
+  cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38
+  ```
 
 Without a branch or a revision, cargo will use the default branch of the repository.
 
@@ -66,7 +90,9 @@ and the [Known Folder system][knownfolder] on Windows.
 The path where the temporary projects are created.
 Set on the cache directory by default.
 
-`temporary_project_dir = "/home/name/.cache/cargo-temp/"`
+```toml
+temporary_project_dir = "/home/name/.cache/cargo-temp/"
+```
 
 ### Cargo target directory
 
@@ -74,7 +100,9 @@ Cargo's target directory override.
 This setting is unset by default and will be ignored if the `CARGO_TARGET_DIR`
 environment variable is already set.
 
-`temporary_project_dir = "/home/name/repos/tmp"`
+```toml
+temporary_project_dir = "/home/name/repos/tmp"`
+```
 
 ### Editor
 
