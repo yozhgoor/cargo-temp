@@ -139,18 +139,16 @@ fn main() -> Result<()> {
 
     // Generate the temporary project
     if cli.worktree_branch.is_some() {
+        let mut command = process::Command::new("git");
+        command
+            .current_dir(&config.git_worktree_dir)
+            .args(&["worktree", "add"]);
         match cli.worktree_branch.unwrap() {
-            Some(branch) => process::Command::new("git")
-                .current_dir(&config.git_worktree_dir)
-                .args(&[
-                    "worktree",
-                    "add",
-                    config.git_worktree_dir.as_str(),
-                    branch.as_str(),
-                ]),
-            None => process::Command::new("git")
-                .current_dir(&config.git_worktree_dir)
-                .args(&["worktree", "add", "-d", config.git_worktree_dir.as_str()]),
+            Some(branch) => command.args(&[config.git_worktree_dir.as_str(), branch.as_str()]),
+            None => command.args(&["-d", config.git_worktree_dir.as_str()]),
+        };
+        if !command.status().context("Could not start git")?.success() {
+            bail!("Cannot create working tree");
         };
     } else {
         let mut command = process::Command::new("cargo");
