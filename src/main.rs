@@ -125,9 +125,20 @@ fn main() -> Result<()> {
     // Read configuration from disk or generate a default one.
     let config = Config::get_or_create()?;
     let _ = fs::create_dir(&config.temporary_project_dir);
-    let tmp_dir = Builder::new()
-        .prefix("tmp-")
-        .tempdir_in(&config.temporary_project_dir)?;
+
+    // Create the temporary directory
+    let tmp_dir = {
+        if cli.worktree_branch.is_some() {
+            Builder::new()
+                .prefix("tmp-")
+                .tempdir_in(&config.git_worktree_dir)?
+        } else {
+            Builder::new()
+                .prefix("tmp-")
+                .tempdir_in(&config.temporary_project_dir)?
+        }
+    };
+
     let project_name = cli.project_name.unwrap_or_else(|| {
         tmp_dir
             .path()
@@ -141,11 +152,15 @@ fn main() -> Result<()> {
     if cli.worktree_branch.is_some() {
         let mut command = process::Command::new("git");
         command
-            .current_dir(&config.git_worktree_dir)
+            .current_dir(env::current_dir()?)
             .args(&["worktree", "add"]);
+        let worktree_dir = &tmp_dir
+            .path()
+            .to_str()
+            .expect("Cannot get user's worktree directory");
         match cli.worktree_branch.unwrap() {
-            Some(branch) => command.args(&[config.git_worktree_dir.as_str(), branch.as_str()]),
-            None => command.args(&["-d", config.git_worktree_dir.as_str()]),
+            Some(branch) => command.args(&[worktree_dir, branch.as_str()]),
+            None => command.args(&["-d", worktree_dir]),
         };
         if !command.status().context("Could not start git")?.success() {
             bail!("Cannot create working tree");
