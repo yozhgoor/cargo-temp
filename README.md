@@ -93,7 +93,7 @@ cargo-temp --worktree
 ```
 <!-- git worktree -d <temp_dir>] -->
 
-This will create a new working tree at the last commit of the current branch.
+This will create a new working tree at the current HEAD.
 You can specify a branch like this:
 
 ```bash
