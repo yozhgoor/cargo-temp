@@ -270,10 +270,8 @@ fn main() -> Result<()> {
                 bail!("Cannot remove working tree");
             };
         }
-    } else {
-        if !delete_file.exists() {
-            println!("Project preserved at: {}", tmp_dir.into_path().display());
-        }
+    } else if !delete_file.exists() {
+        println!("Project preserved at: {}", tmp_dir.into_path().display());
     }
 
     Ok(())
