@@ -53,7 +53,6 @@ struct Config {
     cargo_target_dir: Option<String>,
     editor: Option<String>,
     editor_args: Option<Vec<String>>,
-    worktree_dir: String,
     temporary_project_dir: String,
 }
 
@@ -80,7 +79,6 @@ impl Config {
             cargo_target_dir: None,
             editor: None,
             editor_args: None,
-            worktree_dir: cache_dir.clone(),
             temporary_project_dir: cache_dir,
         })
     }
@@ -129,15 +127,15 @@ fn main() -> Result<()> {
 
     // Create the temporary directory
     let tmp_dir = {
+        let mut builder = Builder::new();
+
         if cli.worktree_branch.is_some() {
-            Builder::new()
-                .prefix("tmp-")
-                .tempdir_in(&config.worktree_dir)?
+            builder.prefix("wk-");
         } else {
-            Builder::new()
-                .prefix("tmp-")
-                .tempdir_in(&config.temporary_project_dir)?
+            builder.prefix("tmp-");
         }
+
+        builder.tempdir_in(&config.temporary_project_dir)?
     };
 
     let project_name = cli.project_name.unwrap_or_else(|| {
