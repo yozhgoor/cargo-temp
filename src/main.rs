@@ -53,7 +53,7 @@ struct Config {
     cargo_target_dir: Option<String>,
     editor: Option<String>,
     editor_args: Option<Vec<String>>,
-    git_worktree_dir: String,
+    worktree_dir: String,
     temporary_project_dir: String,
 }
 
@@ -80,7 +80,7 @@ impl Config {
             cargo_target_dir: None,
             editor: None,
             editor_args: None,
-            git_worktree_dir: cache_dir.clone(),
+            worktree_dir: cache_dir.clone(),
             temporary_project_dir: cache_dir,
         })
     }
@@ -132,7 +132,7 @@ fn main() -> Result<()> {
         if cli.worktree_branch.is_some() {
             Builder::new()
                 .prefix("tmp-")
-                .tempdir_in(&config.git_worktree_dir)?
+                .tempdir_in(&config.worktree_dir)?
         } else {
             Builder::new()
                 .prefix("tmp-")

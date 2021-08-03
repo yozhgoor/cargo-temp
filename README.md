@@ -16,29 +16,29 @@ Requires Rust 1.51.
 Create a new temporary project:
 
 * With no additional dependencies:
-  ```console
+  ```sh
   cargo-temp
   ```
 
 * With multiple dependencies:
-  ```console
+  ```sh
   cargo-temp rand tokio
   ```
 
 * When specifying a version:
-  ```console
+  ```sh
   cargo-temp anyhow=1.0`
   ```
 
 Using the [cargo's comparison requirements][comparison]:
 
 * Exact version:
-  ```console
+  ```sh
   cargo-temp anyhow==1.0.13
   ```
 
 * Maximal version:
-  ```console
+  ```sh
   cargo-temp anyhow=<1.0.2
   ```
 
@@ -49,24 +49,24 @@ You can add repositories to your `Cargo.toml`.
 Examples:
 
 * HTTP:
-  ```console
+  ```sh
   cargo-temp anyhow=https://github.com/dtolnay/anyhow.git
   ```
 
 * SSH
-  ```console
+  ```sh
   cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
   ```
 
 To choose a branch or a revision:
 
 * Branch:
-  ```console
+  ```sh
   cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master
   ```
 
 * Revision:
-  ```console
+  ```sh
   cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38
   ```
 
@@ -85,14 +85,14 @@ editor exits.
 
 You can create a git worktree from the current repository using:
 
-```console
+```sh
 cargo-temp --worktree
 ```
 
 This will create a new working tree at the current HEAD.
 You can specify a branch like this:
 
-```console
+```sh
 cargo-temp --worktree <branch>
 ```
 
