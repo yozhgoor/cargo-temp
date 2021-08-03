@@ -151,13 +151,10 @@ fn main() -> Result<()> {
     if let Some(maybe_branch) = cli.worktree_branch.as_ref() {
         let mut command = process::Command::new("git");
         command.args(&["worktree", "add"]);
-        let worktree_dir = &tmp_dir
-            .path()
-            .to_str()
-            .expect("Cannot get user's worktree directory");
+
         match maybe_branch {
-            Some(branch) => command.args(&[worktree_dir, branch.as_str()]),
-            None => command.args(&["-d", worktree_dir]),
+            Some(branch) => command.arg(&tmp_dir.path()).arg(branch.as_str()),
+            None => command.arg("-d").arg(&tmp_dir.path()),
         };
         if !command.status().context("Could not start git")?.success() {
             bail!("Cannot create working tree");
