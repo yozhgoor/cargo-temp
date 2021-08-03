@@ -9,38 +9,40 @@ with already installed dependencies.
 
 Requires Rust 1.51.
 
-`cargo install cargo-temp`
+```
+cargo install cargo-temp
+```
 
 ## Usage
 
 Create a new temporary project:
 
 * With no additional dependencies:
-  ```
-  cargo-temp
-  ```
+    ```
+    cargo-temp
+    ```
 
 * With multiple dependencies:
-  ```
-  cargo-temp rand tokio
-  ```
+    ```
+    cargo-temp rand tokio
+    ```
 
 * When specifying a version:
-  ```
-  cargo-temp anyhow=1.0`
-  ```
+    ```
+    cargo-temp anyhow=1.0`
+    ```
 
 Using the [cargo's comparison requirements][comparison]:
 
 * Exact version:
-  ```
-  cargo-temp anyhow==1.0.13
-  ```
+    ```
+    cargo-temp anyhow==1.0.13
+    ```
 
 * Maximal version:
-  ```
-  cargo-temp anyhow=<1.0.2
-  ```
+    ```
+    cargo-temp anyhow=<1.0.2
+    ```
 
 ### Repositories
 
@@ -49,26 +51,26 @@ You can add repositories to your `Cargo.toml`.
 Examples:
 
 * HTTP:
-  ```
-  cargo-temp anyhow=https://github.com/dtolnay/anyhow.git
-  ```
+    ```
+    cargo-temp anyhow=https://github.com/dtolnay/anyhow.git
+    ```
 
 * SSH
-  ```
-  cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
-  ```
+    ```
+    cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
+    ```
 
 To choose a branch or a revision:
 
 * Branch:
-  ```
-  cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master
-  ```
+    ```
+    cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master
+    ```
 
 * Revision:
-  ```
-  cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38
-  ```
+    ```
+    cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38
+    ```
 
 Without a branch or a revision, cargo will use the default branch of the
 repository.
@@ -131,16 +133,16 @@ You can use `editor` to start an IDE instead of a shell
 and `editor_args` to provide its arguments. These settings are unset by default.
 
 * Example to run VS Code on Unix
-```toml
-editor = "/usr/bin/code"
-editor_args = [ "--wait", "--new-window" ]
-```
+    ```toml
+    editor = "/usr/bin/code"
+    editor_args = [ "--wait", "--new-window" ]
+    ```
 
 * Example to run VS Code on Windows
-```toml
-editor = "C:\\Program Files\\Microsoft VS Code\\Code.exe"
-editor_args = [ "--wait", "--new-window" ]
-```
+    ```toml
+    editor = "C:\\Program Files\\Microsoft VS Code\\Code.exe"
+    editor_args = [ "--wait", "--new-window" ]
+    ```
 
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [xdg]: https://docs.rs/xdg/2.2.0/xdg/
