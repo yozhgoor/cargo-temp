@@ -99,7 +99,7 @@ cargo-temp --worktree <branch>
 ```
 
 When exiting the shell (or your editor) the working tree will be cleaned up.
-Equivalent to `git worktree prune`
+Equivalent to `git worktree prune`.
 
 ## Settings
 
