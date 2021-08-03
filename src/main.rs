@@ -243,31 +243,25 @@ fn main() -> Result<()> {
         }
     }
 
-    if cli.worktree_branch.is_some() {
-        if !delete_file.exists() {
-            println!(
-                "Working tree directory preserved at: {}",
-                tmp_dir.into_path().display()
-            );
-        } else {
-            let mut command = process::Command::new("git");
-            command.args(&[
-                "worktree",
-                "remove",
+    if !delete_file.exists() {
+        println!(
+            "Project directory preserved at: {}",
+            tmp_dir.into_path().display()
+        );
+    } else if cli.worktree_branch.is_some() {
+        let mut command = process::Command::new("git");
+        command
+            .args(&["worktree", "remove"])
+            .arg(
                 &tmp_dir
                     .path()
                     .file_name()
-                    .expect("Cannot get working tree name")
-                    .to_str()
-                    .expect("Cannot convert working tree name"),
-                "--force",
-            ]);
-            if !command.status().context("Could not start git")?.success() {
-                bail!("Cannot remove working tree");
-            };
-        }
-    } else if !delete_file.exists() {
-        println!("Project preserved at: {}", tmp_dir.into_path().display());
+                    .expect("Cannot get working tree name"),
+            )
+            .arg("--force");
+        if !command.status().context("Could not start git")?.success() {
+            bail!("Cannot remove working tree");
+        };
     }
 
     Ok(())
