@@ -70,16 +70,16 @@ impl Config {
             .context("Could not get cache directory")?
             .join(env!("CARGO_PKG_NAME"));
 
-        let cache_dir = cache_dir
+        let temporary_project_dir = cache_dir
             .to_str()
-            .context("Could not convert cache path into str")?
+            .context("Cannot convert temporary project path into str")?
             .to_string();
 
         Ok(Self {
             cargo_target_dir: None,
             editor: None,
             editor_args: None,
-            temporary_project_dir: cache_dir,
+            temporary_project_dir,
         })
     }
 
@@ -147,15 +147,16 @@ fn main() -> Result<()> {
             .to_lowercase()
     });
 
-    // Generate the temporary project
+    // Generate the temporary project or temporary worktree
     if let Some(maybe_branch) = cli.worktree_branch.as_ref() {
         let mut command = process::Command::new("git");
         command.args(["worktree", "add"]);
 
         match maybe_branch {
-            Some(branch) => command.arg(&tmp_dir.path()).arg(branch.as_str()),
-            None => command.arg("-d").arg(&tmp_dir.path()),
+            Some(branch) => command.arg(tmp_dir.path()).arg(branch),
+            None => command.arg("-d").arg(tmp_dir.path()),
         };
+
         ensure!(
             command.status().context("Could not start git")?.success(),
             "Cannot create working tree"
@@ -165,9 +166,11 @@ fn main() -> Result<()> {
         command
             .current_dir(&tmp_dir)
             .args(["init", "--name", project_name.as_str()]);
+
         if cli.lib {
             command.arg("--lib");
         }
+
         ensure!(
             command.status().context("Could not start cargo")?.success(),
             "Cargo command failed"
@@ -200,7 +203,6 @@ fn main() -> Result<()> {
                 }
             }
         }
-        drop(toml);
     }
 
     // Generate the `TO_DELETE` file
