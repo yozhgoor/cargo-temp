@@ -1,4 +1,4 @@
-use anyhow::{bail, Context, Result};
+use anyhow::{ensure, Context, Result};
 use clap::Clap;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -156,9 +156,10 @@ fn main() -> Result<()> {
             Some(branch) => command.arg(&tmp_dir.path()).arg(branch.as_str()),
             None => command.arg("-d").arg(&tmp_dir.path()),
         };
-        if !command.status().context("Could not start git")?.success() {
-            bail!("Cannot create working tree");
-        };
+        ensure!(
+            command.status().context("Could not start git")?.success(),
+            "Cannot create working tree"
+        );
     } else {
         let mut command = process::Command::new("cargo");
         command
@@ -167,9 +168,10 @@ fn main() -> Result<()> {
         if cli.lib {
             command.arg("--lib");
         }
-        if !command.status().context("Could not start cargo")?.success() {
-            bail!("Cargo command failed");
-        };
+        ensure!(
+            command.status().context("Could not start cargo")?.success(),
+            "Cargo command failed"
+        );
 
         // Add dependencies to Cargo.toml from arguments given by the user
         let mut toml = fs::OpenOptions::new()
@@ -254,9 +256,10 @@ fn main() -> Result<()> {
                     .expect("Cannot get working tree name"),
             )
             .arg("--force");
-        if !command.status().context("Could not start git")?.success() {
-            bail!("Cannot remove working tree");
-        };
+        ensure!(
+            command.status().context("Could not start git")?.success(),
+            "Cannot remove working tree"
+        );
     }
 
     Ok(())
