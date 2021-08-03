@@ -150,7 +150,7 @@ fn main() -> Result<()> {
     // Generate the temporary project
     if let Some(maybe_branch) = cli.worktree_branch.as_ref() {
         let mut command = process::Command::new("git");
-        command.args(&["worktree", "add"]);
+        command.args(["worktree", "add"]);
 
         match maybe_branch {
             Some(branch) => command.arg(&tmp_dir.path()).arg(branch.as_str()),
@@ -163,7 +163,7 @@ fn main() -> Result<()> {
         let mut command = process::Command::new("cargo");
         command
             .current_dir(&tmp_dir)
-            .args(&["init", "--name", project_name.as_str()]);
+            .args(["init", "--name", project_name.as_str()]);
         if cli.lib {
             command.arg("--lib");
         }
@@ -246,7 +246,7 @@ fn main() -> Result<()> {
     } else if cli.worktree_branch.is_some() {
         let mut command = process::Command::new("git");
         command
-            .args(&["worktree", "remove"])
+            .args(["worktree", "remove"])
             .arg(
                 &tmp_dir
                     .path()
