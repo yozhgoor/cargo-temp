@@ -249,12 +249,7 @@ fn main() -> Result<()> {
         let mut command = process::Command::new("git");
         command
             .args(["worktree", "remove"])
-            .arg(
-                &tmp_dir
-                    .path()
-                    .file_name()
-                    .expect("Cannot get working tree name"),
-            )
+            .arg(&tmp_dir.path())
             .arg("--force");
         ensure!(
             command.status().context("Could not start git")?.success(),
