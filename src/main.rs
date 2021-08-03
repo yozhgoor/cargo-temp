@@ -148,8 +148,11 @@ fn main() -> Result<()> {
             .to_lowercase()
     });
 
+    let worktree = cli.worktree_branch.is_some();
+    let worktree_branch = cli.worktree_branch.unwrap();
+
     // Generate the temporary project
-    if cli.worktree_branch.is_some() {
+    if worktree {
         let mut command = process::Command::new("git");
         command
             .current_dir(env::current_dir()?)
@@ -158,7 +161,7 @@ fn main() -> Result<()> {
             .path()
             .to_str()
             .expect("Cannot get user's worktree directory");
-        match cli.worktree_branch.unwrap() {
+        match worktree_branch {
             Some(branch) => command.args(&[worktree_dir, branch.as_str()]),
             None => command.args(&["-d", worktree_dir]),
         };
@@ -244,8 +247,33 @@ fn main() -> Result<()> {
         }
     }
 
-    if !delete_file.exists() {
-        println!("Project preserved at: {}", tmp_dir.into_path().display());
+    if worktree {
+        if !delete_file.exists() {
+            println!(
+                "Working tree directory preserved at: {}",
+                tmp_dir.into_path().display()
+            );
+        } else {
+            let mut command = process::Command::new("git");
+            command.current_dir(env::current_dir()?).args(&[
+                "worktree",
+                "remove",
+                &tmp_dir
+                    .path()
+                    .file_name()
+                    .expect("Cannot get working tree name")
+                    .to_str()
+                    .expect("Cannot convert working tree name"),
+                "--force",
+            ]);
+            if !command.status().context("Could not start git")?.success() {
+                bail!("Cannot remove working tree");
+            };
+        }
+    } else {
+        if !delete_file.exists() {
+            println!("Project preserved at: {}", tmp_dir.into_path().display());
+        }
     }
 
     Ok(())
