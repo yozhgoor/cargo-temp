@@ -24,14 +24,15 @@ struct Cli {
     dependencies: Vec<Dependency>,
 
     /// Create a library instead of a binary.
-    #[clap(short, long)]
+    #[clap(long)]
     lib: bool,
 
     /// Name of the temporary crate.
     #[clap(long = "name")]
     project_name: Option<String>,
 
-    /// Create a git working tree
+    /// Create a temporary Git working tree based on the repository in the
+    /// current directory
     #[clap(long = "worktree")]
     worktree_branch: Option<Option<String>>,
 }
@@ -148,20 +149,15 @@ fn main() -> Result<()> {
             .to_lowercase()
     });
 
-    let worktree = cli.worktree_branch.is_some();
-    let worktree_branch = cli.worktree_branch.unwrap();
-
     // Generate the temporary project
-    if worktree {
+    if let Some(maybe_branch) = cli.worktree_branch.as_ref() {
         let mut command = process::Command::new("git");
-        command
-            .current_dir(env::current_dir()?)
-            .args(&["worktree", "add"]);
+        command.args(&["worktree", "add"]);
         let worktree_dir = &tmp_dir
             .path()
             .to_str()
             .expect("Cannot get user's worktree directory");
-        match worktree_branch {
+        match maybe_branch {
             Some(branch) => command.args(&[worktree_dir, branch.as_str()]),
             None => command.args(&["-d", worktree_dir]),
         };
@@ -247,7 +243,7 @@ fn main() -> Result<()> {
         }
     }
 
-    if worktree {
+    if cli.worktree_branch.is_some() {
         if !delete_file.exists() {
             println!(
                 "Working tree directory preserved at: {}",
@@ -255,7 +251,7 @@ fn main() -> Result<()> {
             );
         } else {
             let mut command = process::Command::new("git");
-            command.current_dir(env::current_dir()?).args(&[
+            command.args(&[
                 "worktree",
                 "remove",
                 &tmp_dir

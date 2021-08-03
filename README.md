@@ -15,61 +15,58 @@ Requires Rust 1.51.
 
 Create a new temporary project:
 
-### With no additional dependencies:
+* With no additional dependencies:
+  ```console
+  cargo-temp
+  ```
 
-```bash
-cargo-temp
-```
+* With multiple dependencies:
+  ```console
+  cargo-temp rand tokio
+  ```
 
-### With multiple dependencies:
-
-```bash
-cargo-temp rand tokio
-```
-
-### When specifying a version:
-
-```bash
-cargo-temp anyhow=1.0`
-```
+* When specifying a version:
+  ```console
+  cargo-temp anyhow=1.0`
+  ```
 
 Using the [cargo's comparison requirements][comparison]:
 
 * Exact version:
-  ```bash
+  ```console
   cargo-temp anyhow==1.0.13
   ```
 
 * Maximal version:
-  ```bash
+  ```console
   cargo-temp anyhow=<1.0.2
   ```
 
 ### Repositories
 
-You can add repositories to your *Cargo.toml*.
+You can add repositories to your `Cargo.toml`.
 
 Examples:
 
 * HTTP:
-  ```bash
+  ```console
   cargo-temp anyhow=https://github.com/dtolnay/anyhow.git
   ```
 
 * SSH
-  ```bash
+  ```console
   cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
   ```
 
 To choose a branch or a revision:
 
 * Branch:
-  ```bash
+  ```console
   cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master
   ```
 
 * Revision:
-  ```bash
+  ```console
   cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38
   ```
 
@@ -88,18 +85,16 @@ editor exits.
 
 You can create a git worktree from the current repository using:
 
-```bash
+```console
 cargo-temp --worktree
 ```
-<!-- git worktree -d <temp_dir>] -->
 
 This will create a new working tree at the current HEAD.
 You can specify a branch like this:
 
-```bash
+```console
 cargo-temp --worktree <branch>
 ```
-<!-- git worktree <temp_dir> <branch>-->
 
 When exiting the shell (or your editor) the working tree will be cleaned up.
 Equivalent to `git worktree prune`
