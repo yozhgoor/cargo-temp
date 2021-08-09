@@ -179,7 +179,7 @@ pub fn run(cli: Cli, config: &Config) -> Result<()> {
 
     let delete_file = generate_delete_file(&tmp_dir)?;
 
-    start_shell(&config, &tmp_dir)?;
+    start_shell(config, &tmp_dir)?;
 
     exit_shell(delete_file, tmp_dir, cli.worktree_branch)?;
 
