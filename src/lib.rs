@@ -167,62 +167,21 @@ pub fn get_shell() -> String {
     }
 }
 
-pub fn run(cli: Cli, config: Config) -> Result<()> {
+pub fn run(cli: Cli, config: &Config) -> Result<()> {
     let tmp_dir = generate_tmp_project(
         cli.worktree_branch.clone(),
         cli.project_name,
         cli.lib,
-        config.temporary_project_dir,
+        config.temporary_project_dir.clone(),
     )?;
 
-    let delete_file = config_tmp_project(&tmp_dir, cli.dependencies)?;
+    add_dependencies_to_toml(&tmp_dir, cli.dependencies)?;
 
-    // Prepare a new shell or an editor if its set in the config file
-    let mut shell_process = match config.editor {
-        None => process::Command::new(get_shell()),
-        Some(ref editor) => {
-            let mut ide_process = process::Command::new(editor);
-            ide_process
-                .args(config.editor_args.iter().flatten())
-                .arg(tmp_dir.path());
-            ide_process
-        }
-    };
+    let delete_file = generate_delete_file(&tmp_dir)?;
 
-    if env::var("CARGO_TARGET_DIR").is_err() {
-        if let Some(path) = &config.cargo_target_dir {
-            shell_process.env("CARGO_TARGET_DIR", path);
-        }
-    }
+    start_shell(&config, &tmp_dir)?;
 
-    shell_process
-        .current_dir(&tmp_dir)
-        .status()
-        .context("Cannot start shell")?;
-
-    #[cfg(windows)]
-    if config.editor.is_some() {
-        unsafe {
-            cargo_temp_bindings::Windows::Win32::SystemServices::FreeConsole();
-        }
-    }
-
-    if !delete_file.exists() {
-        println!(
-            "Project directory preserved at: {}",
-            tmp_dir.into_path().display()
-        );
-    } else if cli.worktree_branch.is_some() {
-        let mut command = process::Command::new("git");
-        command
-            .args(["worktree", "remove"])
-            .arg(&tmp_dir.path())
-            .arg("--force");
-        ensure!(
-            command.status().context("Could not start git")?.success(),
-            "Cannot remove working tree"
-        );
-    }
+    exit_shell(delete_file, tmp_dir, cli.worktree_branch)?;
 
     Ok(())
 }
@@ -286,7 +245,7 @@ fn generate_tmp_project(
     Ok(tmp_dir)
 }
 
-fn config_tmp_project(tmp_dir: &TempDir, dependencies: Vec<Dependency>) -> Result<PathBuf> {
+fn add_dependencies_to_toml(tmp_dir: &TempDir, dependencies: Vec<Dependency>) -> Result<()> {
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(tmp_dir.path().join("Cargo.toml"))?;
@@ -314,7 +273,10 @@ fn config_tmp_project(tmp_dir: &TempDir, dependencies: Vec<Dependency>) -> Resul
         }
     }
 
-    // Generate the `TO_DELETE` file
+    Ok(())
+}
+
+fn generate_delete_file(tmp_dir: &TempDir) -> Result<PathBuf> {
     let delete_file = tmp_dir.path().join("TO_DELETE");
     fs::write(
         &delete_file,
@@ -322,6 +284,64 @@ fn config_tmp_project(tmp_dir: &TempDir, dependencies: Vec<Dependency>) -> Resul
     )?;
 
     Ok(delete_file)
+}
+
+fn start_shell(config: &Config, tmp_dir: &TempDir) -> Result<()> {
+    let mut shell_process = match config.editor {
+        None => process::Command::new(get_shell()),
+        Some(ref editor) => {
+            let mut ide_process = process::Command::new(editor);
+            ide_process
+                .args(config.editor_args.iter().flatten())
+                .arg(tmp_dir.path());
+            ide_process
+        }
+    };
+
+    if env::var("CARGO_TARGET_DIR").is_err() {
+        if let Some(path) = &config.cargo_target_dir {
+            shell_process.env("CARGO_TARGET_DIR", path);
+        }
+    }
+
+    shell_process
+        .current_dir(&tmp_dir)
+        .status()
+        .context("Cannot start shell")?;
+
+    #[cfg(windows)]
+    if config.editor.is_some() {
+        unsafe {
+            cargo_temp_bindings::Windows::Win32::SystemServices::FreeConsole();
+        }
+    }
+
+    Ok(())
+}
+
+pub fn exit_shell(
+    delete_file: PathBuf,
+    tmp_dir: TempDir,
+    worktree_branch: Option<Option<String>>,
+) -> Result<()> {
+    if !delete_file.exists() {
+        println!(
+            "Project directory preserved at: {}",
+            tmp_dir.into_path().display()
+        );
+    } else if worktree_branch.is_some() {
+        let mut command = process::Command::new("git");
+        command
+            .args(["worktree", "remove"])
+            .arg(&tmp_dir.path())
+            .arg("--force");
+        ensure!(
+            command.status().context("Could not start git")?.success(),
+            "Cannot remove working tree"
+        );
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

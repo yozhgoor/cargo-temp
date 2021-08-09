@@ -9,7 +9,7 @@ fn main() -> Result<()> {
     let config = cargo_temp::Config::get_or_create()?;
     let _ = fs::create_dir(&config.temporary_project_dir);
 
-    cargo_temp::run(cli, config)?;
+    cargo_temp::run(cli, &config)?;
 
     Ok(())
 }
