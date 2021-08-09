@@ -48,6 +48,12 @@ impl Cli {
     }
 }
 
+impl Default for Cli {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub cargo_target_dir: Option<String>,
