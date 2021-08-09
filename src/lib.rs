@@ -4,6 +4,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
+use std::path::PathBuf;
 use std::{env, fs, process};
 use tempfile::{Builder, TempDir};
 
@@ -162,46 +163,13 @@ pub fn get_shell() -> String {
 
 pub fn run(cli: Cli, config: Config) -> Result<()> {
     let tmp_dir = generate_tmp_project(
-        cli.worktree_branch,
+        cli.worktree_branch.clone(),
         cli.project_name,
         cli.lib,
         config.temporary_project_dir,
     )?;
 
-    // Add dependencies to Cargo.toml from arguments given by the user
-    let mut toml = fs::OpenOptions::new()
-        .append(true)
-        .open(tmp_dir.path().join("Cargo.toml"))?;
-    for dependency in cli.dependencies.iter() {
-        match dependency {
-            Dependency::CrateIo(s, v) => match &v {
-                Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
-                None => writeln!(toml, "{} = \"*\"", s)?,
-            },
-            Dependency::Repository {
-                name,
-                url,
-                branch,
-                rev,
-            } => {
-                write!(toml, "{name} = {{ git = {url:?}", name = name, url = url)?;
-                if let Some(branch) = branch {
-                    write!(toml, ", branch = {:?}", branch)?;
-                }
-                if let Some(rev) = rev {
-                    write!(toml, ", rev = {:?}", rev)?;
-                }
-                writeln!(toml, " }}")?;
-            }
-        }
-    }
-
-    // Generate the `TO_DELETE` file
-    let delete_file = tmp_dir.path().join("TO_DELETE");
-    fs::write(
-        &delete_file,
-        "Delete this file if you want to preserve this project",
-    )?;
+    let delete_file = config_tmp_project(&tmp_dir, cli.dependencies)?;
 
     // Prepare a new shell or an editor if its set in the config file
     let mut shell_process = match config.editor {
@@ -233,10 +201,27 @@ pub fn run(cli: Cli, config: Config) -> Result<()> {
         }
     }
 
+    if !delete_file.exists() {
+        println!(
+            "Project directory preserved at: {}",
+            tmp_dir.into_path().display()
+        );
+    } else if cli.worktree_branch.is_some() {
+        let mut command = process::Command::new("git");
+        command
+            .args(["worktree", "remove"])
+            .arg(&tmp_dir.path())
+            .arg("--force");
+        ensure!(
+            command.status().context("Could not start git")?.success(),
+            "Cannot remove working tree"
+        );
+    }
+
     Ok(())
 }
 
-pub fn generate_tmp_project(
+fn generate_tmp_project(
     worktree_branch: Option<Option<String>>,
     project_name: Option<String>,
     lib: bool,
@@ -293,6 +278,44 @@ pub fn generate_tmp_project(
     }
 
     Ok(tmp_dir)
+}
+
+fn config_tmp_project(tmp_dir: &TempDir, dependencies: Vec<Dependency>) -> Result<PathBuf> {
+    let mut toml = fs::OpenOptions::new()
+        .append(true)
+        .open(tmp_dir.path().join("Cargo.toml"))?;
+    for dependency in dependencies.iter() {
+        match dependency {
+            Dependency::CrateIo(s, v) => match &v {
+                Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
+                None => writeln!(toml, "{} = \"*\"", s)?,
+            },
+            Dependency::Repository {
+                name,
+                url,
+                branch,
+                rev,
+            } => {
+                write!(toml, "{name} = {{ git = {url:?}", name = name, url = url)?;
+                if let Some(branch) = branch {
+                    write!(toml, ", branch = {:?}", branch)?;
+                }
+                if let Some(rev) = rev {
+                    write!(toml, ", rev = {:?}", rev)?;
+                }
+                writeln!(toml, " }}")?;
+            }
+        }
+    }
+
+    // Generate the `TO_DELETE` file
+    let delete_file = tmp_dir.path().join("TO_DELETE");
+    fs::write(
+        &delete_file,
+        "Delete this file if you want to preserve this project",
+    )?;
+
+    Ok(delete_file)
 }
 
 #[cfg(test)]
