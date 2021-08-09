@@ -1,9 +1,11 @@
-use anyhow::{Context, Result};
+use anyhow::{ensure, Context, Result};
 use clap::Clap;
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::{env, fs};
+use std::io::Write;
+use std::{env, fs, process};
+use tempfile::Builder;
 
 /// This tool allow you to create a new Rust temporary project in
 /// a temporary directory.
@@ -156,6 +158,127 @@ pub fn get_shell() -> String {
     {
         env::var("COMSPEC").unwrap_or_else(|_| "cmd".to_string())
     }
+}
+
+pub fn run(cli: Cli, config: Config) -> Result<()> {
+    // Create the temporary directory
+    let tmp_dir = {
+        let mut builder = Builder::new();
+
+        if cli.worktree_branch.is_some() {
+            builder.prefix("wk-");
+        } else {
+            builder.prefix("tmp-");
+        }
+
+        builder.tempdir_in(&config.temporary_project_dir)?
+    };
+
+    let project_name = cli.project_name.unwrap_or_else(|| {
+        tmp_dir
+            .path()
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .to_lowercase()
+    });
+
+    // Generate the temporary project or temporary worktree
+    if let Some(maybe_branch) = cli.worktree_branch.as_ref() {
+        let mut command = process::Command::new("git");
+        command.args(["worktree", "add"]);
+
+        match maybe_branch {
+            Some(branch) => command.arg(tmp_dir.path()).arg(branch),
+            None => command.arg("-d").arg(tmp_dir.path()),
+        };
+
+        ensure!(
+            command.status().context("Could not start git")?.success(),
+            "Cannot create working tree"
+        );
+    } else {
+        let mut command = process::Command::new("cargo");
+        command
+            .current_dir(&tmp_dir)
+            .args(["init", "--name", project_name.as_str()]);
+
+        if cli.lib {
+            command.arg("--lib");
+        }
+
+        ensure!(
+            command.status().context("Could not start cargo")?.success(),
+            "Cargo command failed"
+        );
+    }
+
+    // Add dependencies to Cargo.toml from arguments given by the user
+    let mut toml = fs::OpenOptions::new()
+        .append(true)
+        .open(tmp_dir.path().join("Cargo.toml"))?;
+    for dependency in cli.dependencies.iter() {
+        match dependency {
+            Dependency::CrateIo(s, v) => match &v {
+                Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
+                None => writeln!(toml, "{} = \"*\"", s)?,
+            },
+            Dependency::Repository {
+                name,
+                url,
+                branch,
+                rev,
+            } => {
+                write!(toml, "{name} = {{ git = {url:?}", name = name, url = url)?;
+                if let Some(branch) = branch {
+                    write!(toml, ", branch = {:?}", branch)?;
+                }
+                if let Some(rev) = rev {
+                    write!(toml, ", rev = {:?}", rev)?;
+                }
+                writeln!(toml, " }}")?;
+            }
+        }
+    }
+
+    // Generate the `TO_DELETE` file
+    let delete_file = tmp_dir.path().join("TO_DELETE");
+    fs::write(
+        &delete_file,
+        "Delete this file if you want to preserve this project",
+    )?;
+
+    // Prepare a new shell or an editor if its set in the config file
+    let mut shell_process = match config.editor {
+        None => process::Command::new(get_shell()),
+        Some(ref editor) => {
+            let mut ide_process = process::Command::new(editor);
+            ide_process
+                .args(config.editor_args.iter().flatten())
+                .arg(tmp_dir.path());
+            ide_process
+        }
+    };
+
+    if env::var("CARGO_TARGET_DIR").is_err() {
+        if let Some(path) = &config.cargo_target_dir {
+            shell_process.env("CARGO_TARGET_DIR", path);
+        }
+    }
+
+    shell_process
+        .current_dir(&tmp_dir)
+        .status()
+        .context("Cannot start shell")?;
+
+    #[cfg(windows)]
+    if config.editor.is_some() {
+        unsafe {
+            cargo_temp_bindings::Windows::Win32::SystemServices::FreeConsole();
+        }
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
