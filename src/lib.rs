@@ -5,7 +5,7 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::{env, fs, process};
-use tempfile::Builder;
+use tempfile::{Builder, TempDir};
 
 /// This tool allow you to create a new Rust temporary project in
 /// a temporary directory.
@@ -161,57 +161,12 @@ pub fn get_shell() -> String {
 }
 
 pub fn run(cli: Cli, config: Config) -> Result<()> {
-    // Create the temporary directory
-    let tmp_dir = {
-        let mut builder = Builder::new();
-
-        if cli.worktree_branch.is_some() {
-            builder.prefix("wk-");
-        } else {
-            builder.prefix("tmp-");
-        }
-
-        builder.tempdir_in(&config.temporary_project_dir)?
-    };
-
-    let project_name = cli.project_name.unwrap_or_else(|| {
-        tmp_dir
-            .path()
-            .file_name()
-            .unwrap()
-            .to_string_lossy()
-            .to_lowercase()
-    });
-
-    // Generate the temporary project or temporary worktree
-    if let Some(maybe_branch) = cli.worktree_branch.as_ref() {
-        let mut command = process::Command::new("git");
-        command.args(["worktree", "add"]);
-
-        match maybe_branch {
-            Some(branch) => command.arg(tmp_dir.path()).arg(branch),
-            None => command.arg("-d").arg(tmp_dir.path()),
-        };
-
-        ensure!(
-            command.status().context("Could not start git")?.success(),
-            "Cannot create working tree"
-        );
-    } else {
-        let mut command = process::Command::new("cargo");
-        command
-            .current_dir(&tmp_dir)
-            .args(["init", "--name", project_name.as_str()]);
-
-        if cli.lib {
-            command.arg("--lib");
-        }
-
-        ensure!(
-            command.status().context("Could not start cargo")?.success(),
-            "Cargo command failed"
-        );
-    }
+    let tmp_dir = generate_tmp_project(
+        cli.worktree_branch,
+        cli.project_name,
+        cli.lib,
+        config.temporary_project_dir,
+    )?;
 
     // Add dependencies to Cargo.toml from arguments given by the user
     let mut toml = fs::OpenOptions::new()
@@ -279,6 +234,65 @@ pub fn run(cli: Cli, config: Config) -> Result<()> {
     }
 
     Ok(())
+}
+
+pub fn generate_tmp_project(
+    worktree_branch: Option<Option<String>>,
+    project_name: Option<String>,
+    lib: bool,
+    temporary_project_dir: String,
+) -> Result<TempDir> {
+    let tmp_dir = {
+        let mut builder = Builder::new();
+
+        if worktree_branch.is_some() {
+            builder.prefix("wk-");
+        } else {
+            builder.prefix("tmp-");
+        }
+
+        builder.tempdir_in(temporary_project_dir)?
+    };
+
+    let project_name = project_name.unwrap_or_else(|| {
+        tmp_dir
+            .path()
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .to_lowercase()
+    });
+
+    if let Some(maybe_branch) = worktree_branch.as_ref() {
+        let mut command = process::Command::new("git");
+        command.args(["worktree", "add"]);
+
+        match maybe_branch {
+            Some(branch) => command.arg(tmp_dir.path()).arg(branch),
+            None => command.arg("-d").arg(tmp_dir.path()),
+        };
+
+        ensure!(
+            command.status().context("Could not start git")?.success(),
+            "Cannot create working tree"
+        );
+    } else {
+        let mut command = process::Command::new("cargo");
+        command
+            .current_dir(&tmp_dir)
+            .args(["init", "--name", project_name.as_str()]);
+
+        if lib {
+            command.arg("--lib");
+        }
+
+        ensure!(
+            command.status().context("Could not start cargo")?.success(),
+            "Cargo command failed"
+        );
+    }
+
+    Ok(tmp_dir)
 }
 
 #[cfg(test)]
