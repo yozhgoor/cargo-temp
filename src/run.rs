@@ -1,38 +1,19 @@
 use crate::config::Config;
-use crate::{Cli, Dependency};
+use crate::Dependency;
 use anyhow::{ensure, Context, Result};
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{env, fs, process};
-use tempfile::{Builder, TempDir};
+use tempfile::TempDir;
 
-pub fn start(cli: Cli, config: &Config) -> Result<()> {
-    let tmp_dir = generate_tmp_project(
-        cli.worktree_branch.clone(),
-        cli.project_name,
-        cli.lib,
-        config.temporary_project_dir.clone(),
-    )?;
-
-    add_dependencies_to_toml(&tmp_dir, cli.dependencies)?;
-
-    let delete_file = generate_delete_file(&tmp_dir)?;
-
-    start_shell(config, &tmp_dir)?;
-
-    exit_shell(delete_file, tmp_dir, cli.worktree_branch)?;
-
-    Ok(())
-}
-
-fn generate_tmp_project(
+pub fn generate_tmp_project(
     worktree_branch: Option<Option<String>>,
     project_name: Option<String>,
     lib: bool,
-    temporary_project_dir: String,
+    temporary_project_dir: PathBuf,
 ) -> Result<TempDir> {
     let tmp_dir = {
-        let mut builder = Builder::new();
+        let mut builder = tempfile::Builder::new();
 
         if worktree_branch.is_some() {
             builder.prefix("wk-");
@@ -84,13 +65,16 @@ fn generate_tmp_project(
     Ok(tmp_dir)
 }
 
-fn add_dependencies_to_toml(tmp_dir: &TempDir, dependencies: Vec<Dependency>) -> Result<()> {
+pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &Vec<Dependency>) -> Result<()> {
     let mut toml = fs::OpenOptions::new()
         .append(true)
-        .open(tmp_dir.path().join("Cargo.toml"))?;
+        .open(tmp_dir.join("Cargo.toml"))?;
     for dependency in dependencies.iter() {
         match dependency {
-            Dependency::CrateIo(s, v) => match &v {
+            Dependency::CrateIo {
+                name: s,
+                version: v,
+            } => match &v {
                 Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
                 None => writeln!(toml, "{} = \"*\"", s)?,
             },
@@ -115,8 +99,8 @@ fn add_dependencies_to_toml(tmp_dir: &TempDir, dependencies: Vec<Dependency>) ->
     Ok(())
 }
 
-fn generate_delete_file(tmp_dir: &TempDir) -> Result<PathBuf> {
-    let delete_file = tmp_dir.path().join("TO_DELETE");
+pub fn generate_delete_file(tmp_dir: &Path) -> Result<PathBuf> {
+    let delete_file = tmp_dir.join("TO_DELETE");
     fs::write(
         &delete_file,
         "Delete this file if you want to preserve this project",
@@ -125,14 +109,14 @@ fn generate_delete_file(tmp_dir: &TempDir) -> Result<PathBuf> {
     Ok(delete_file)
 }
 
-fn start_shell(config: &Config, tmp_dir: &TempDir) -> Result<()> {
+pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<()> {
     let mut shell_process = match config.editor {
         None => process::Command::new(get_shell()),
         Some(ref editor) => {
             let mut ide_process = process::Command::new(editor);
             ide_process
                 .args(config.editor_args.iter().flatten())
-                .arg(tmp_dir.path());
+                .arg(tmp_dir);
             ide_process
         }
     };
@@ -158,7 +142,7 @@ fn start_shell(config: &Config, tmp_dir: &TempDir) -> Result<()> {
     Ok(())
 }
 
-pub fn exit_shell(
+pub fn clean_up(
     delete_file: PathBuf,
     tmp_dir: TempDir,
     worktree_branch: Option<Option<String>>,

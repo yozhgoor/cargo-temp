@@ -1,13 +1,14 @@
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
+use std::path::PathBuf;
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     pub cargo_target_dir: Option<String>,
     pub editor: Option<String>,
     pub editor_args: Option<Vec<String>>,
-    pub temporary_project_dir: String,
+    pub temporary_project_dir: PathBuf,
 }
 
 impl Config {
@@ -24,10 +25,7 @@ impl Config {
             .context("Could not get cache directory")?
             .join(env!("CARGO_PKG_NAME"));
 
-        let temporary_project_dir = cache_dir
-            .to_str()
-            .context("Cannot convert temporary project path into str")?
-            .to_string();
+        let temporary_project_dir = cache_dir;
 
         Ok(Self {
             cargo_target_dir: None,

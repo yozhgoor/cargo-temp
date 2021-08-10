@@ -1,18 +1,18 @@
+use crate::config::Config;
+use anyhow::Result;
 use clap::Clap;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use std::env;
 
 pub mod config;
 pub mod run;
 
-/// This tool allow you to create a new Rust temporary project in
-/// a temporary directory.
+/// This tool allow you to create a new Rust temporary project in a temporary
+/// directory.
 ///
-/// The dependencies can be provided in arguments
-/// (e.g. `cargo-temp anyhow tokio`).
-/// When the shell is exited, the temporary directory is deleted
-/// unless you removed the file `TO_DELETE`
+/// The dependencies can be provided in arguments (e.g.`cargo-temp anyhow
+/// tokio`). When the shell is exited, the temporary directory is deleted unless
+/// you removed the file `TO_DELETE`
 #[derive(Clap, Debug)]
 pub struct Cli {
     /// Dependencies to add to `Cargo.toml`.
@@ -37,24 +37,32 @@ pub struct Cli {
 }
 
 impl Cli {
-    pub fn new() -> Cli {
-        let mut args = env::args().peekable();
-        let command = args.next();
-        args.next_if(|x| x.as_str() == "temp");
+    pub fn run(&self, config: &Config) -> Result<()> {
+        let tmp_dir = run::generate_tmp_project(
+            self.worktree_branch.clone(),
+            self.project_name.clone(),
+            self.lib,
+            config.temporary_project_dir.clone(),
+        )?;
 
-        Cli::parse_from(command.into_iter().chain(args))
-    }
-}
+        run::add_dependencies_to_project(tmp_dir.path(), &self.dependencies)?;
 
-impl Default for Cli {
-    fn default() -> Self {
-        Self::new()
+        let delete_file = run::generate_delete_file(tmp_dir.path())?;
+
+        run::start_shell(config, tmp_dir.path())?;
+
+        run::clean_up(delete_file, tmp_dir, self.worktree_branch.clone())?;
+
+        Ok(())
     }
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Dependency {
-    CrateIo(String, Option<String>),
+    CrateIo {
+        name: String,
+        version: Option<String>,
+    },
     Repository {
         branch: Option<String>,
         name: String,
@@ -80,10 +88,16 @@ fn parse_dependency(s: &str) -> Dependency {
                 rev: caps.get(9).map(|x| x.as_str().to_string()),
             }
         } else {
-            Dependency::CrateIo(caps[1].to_string(), Some(caps[2].to_string()))
+            Dependency::CrateIo {
+                name: caps[1].to_string(),
+                version: Some(caps[2].to_string()),
+            }
         }
     } else {
-        Dependency::CrateIo(s.to_string(), None)
+        Dependency::CrateIo {
+            name: s.to_string(),
+            version: None,
+        }
     }
 }
 
@@ -95,7 +109,10 @@ mod parse_dependency_tests {
     fn simple_dependency() {
         assert_eq!(
             parse_dependency("anyhow"),
-            Dependency::CrateIo("anyhow".to_string(), None)
+            Dependency::CrateIo {
+                name: "anyhow".to_string(),
+                version: None,
+            }
         );
     }
 
@@ -103,7 +120,10 @@ mod parse_dependency_tests {
     fn dependency_with_version() {
         assert_eq!(
             parse_dependency("anyhow=1.0"),
-            Dependency::CrateIo("anyhow".to_string(), Some("1.0".to_string()))
+            Dependency::CrateIo {
+                name: "anyhow".to_string(),
+                version: Some("1.0".to_string()),
+            }
         )
     }
 
