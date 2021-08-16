@@ -65,7 +65,7 @@ pub fn generate_tmp_project(
     Ok(tmp_dir)
 }
 
-pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &Vec<Dependency>) -> Result<()> {
+pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) -> Result<()> {
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(tmp_dir.join("Cargo.toml"))?;
