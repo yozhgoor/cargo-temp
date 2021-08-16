@@ -14,18 +14,16 @@ pub struct Config {
 impl Config {
     pub fn new() -> Result<Self> {
         #[cfg(unix)]
-        let cache_dir = {
+        let temporary_project_dir = {
             let cache_dir = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"))
                 .context("Could not find HOME directory")?;
 
             cache_dir.get_cache_home()
         };
         #[cfg(windows)]
-        let cache_dir = dirs::cache_dir()
+        let temporary_project_dir = dirs::cache_dir()
             .context("Could not get cache directory")?
             .join(env!("CARGO_PKG_NAME"));
-
-        let temporary_project_dir = cache_dir;
 
         Ok(Self {
             cargo_target_dir: None,

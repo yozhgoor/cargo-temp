@@ -82,20 +82,14 @@ fn parse_dependency(s: &str) -> Dependency {
     if let Some(caps) = RE.captures(s) {
         if let Some(url) = caps.name("url") {
             Dependency::Repository {
-                name: caps
-                    .name("name")
-                    .map(|x| x.as_str().to_string())
-                    .expect("Cannot get repository name"),
+                name: caps.name("name").unwrap().as_str().to_string(),
                 url: url.as_str().to_string(),
                 branch: caps.name("branch").map(|x| x.as_str().to_string()),
                 rev: caps.name("rev").map(|x| x.as_str().to_string()),
             }
         } else {
             Dependency::CrateIo {
-                name: caps
-                    .name("name")
-                    .map(|x| x.as_str().to_string())
-                    .expect("Cannot get crate's name"),
+                name: caps.name("name").unwrap().as_str().to_string(),
                 version: caps.name("version").map(|x| x.as_str().to_string()),
             }
         }
