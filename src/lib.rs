@@ -75,22 +75,28 @@ fn parse_dependency(s: &str) -> Dependency {
     // This will change when `std::lazy` is released.
     // See https://github.com/rust-lang/rust/issues/74465.
     static RE: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"^([^=]+)=(((\w+://([^:@]+(:[^@]+)?@)?[^#]+)(#branch=(.+)|#rev=(.+))?)|.+)$")
+        Regex::new(r"^(?P<name>[^=]+)=(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#]+)(#branch=(?P<branch>.+)|#rev=(?P<rev>.+))?)|.+)$")
             .unwrap()
     });
 
     if let Some(caps) = RE.captures(s) {
-        if let Some(url) = caps.get(4) {
+        if let Some(url) = caps.name("url") {
             Dependency::Repository {
-                name: caps[1].to_string(),
+                name: caps
+                    .name("name")
+                    .map(|x| x.as_str().to_string())
+                    .expect("Cannot get repository name"),
                 url: url.as_str().to_string(),
-                branch: caps.get(8).map(|x| x.as_str().to_string()),
-                rev: caps.get(9).map(|x| x.as_str().to_string()),
+                branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                rev: caps.name("rev").map(|x| x.as_str().to_string()),
             }
         } else {
             Dependency::CrateIo {
-                name: caps[1].to_string(),
-                version: Some(caps[2].to_string()),
+                name: caps
+                    .name("name")
+                    .map(|x| x.as_str().to_string())
+                    .expect("Cannot get crate's name"),
+                version: caps.name("version").map(|x| x.as_str().to_string()),
             }
         }
     } else {
