@@ -12,7 +12,7 @@ pub fn generate_tmp_project(
     lib: bool,
     git: Option<String>,
     temporary_project_dir: PathBuf,
-    git_repo_depth: u32,
+    git_repo_depth: Option<u32>,
 ) -> Result<TempDir> {
     let tmp_dir = {
         let mut builder = tempfile::Builder::new();
@@ -49,13 +49,19 @@ pub fn generate_tmp_project(
             "Cannot create working tree"
         );
     } else if let Some(url) = git {
+        let depth = if let Some(depth) = git_repo_depth {
+            depth
+        } else {
+            1
+        };
+
         let mut command = process::Command::new("git");
         command
             .arg("clone")
             .arg(url)
             .arg(&tmp_dir.as_ref())
             .arg("--depth")
-            .arg(git_repo_depth.to_string());
+            .arg(depth.to_string());
 
         ensure!(
             command.status().context("Could not start git")?.success(),
