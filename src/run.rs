@@ -12,6 +12,7 @@ pub fn generate_tmp_project(
     lib: bool,
     git: Option<String>,
     temporary_project_dir: PathBuf,
+    git_repo_depth: u32,
 ) -> Result<TempDir> {
     let tmp_dir = {
         let mut builder = tempfile::Builder::new();
@@ -51,9 +52,10 @@ pub fn generate_tmp_project(
         let mut command = process::Command::new("git");
         command
             .arg("clone")
-            .arg("--quiet")
             .arg(url)
-            .arg(&tmp_dir.as_ref());
+            .arg(&tmp_dir.as_ref())
+            .arg("--depth")
+            .arg(git_repo_depth.to_string());
 
         ensure!(
             command.status().context("Could not start git")?.success(),
