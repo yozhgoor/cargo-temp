@@ -12,7 +12,7 @@ pub mod run;
 ///
 /// The dependencies can be provided in arguments (e.g.`cargo-temp anyhow
 /// tokio`). When the shell is exited, the temporary directory is deleted unless
-/// you removed the file `TO_DELETE`
+/// you removed the file `TO_DELETE`.
 #[derive(Clap, Debug)]
 pub struct Cli {
     /// Dependencies to add to `Cargo.toml`.
@@ -31,11 +31,11 @@ pub struct Cli {
     pub project_name: Option<String>,
 
     /// Create a temporary Git working tree based on the repository in the
-    /// current directory
+    /// current directory.
     #[clap(long = "worktree")]
     pub worktree_branch: Option<Option<String>>,
 
-    /// Create a temporary clone of a Git repository
+    /// Create a temporary clone of a Git repository.
     #[clap(long = "git")]
     pub git: Option<String>,
 }
