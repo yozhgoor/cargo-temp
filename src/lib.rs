@@ -34,6 +34,10 @@ pub struct Cli {
     /// current directory
     #[clap(long = "worktree")]
     pub worktree_branch: Option<Option<String>>,
+
+    /// Create a temporary clone of a Git repository
+    #[clap(long = "git")]
+    pub git: Option<String>,
 }
 
 impl Cli {
@@ -42,6 +46,7 @@ impl Cli {
             self.worktree_branch.clone(),
             self.project_name.clone(),
             self.lib,
+            self.git.clone(),
             config.temporary_project_dir.clone(),
         )?;
 

@@ -10,6 +10,7 @@ pub fn generate_tmp_project(
     worktree_branch: Option<Option<String>>,
     project_name: Option<String>,
     lib: bool,
+    git: Option<String>,
     temporary_project_dir: PathBuf,
 ) -> Result<TempDir> {
     let tmp_dir = {
@@ -45,6 +46,18 @@ pub fn generate_tmp_project(
         ensure!(
             command.status().context("Could not start git")?.success(),
             "Cannot create working tree"
+        );
+    } else if let Some(url) = git {
+        let mut command = process::Command::new("git");
+        command
+            .arg("clone")
+            .arg("--quiet")
+            .arg(url)
+            .arg(&tmp_dir.as_ref());
+
+        ensure!(
+            command.status().context("Could not start git")?.success(),
+            "Cannot clone repository"
         );
     } else {
         let mut command = process::Command::new("cargo");
