@@ -48,7 +48,7 @@ impl Cli {
             self.lib,
             self.git.clone(),
             config.temporary_project_dir.clone(),
-            config.git_repo_depth,
+            config.git_repo_depth.clone(),
         )?;
 
         run::add_dependencies_to_project(tmp_dir.path(), &self.dependencies)?;

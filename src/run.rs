@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::{Config, Depth};
 use crate::Dependency;
 use anyhow::{ensure, Context, Result};
 use std::io::Write;
@@ -12,7 +12,7 @@ pub fn generate_tmp_project(
     lib: bool,
     git: Option<String>,
     temporary_project_dir: PathBuf,
-    git_repo_depth: Option<u32>,
+    git_repo_depth: Option<Depth>,
 ) -> Result<TempDir> {
     let tmp_dir = {
         let mut builder = tempfile::Builder::new();
@@ -52,9 +52,11 @@ pub fn generate_tmp_project(
         let mut command = process::Command::new("git");
         command.arg("clone").arg(url).arg(&tmp_dir.as_ref());
 
-        if let Some(depth) = git_repo_depth {
-            command.arg("--depth").arg(depth.to_string());
-        }
+        match git_repo_depth {
+            Some(Depth::Active(false)) => &command,
+            None | Some(Depth::Active(true)) => command.arg("--depth").arg("1"),
+            Some(Depth::Level(level)) => command.arg("--depth").arg(level.to_string()),
+        };
 
         ensure!(
             command.status().context("Could not start git")?.success(),
