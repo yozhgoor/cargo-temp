@@ -9,6 +9,7 @@ pub struct Config {
     pub editor: Option<String>,
     pub editor_args: Option<Vec<String>>,
     pub temporary_project_dir: PathBuf,
+    pub git_repo_depth: Option<Depth>,
 }
 
 impl Config {
@@ -29,6 +30,7 @@ impl Config {
             cargo_target_dir: None,
             editor: None,
             editor_args: None,
+            git_repo_depth: None,
             temporary_project_dir,
         })
     }
@@ -62,4 +64,11 @@ impl Config {
 
         Ok(config)
     }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Depth {
+    Active(bool),
+    Level(u8),
 }
