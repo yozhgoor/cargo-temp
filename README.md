@@ -113,11 +113,11 @@ Cargo-temp truncate the history to the last commit. You can change this behavior
 
 * If you do not want to truncate the history
   ```toml
-  git_repo_depth: false
+  git_repo_depth = false
   ```
 * You can choose how many commits will stay in the history
   ```toml
-  git_repo_depth: 3
+  git_repo_depth = 3
   ```
   This will leave the 3 last commit of the history
 
