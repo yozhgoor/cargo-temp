@@ -122,7 +122,7 @@ Cargo-temp truncate the history to the last commit by default. You can change th
   git_repo_depth = false
   ```
 
-`git_repo_depth = true` will have the default behavior.
+`git_repo_depth = true` is the same as the default behavior.
 
 ## Settings
 
