@@ -101,6 +101,26 @@ cargo-temp --worktree <branch>
 When exiting the shell (or your editor) the working tree will be cleaned up.
 Equivalent to `git worktree prune`.
 
+### Temporary Git Clone
+
+If you want to create a temporary project from a git repository, you can use the `--git` option with the repository's url:
+
+```
+cargo-temp --git <url>
+```
+
+Cargo-temp truncate the history to the last commit. You can change this behavior in the config file:
+
+* If you do not want to truncate the history
+  ```toml
+  git_repo_depth: false
+  ```
+* You can choose how many commits will stay in the history
+  ```toml
+  git_repo_depth: 3
+  ```
+  This will leave the 3 last commit of the history
+
 ## Settings
 
 The config file is located at `{CONFIG_DIR}/cargo-temp/config.toml`.
