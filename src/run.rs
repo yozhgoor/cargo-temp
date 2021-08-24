@@ -53,9 +53,13 @@ pub fn generate_tmp_project(
         command.arg("clone").arg(url).arg(&tmp_dir.as_ref());
 
         match git_repo_depth {
-            Some(Depth::Active(false)) => &command,
-            None | Some(Depth::Active(true)) => command.arg("--depth").arg("1"),
-            Some(Depth::Level(level)) => command.arg("--depth").arg(level.to_string()),
+            Some(Depth::Active(false)) => {}
+            None | Some(Depth::Active(true)) => {
+                command.arg("--depth").arg("1");
+            }
+            Some(Depth::Level(level)) => {
+                command.arg("--depth").arg(level.to_string());
+            }
         };
 
         ensure!(
