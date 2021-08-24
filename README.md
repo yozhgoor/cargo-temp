@@ -111,15 +111,18 @@ cargo-temp --git <url>
 
 Cargo-temp truncate the history to the last commit by default. You can change this behavior in the config file:
 
-* If you do not want to truncate the history
-  ```toml
-  git_repo_depth = false
-  ```
-* You can choose how many commits will stay in the history
+* You can choose how many commits will stay in the history.
   ```toml
   git_repo_depth = 3
   ```
-  This will leave the 3 last commit of the history
+  This will leave the 3 last commit of the history.
+* If you do not want to truncate the history, you can set the option to
+  false.
+  ```toml
+  git_repo_depth = false
+  ```
+
+`git_repo_depth = true` will have the default behavior.
 
 ## Settings
 
