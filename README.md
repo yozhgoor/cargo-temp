@@ -109,7 +109,7 @@ If you want to create a temporary project from a git repository, you can use the
 cargo-temp --git <url>
 ```
 
-Cargo-temp truncate the history to the last commit. You can change this behavior in the config file:
+Cargo-temp truncate the history to the last commit by default. You can change this behavior in the config file:
 
 * If you do not want to truncate the history
   ```toml
