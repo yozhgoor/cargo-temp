@@ -30,8 +30,8 @@ impl Config {
             cargo_target_dir: None,
             editor: None,
             editor_args: None,
-            temporary_project_dir,
             git_repo_depth: None,
+            temporary_project_dir,
         })
     }
 
