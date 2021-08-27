@@ -13,6 +13,7 @@ pub fn generate_tmp_project(
     git: Option<String>,
     temporary_project_dir: PathBuf,
     git_repo_depth: Option<Depth>,
+    vcs: bool,
 ) -> Result<TempDir> {
     let tmp_dir = {
         let mut builder = tempfile::Builder::new();
@@ -74,6 +75,10 @@ pub fn generate_tmp_project(
 
         if lib {
             command.arg("--lib");
+        }
+
+        if !vcs {
+            command.args(["--vcs", "none"]);
         }
 
         ensure!(
