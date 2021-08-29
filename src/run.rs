@@ -82,7 +82,7 @@ pub fn generate_tmp_project(
                 "Pijul" | "pijul" => command.args(["--vcs", "pijul"]),
                 "Fossil" | "fossil" => command.args(["--vcs", "fossil"]),
                 "HG" | "hg" | "Hg" => command.args(["--vcs", "hg"]),
-                "Git" | "git" | _ => command.args(["--vcs", "git"]),
+                _ => command.args(["--vcs", "git"]),
             }
         } else {
             command.args(["--vcs", "none"])
