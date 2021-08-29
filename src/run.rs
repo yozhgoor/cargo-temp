@@ -13,7 +13,7 @@ pub fn generate_tmp_project(
     git: Option<String>,
     temporary_project_dir: PathBuf,
     git_repo_depth: Option<Depth>,
-    vcs: bool,
+    vcs: Option<String>,
 ) -> Result<TempDir> {
     let tmp_dir = {
         let mut builder = tempfile::Builder::new();
@@ -77,9 +77,16 @@ pub fn generate_tmp_project(
             command.arg("--lib");
         }
 
-        if !vcs {
-            command.args(["--vcs", "none"]);
-        }
+        if let Some(arg) = vcs {
+            match arg.as_str() {
+                "Git" | "git" => command.args(["--vcs", "git"]),
+                "Pijul" | "pijul" => command.args(["--vcs", "pijul"]),
+                "Fossil" | "fossil" => command.args(["--vcs", "fossil"]),
+                "HG" | "hg" | "Hg" => command.args(["--vcs", "hg"]),
+            }
+        } else {
+            command.args(["--vcs", "none"])
+        };
 
         ensure!(
             command.status().context("Could not start cargo")?.success(),
