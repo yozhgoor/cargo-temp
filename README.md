@@ -167,6 +167,25 @@ and `editor_args` to provide its arguments. These settings are unset by default.
     editor_args = [ "--wait", "--new-window" ]
     ```
 
+### Use a VCS
+
+By default, cargo-temp will use the default cargo VCS for your projects (which
+is normally git), you can change that in the config file with the `vcs` option.
+
+```toml
+vcs = "pijul"
+```
+
+The possible values are
+
+* pijul
+* fossil
+* hg
+* git
+* none
+
+The `--vcs` value will be passed as is to cargo.
+
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [xdg]: https://docs.rs/xdg/2.2.0/xdg/
 [knownfolder]: https://docs.rs/dirs-2/3.0.1/dirs_2/

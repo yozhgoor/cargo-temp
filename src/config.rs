@@ -10,6 +10,7 @@ pub struct Config {
     pub editor_args: Option<Vec<String>>,
     pub temporary_project_dir: PathBuf,
     pub git_repo_depth: Option<Depth>,
+    pub vcs: Option<String>,
 }
 
 impl Config {
@@ -32,6 +33,7 @@ impl Config {
             editor_args: None,
             git_repo_depth: None,
             temporary_project_dir,
+            vcs: None,
         })
     }
 
