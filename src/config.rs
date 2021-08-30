@@ -33,7 +33,7 @@ impl Config {
             editor_args: None,
             git_repo_depth: None,
             temporary_project_dir,
-            vcs: Some(String::from("git")),
+            vcs: None,
         })
     }
 

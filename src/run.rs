@@ -78,15 +78,7 @@ pub fn generate_tmp_project(
         }
 
         if let Some(arg) = vcs {
-            match arg.as_str() {
-                "Pijul" | "pijul" => command.args(["--vcs", "pijul"]),
-                "Fossil" | "fossil" => command.args(["--vcs", "fossil"]),
-                "HG" | "hg" | "Hg" => command.args(["--vcs", "hg"]),
-                "None" | "non" => command.args(["--vcs", "none"]),
-                _ => command.args(["--vcs", "git"]),
-            };
-        } else {
-            command.args(["--vcs", "git"]);
+            command.args(["--vcs", arg.as_str()]);
         }
 
         ensure!(
