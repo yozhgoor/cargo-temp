@@ -169,7 +169,8 @@ and `editor_args` to provide its arguments. These settings are unset by default.
 
 ### Use a VCS
 
-By default, cargo-temp will use Git as the default vcs for you projects, you can change that in the config file with the vcs option.
+By default, cargo-temp will use the default cargo VCS for your projects (which
+is normally git), you can change that in the config file with the `vcs` option.
 
 ```toml
 vcs = "pijul"
@@ -177,12 +178,13 @@ vcs = "pijul"
 
 The possible values are
 
-* Pijul
-* Fossil
-* Hg
-* None
+* pijul
+* fossil
+* hg
+* git
+* none
 
-If you do not add the option or if the value is `git` or something else that is not in the possible value, cargo-temp will use the default value.
+The `--vcs` value will be passed as is to cargo.
 
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [xdg]: https://docs.rs/xdg/2.2.0/xdg/
