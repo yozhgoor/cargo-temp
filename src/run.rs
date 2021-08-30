@@ -82,11 +82,12 @@ pub fn generate_tmp_project(
                 "Pijul" | "pijul" => command.args(["--vcs", "pijul"]),
                 "Fossil" | "fossil" => command.args(["--vcs", "fossil"]),
                 "HG" | "hg" | "Hg" => command.args(["--vcs", "hg"]),
+                "None" | "non" => command.args(["--vcs", "none"]),
                 _ => command.args(["--vcs", "git"]),
-            }
+            };
         } else {
-            command.args(["--vcs", "none"])
-        };
+            command.args(["--vcs", "git"]);
+        }
 
         ensure!(
             command.status().context("Could not start cargo")?.success(),
