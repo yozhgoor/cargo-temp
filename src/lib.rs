@@ -1,6 +1,6 @@
 use crate::config::Config;
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -13,7 +13,7 @@ pub mod run;
 /// The dependencies can be provided in arguments (e.g.`cargo-temp anyhow
 /// tokio`). When the shell is exited, the temporary directory is deleted unless
 /// you removed the file `TO_DELETE`.
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 pub struct Cli {
     /// Dependencies to add to `Cargo.toml`.
     ///

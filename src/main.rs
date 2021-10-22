@@ -1,7 +1,7 @@
 use anyhow::Result;
 use cargo_temp::config::Config;
 use cargo_temp::Cli;
-use clap::Clap;
+use clap::Parser;
 use std::{env, fs};
 
 fn main() -> Result<()> {
