@@ -97,11 +97,14 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
     for dependency in dependencies.iter() {
         match dependency {
             Dependency::CrateIo {
-                name: s,
+                name: n,
                 version: v,
-            } => match &v {
-                Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
-                None => writeln!(toml, "{} = \"*\"", s)?,
+                features: f,
+            } => match (&v, &f) {
+                (Some(version), None) => writeln!(toml, "{} = \"{}\"", n, version)?,
+                (None, Some(features)) => todo!(),
+                (Some(version), Some(features)) => todo!(),
+                (None, None) => writeln!(toml, "{} = \"*\"", n)?,
             },
             Dependency::Repository {
                 name,

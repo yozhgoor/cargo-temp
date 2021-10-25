@@ -69,6 +69,7 @@ pub enum Dependency {
     CrateIo {
         name: String,
         version: Option<String>,
+        features: Option<Vec<String>>,
     },
     Repository {
         branch: Option<String>,
@@ -94,16 +95,36 @@ fn parse_dependency(s: &str) -> Dependency {
                 branch: caps.name("branch").map(|x| x.as_str().to_string()),
                 rev: caps.name("rev").map(|x| x.as_str().to_string()),
             }
+        } else if let Some(version) = caps.name("version") {
+            Dependency::CrateIo {
+                name: caps.name("name").unwrap().as_str().to_string(),
+                version: caps.name("version").map(|x| x.as_str().to_string()),
+                features: None,
+            }
+        } else if let Some(features) = caps.name("features") {
+            Dependency::CrateIo {
+                name: caps.name("name").unwrap().as_str().to_string(),
+                version: None,
+                features: Some(vec![caps
+                    .name("features")
+                    .map(|x| x.as_str().to_string())
+                    .unwrap()]),
+            }
         } else {
             Dependency::CrateIo {
                 name: caps.name("name").unwrap().as_str().to_string(),
                 version: caps.name("version").map(|x| x.as_str().to_string()),
+                features: Some(vec![caps
+                    .name("features")
+                    .map(|x| x.as_str().to_string())
+                    .unwrap()]),
             }
         }
     } else {
         Dependency::CrateIo {
             name: s.to_string(),
             version: None,
+            features: None,
         }
     }
 }
@@ -119,6 +140,7 @@ mod parse_dependency_tests {
             Dependency::CrateIo {
                 name: "anyhow".to_string(),
                 version: None,
+                features: None,
             }
         );
     }
@@ -130,6 +152,55 @@ mod parse_dependency_tests {
             Dependency::CrateIo {
                 name: "anyhow".to_string(),
                 version: Some("1.0".to_string()),
+                features: None,
+            }
+        )
+    }
+
+    #[test]
+    fn dependency_with_one_feature() {
+        assert_eq!(
+            parse_dependency("serde+derive"),
+            Dependency::CrateIo {
+                name: "anyhow".to_string(),
+                version: None,
+                features: Some(vec!["derive".to_string()]),
+            }
+        )
+    }
+
+    #[test]
+    fn dependency_with_two_features() {
+        assert_eq!(
+            parse_dependency("serde+derive+alloc"),
+            Dependency::CrateIo {
+                name: "anyhow".to_string(),
+                version: None,
+                features: Some(vec!["derive".to_string(), "alloc".to_string()])
+            }
+        )
+    }
+
+    #[test]
+    fn dependency_with_a_version_and_one_feature() {
+        assert_eq!(
+            parse_dependency("serde=1.0+derive"),
+            Dependency::CrateIo {
+                name: "anyhow".to_string(),
+                version: Some("1.0".to_string()),
+                features: Some(vec!["derive".to_string()])
+            }
+        )
+    }
+
+    #[test]
+    fn dependency_with_a_version_and_two_features() {
+        assert_eq!(
+            parse_dependency("serde=1.0+derive+alloc"),
+            Dependency::CrateIo {
+                name: "anyhow".to_string(),
+                version: Some("1.0".to_string()),
+                features: Some(vec!["derive".to_string(), "alloc".to_string()])
             }
         )
     }
@@ -174,7 +245,7 @@ mod parse_dependency_tests {
     }
 
     #[test]
-    fn with_rev() {
+    fn repository_with_rev() {
         assert_eq!(
             parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38"),
             Dependency::Repository {
