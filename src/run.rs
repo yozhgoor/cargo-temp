@@ -101,9 +101,15 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
                 version: v,
                 features: f,
             } => match (&v, &f) {
-                (Some(version), None) => writeln!(toml, "{} = \"{}\"", n, version)?,
-                (None, Some(features)) => todo!(),
-                (Some(version), Some(features)) => todo!(),
+                (Some(v), None) => writeln!(toml, "{} = \"{}\"", n, v)?,
+                (None, Some(f)) => {
+                    writeln!(toml, "{} = {{ version = \"*\", features = {:?} }}", n, f)?
+                }
+                (Some(v), Some(f)) => writeln!(
+                    toml,
+                    "{} = {{ version = \"{}\", features = {:?} }}",
+                    n, v, f
+                )?,
                 (None, None) => writeln!(toml, "{} = \"*\"", n)?,
             },
             Dependency::Repository {

@@ -95,13 +95,13 @@ fn parse_dependency(s: &str) -> Dependency {
                 branch: caps.name("branch").map(|x| x.as_str().to_string()),
                 rev: caps.name("rev").map(|x| x.as_str().to_string()),
             }
-        } else if let Some(version) = caps.name("version") {
+        } else if let Some(_) = caps.name("version") {
             Dependency::CrateIo {
                 name: caps.name("name").unwrap().as_str().to_string(),
                 version: caps.name("version").map(|x| x.as_str().to_string()),
                 features: None,
             }
-        } else if let Some(features) = caps.name("features") {
+        } else if let Some(_) = caps.name("features") {
             Dependency::CrateIo {
                 name: caps.name("name").unwrap().as_str().to_string(),
                 version: None,
