@@ -162,7 +162,7 @@ mod parse_dependency_tests {
         assert_eq!(
             parse_dependency("serde+derive"),
             Dependency::CrateIo {
-                name: "anyhow".to_string(),
+                name: "serde".to_string(),
                 version: None,
                 features: Some(vec!["derive".to_string()]),
             }
@@ -174,7 +174,7 @@ mod parse_dependency_tests {
         assert_eq!(
             parse_dependency("serde+derive+alloc"),
             Dependency::CrateIo {
-                name: "anyhow".to_string(),
+                name: "serde".to_string(),
                 version: None,
                 features: Some(vec!["derive".to_string(), "alloc".to_string()])
             }
@@ -186,7 +186,7 @@ mod parse_dependency_tests {
         assert_eq!(
             parse_dependency("serde=1.0+derive"),
             Dependency::CrateIo {
-                name: "anyhow".to_string(),
+                name: "serde".to_string(),
                 version: Some("1.0".to_string()),
                 features: Some(vec!["derive".to_string()])
             }
@@ -198,7 +198,7 @@ mod parse_dependency_tests {
         assert_eq!(
             parse_dependency("serde=1.0+derive+alloc"),
             Dependency::CrateIo {
-                name: "anyhow".to_string(),
+                name: "serde".to_string(),
                 version: Some("1.0".to_string()),
                 features: Some(vec!["derive".to_string(), "alloc".to_string()])
             }
