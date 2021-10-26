@@ -117,6 +117,7 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
                 url,
                 branch,
                 rev,
+                features,
             } => {
                 write!(toml, "{name} = {{ git = {url:?}", name = name, url = url)?;
                 if let Some(branch) = branch {
@@ -124,6 +125,9 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
                 }
                 if let Some(rev) = rev {
                     write!(toml, ", rev = {:?}", rev)?;
+                }
+                if let Some(features) = features {
+                    write!(toml, ", features = {:?}", features)?;
                 }
                 writeln!(toml, " }}")?;
             }

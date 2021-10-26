@@ -76,6 +76,7 @@ pub enum Dependency {
         name: String,
         rev: Option<String>,
         url: String,
+        features: Option<Vec<String>>,
     },
 }
 
@@ -83,17 +84,31 @@ fn parse_dependency(s: &str) -> Dependency {
     // This will change when `std::lazy` is released.
     // See https://github.com/rust-lang/rust/issues/74465.
     static RE: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"^(?P<name>[^=]+)=(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#]+)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)$")
+        Regex::new(r"^(?P<name>[^+=]+)=(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]+)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(\+?P<features>[^+]+)*")
             .unwrap()
     });
 
     if let Some(caps) = RE.captures(s) {
         if let Some(url) = caps.name("url") {
-            Dependency::Repository {
-                name: caps.name("name").unwrap().as_str().to_string(),
-                url: url.as_str().to_string(),
-                branch: caps.name("branch").map(|x| x.as_str().to_string()),
-                rev: caps.name("rev").map(|x| x.as_str().to_string()),
+            if let Some(_) = caps.name("features") {
+                Dependency::Repository {
+                    name: caps.name("name").unwrap().as_str().to_string(),
+                    url: url.as_str().to_string(),
+                    branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                    rev: caps.name("rev").map(|x| x.as_str().to_string()),
+                    features: Some(vec![caps
+                        .name("features")
+                        .map(|x| x.as_str().to_string())
+                        .unwrap()]),
+                }
+            } else {
+                Dependency::Repository {
+                    name: caps.name("name").unwrap().as_str().to_string(),
+                    url: url.as_str().to_string(),
+                    branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                    rev: caps.name("rev").map(|x| x.as_str().to_string()),
+                    features: None,
+                }
             }
         } else if let Some(_) = caps.name("version") {
             Dependency::CrateIo {
@@ -214,6 +229,21 @@ mod parse_dependency_tests {
                 url: "https://github.com/dtolnay/anyhow.git".to_string(),
                 branch: None,
                 rev: None,
+                features: None,
+            }
+        )
+    }
+
+    #[test]
+    fn repository_with_http_and_a_feature() {
+        assert_eq!(
+            parse_dependency("serde=https://github.com/serde-rs/serde.git"),
+            Dependency::Repository {
+                name: "serde".to_string(),
+                url: "https://github.com/serde-rs/serde.git".to_string(),
+                branch: None,
+                rev: None,
+                features: Some(vec!["derive".to_string()]),
             }
         )
     }
@@ -227,6 +257,21 @@ mod parse_dependency_tests {
                 url: "ssh://git@github.com/dtolnay/anyhow.git".to_string(),
                 branch: None,
                 rev: None,
+                features: None,
+            }
+        )
+    }
+
+    #[test]
+    fn repository_with_ssh_repository_and_a_feature() {
+        assert_eq!(
+            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git+alloc"),
+            Dependency::Repository {
+                name: "serde".to_string(),
+                url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
+                branch: None,
+                rev: None,
+                features: Some(vec!["alloc".to_string()])
             }
         )
     }
@@ -240,6 +285,21 @@ mod parse_dependency_tests {
                 url: "https://github.com/dtolnay/anyhow.git".to_string(),
                 branch: Some("main".to_string()),
                 rev: None,
+                features: None,
+            }
+        )
+    }
+
+    #[test]
+    fn repository_with_branch_and_a_feature() {
+        assert_eq!(
+            parse_dependency("serde=https://github.com/serde-rs/serde.git#branch=main+derive"),
+            Dependency::Repository {
+                name: "serde".to_string(),
+                url: "https://github.com/serde-rs/serde.git".to_string(),
+                branch: Some("main".to_string()),
+                rev: None,
+                features: Some(vec!["derive".to_string()]),
             }
         )
     }
@@ -253,6 +313,21 @@ mod parse_dependency_tests {
                 url: "https://github.com/dtolnay/anyhow.git".to_string(),
                 branch: None,
                 rev: Some("7e0f77a38".to_string()),
+                features: None,
+            }
+        )
+    }
+
+    #[test]
+    fn repository_with_rev_and_a_feature() {
+        assert_eq!(
+            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+alloc"),
+            Dependency::Repository {
+                name: "serde".to_string(),
+                url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
+                branch: None,
+                rev: Some("5b140361a".to_string()),
+                features: Some(vec!["alloc".to_string()]),
             }
         )
     }
