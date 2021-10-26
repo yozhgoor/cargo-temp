@@ -84,55 +84,44 @@ fn parse_dependency(s: &str) -> Dependency {
     // This will change when `std::lazy` is released.
     // See https://github.com/rust-lang/rust/issues/74465.
     static RE: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"^(?P<name>[^+=]+)=(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]+)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(?P<features>\+[^+]+)*")
+        Regex::new(r"^(?P<name>[^+=]+)=?(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]+)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(?P<features>(\+[^+]+)*)")
             .unwrap()
     });
 
     if let Some(caps) = RE.captures(s) {
+        let features = caps.name("features").map(|x| {
+            x.as_str()
+                .trim_start_matches('+')
+                .split('+')
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+        });
+
         if let Some(url) = caps.name("url") {
-            if let Some(_) = caps.name("features") {
-                Dependency::Repository {
-                    name: caps.name("name").unwrap().as_str().to_string(),
-                    url: url.as_str().to_string(),
-                    branch: caps.name("branch").map(|x| x.as_str().to_string()),
-                    rev: caps.name("rev").map(|x| x.as_str().to_string()),
-                    features: Some(vec![caps
-                        .name("features")
-                        .map(|x| x.as_str().to_string())
-                        .unwrap()]),
-                }
-            } else {
-                Dependency::Repository {
-                    name: caps.name("name").unwrap().as_str().to_string(),
-                    url: url.as_str().to_string(),
-                    branch: caps.name("branch").map(|x| x.as_str().to_string()),
-                    rev: caps.name("rev").map(|x| x.as_str().to_string()),
-                    features: None,
-                }
+            Dependency::Repository {
+                name: caps.name("name").unwrap().as_str().to_string(),
+                url: url.as_str().to_string(),
+                branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                rev: caps.name("rev").map(|x| x.as_str().to_string()),
+                features,
             }
         } else if let Some(_) = caps.name("version") {
             Dependency::CrateIo {
                 name: caps.name("name").unwrap().as_str().to_string(),
                 version: caps.name("version").map(|x| x.as_str().to_string()),
-                features: None,
+                features,
             }
         } else if let Some(_) = caps.name("features") {
             Dependency::CrateIo {
                 name: caps.name("name").unwrap().as_str().to_string(),
                 version: None,
-                features: Some(vec![caps
-                    .name("features")
-                    .map(|x| x.as_str().to_string())
-                    .unwrap()]),
+                features,
             }
         } else {
             Dependency::CrateIo {
                 name: caps.name("name").unwrap().as_str().to_string(),
                 version: caps.name("version").map(|x| x.as_str().to_string()),
-                features: Some(vec![caps
-                    .name("features")
-                    .map(|x| x.as_str().to_string())
-                    .unwrap()]),
+                features,
             }
         }
     } else {
