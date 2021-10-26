@@ -84,7 +84,7 @@ fn parse_dependency(s: &str) -> Dependency {
     // This will change when `std::lazy` is released.
     // See https://github.com/rust-lang/rust/issues/74465.
     static RE: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"^(?P<name>[^+=]+)=(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]+)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(\+?P<features>[^+]+)*")
+        Regex::new(r"^(?P<name>[^+=]+)=(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]+)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(?P<features>\+[^+]+)*")
             .unwrap()
     });
 
