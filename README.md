@@ -60,6 +60,9 @@ Examples:
     cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
     ```
 
+If you have some problems with this, please refer to this:
+[ssh-issue](ssh-issue). If it doesn't help, please fill an issue.
+
 To choose a branch or a revision:
 
 * Branch:
@@ -189,3 +192,4 @@ The `--vcs` value will be passed as is to cargo.
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [xdg]: https://docs.rs/xdg/2.2.0/xdg/
 [knownfolder]: https://docs.rs/dirs-2/3.0.1/dirs_2/
+[ssh-issue]: https://github.com/rust-lang/cargo/issues/1851
