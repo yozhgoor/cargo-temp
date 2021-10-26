@@ -147,7 +147,7 @@ This setting is unset by default and will be ignored if the `CARGO_TARGET_DIR`
 environment variable is already set.
 
 ```toml
-temporary_project_dir = "/home/name/repos/tmp"
+cargo_target_dir = "/home/name/repos/tmp"
 ```
 
 ### Editor
