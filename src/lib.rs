@@ -126,190 +126,241 @@ fn parse_dependency(s: &str) -> Dependency {
 }
 
 #[cfg(test)]
-mod parse_dependency_tests {
+mod parse_and_format_dependency_tests {
     use super::*;
 
     #[test]
     fn simple_dependency() {
-        assert_eq!(
-            parse_dependency("anyhow"),
-            Dependency::CrateIo {
-                name: "anyhow".to_string(),
-                version: None,
-                features: Vec::new(),
-            }
-        );
+        let dependency = Dependency::CrateIo {
+            name: "anyhow".to_string(),
+            version: None,
+            features: Vec::new(),
+        };
+        let format = "anyhow = \"*\"";
+
+        assert_eq!(dependency, parse_dependency("anyhow"));
+        assert_eq!(format, run::format_dependency(&dependency))
     }
 
     #[test]
     fn dependency_with_version() {
-        assert_eq!(
-            parse_dependency("anyhow=1.0"),
-            Dependency::CrateIo {
-                name: "anyhow".to_string(),
-                version: Some("1.0".to_string()),
-                features: Vec::new(),
-            }
-        )
+        let dependency = Dependency::CrateIo {
+            name: "anyhow".to_string(),
+            version: Some("1.0".to_string()),
+            features: Vec::new(),
+        };
+        let format = "anyhow = \"1.0\"".to_string();
+
+        assert_eq!(dependency, parse_dependency("anyhow=1.0"));
+        assert_eq!(format, run::format_dependency(&dependency))
     }
 
     #[test]
     fn dependency_with_one_feature() {
-        assert_eq!(
-            parse_dependency("serde+derive"),
-            Dependency::CrateIo {
-                name: "serde".to_string(),
-                version: None,
-                features: vec!["derive".to_string()],
-            }
-        )
+        let dependency = Dependency::CrateIo {
+            name: "serde".to_string(),
+            version: None,
+            features: vec!["derive".to_string()],
+        };
+        let format = "serde = { version = \"*\", features = [\"derive\"] }".to_string();
+
+        assert_eq!(dependency, parse_dependency("serde+derive"));
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn dependency_with_two_features() {
-        assert_eq!(
-            parse_dependency("serde+derive+alloc"),
-            Dependency::CrateIo {
-                name: "serde".to_string(),
-                version: None,
-                features: vec!["derive".to_string(), "alloc".to_string()]
-            }
-        )
+        let dependency = Dependency::CrateIo {
+            name: "serde".to_string(),
+            version: None,
+            features: vec!["derive".to_string(), "alloc".to_string()],
+        };
+        let format = "serde = { version = \"*\", features = [\"derive\", \"alloc\"] }".to_string();
+
+        assert_eq!(dependency, parse_dependency("serde+derive+alloc"));
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn dependency_with_a_version_and_one_feature() {
-        assert_eq!(
-            parse_dependency("serde=1.0+derive"),
-            Dependency::CrateIo {
-                name: "serde".to_string(),
-                version: Some("1.0".to_string()),
-                features: vec!["derive".to_string()]
-            }
-        )
+        let dependency = Dependency::CrateIo {
+            name: "serde".to_string(),
+            version: Some("1.0".to_string()),
+            features: vec!["derive".to_string()],
+        };
+        let format = "serde = { version = \"1.0\", features = [\"derive\"] }".to_string();
+
+        assert_eq!(dependency, parse_dependency("serde=1.0+derive"));
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn dependency_with_a_version_and_two_features() {
-        assert_eq!(
-            parse_dependency("serde=1.0+derive+alloc"),
-            Dependency::CrateIo {
-                name: "serde".to_string(),
-                version: Some("1.0".to_string()),
-                features: vec!["derive".to_string(), "alloc".to_string()]
-            }
-        )
+        let dependency = Dependency::CrateIo {
+            name: "serde".to_string(),
+            version: Some("1.0".to_string()),
+            features: vec!["derive".to_string(), "alloc".to_string()],
+        };
+        let format =
+            "serde = { version = \"1.0\", features = [\"derive\", \"alloc\"] }".to_string();
+
+        assert_eq!(dependency, parse_dependency("serde=1.0+derive+alloc"));
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn repository_with_http() {
+        let dependency = Dependency::Repository {
+            name: "anyhow".to_string(),
+            url: "https://github.com/dtolnay/anyhow.git".to_string(),
+            branch: None,
+            rev: None,
+            features: Vec::new(),
+        };
+        let format = "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\" }".to_string();
+
         assert_eq!(
-            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git"),
-            Dependency::Repository {
-                name: "anyhow".to_string(),
-                url: "https://github.com/dtolnay/anyhow.git".to_string(),
-                branch: None,
-                rev: None,
-                features: Vec::new(),
-            }
-        )
+            dependency,
+            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git")
+        );
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn repository_with_http_and_a_feature() {
+        let dependency = Dependency::Repository {
+            name: "serde".to_string(),
+            url: "https://github.com/serde-rs/serde.git".to_string(),
+            branch: None,
+            rev: None,
+            features: vec!["derive".to_string()],
+        };
+        let format =
+            "serde = { git = \"https://github.com/serde-rs/serde.git\", features = [\"derive\"] }"
+                .to_string();
+
         assert_eq!(
-            parse_dependency("serde=https://github.com/serde-rs/serde.git"),
-            Dependency::Repository {
-                name: "serde".to_string(),
-                url: "https://github.com/serde-rs/serde.git".to_string(),
-                branch: None,
-                rev: None,
-                features: Vec::new()
-            }
-        )
+            dependency,
+            parse_dependency("serde=https://github.com/serde-rs/serde.git+derive")
+        );
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn repository_with_ssh_repository() {
+        let dependency = Dependency::Repository {
+            name: "anyhow".to_string(),
+            url: "ssh://git@github.com/dtolnay/anyhow.git".to_string(),
+            branch: None,
+            rev: None,
+            features: Vec::new(),
+        };
+        let format = "anyhow = { git = \"ssh://git@github.com/dtolnay/anyhow.git\" }".to_string();
+
         assert_eq!(
-            parse_dependency("anyhow=ssh://git@github.com/dtolnay/anyhow.git"),
-            Dependency::Repository {
-                name: "anyhow".to_string(),
-                url: "ssh://git@github.com/dtolnay/anyhow.git".to_string(),
-                branch: None,
-                rev: None,
-                features: Vec::new(),
-            }
-        )
+            dependency,
+            parse_dependency("anyhow=ssh://git@github.com/dtolnay/anyhow.git")
+        );
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn repository_with_ssh_repository_and_a_feature() {
+        let dependency = Dependency::Repository {
+            name: "serde".to_string(),
+            url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
+            branch: None,
+            rev: None,
+            features: vec!["alloc".to_string()],
+        };
+        let format =
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"alloc\"] }"
+                .to_string();
+
         assert_eq!(
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git+alloc"),
-            Dependency::Repository {
-                name: "serde".to_string(),
-                url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
-                branch: None,
-                rev: None,
-                features: vec!["alloc".to_string()]
-            }
-        )
+            dependency,
+            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git+alloc")
+        );
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn repository_with_branch() {
+        let dependency = Dependency::Repository {
+            name: "anyhow".to_string(),
+            url: "https://github.com/dtolnay/anyhow.git".to_string(),
+            branch: Some("main".to_string()),
+            rev: None,
+            features: Vec::new(),
+        };
+        let format =
+            "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\" , branch = \"main\" }"
+                .to_string();
+
         assert_eq!(
-            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#branch=main"),
-            Dependency::Repository {
-                name: "anyhow".to_string(),
-                url: "https://github.com/dtolnay/anyhow.git".to_string(),
-                branch: Some("main".to_string()),
-                rev: None,
-                features: Vec::new(),
-            }
-        )
+            dependency,
+            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#branch=main")
+        );
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn repository_with_branch_and_a_feature() {
+        let dependency = Dependency::Repository {
+            name: "serde".to_string(),
+            url: "https://github.com/serde-rs/serde.git".to_string(),
+            branch: Some("main".to_string()),
+            rev: None,
+            features: vec!["derive".to_string()],
+        };
+        let format =
+            "serde = { git = \"https://github.com/serde-rs/serde.git\" , branch = \"main\", features = [\"derive\"] }"
+        .to_string();
+
         assert_eq!(
+            dependency,
             parse_dependency("serde=https://github.com/serde-rs/serde.git#branch=main+derive"),
-            Dependency::Repository {
-                name: "serde".to_string(),
-                url: "https://github.com/serde-rs/serde.git".to_string(),
-                branch: Some("main".to_string()),
-                rev: None,
-                features: vec!["derive".to_string()],
-            }
-        )
+        );
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn repository_with_rev() {
+        let dependency = Dependency::Repository {
+            name: "anyhow".to_string(),
+            url: "https://github.com/dtolnay/anyhow.git".to_string(),
+            branch: None,
+            rev: Some("7e0f77a38".to_string()),
+            features: Vec::new(),
+        };
+        let format =
+            "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\", rev = \"7e0f77a38\" }"
+                .to_string();
+
         assert_eq!(
+            dependency,
             parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38"),
-            Dependency::Repository {
-                name: "anyhow".to_string(),
-                url: "https://github.com/dtolnay/anyhow.git".to_string(),
-                branch: None,
-                rev: Some("7e0f77a38".to_string()),
-                features: Vec::new(),
-            }
-        )
+        );
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 
     #[test]
     fn repository_with_rev_and_a_feature() {
+        let dependency = Dependency::Repository {
+            name: "serde".to_string(),
+            url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
+            branch: None,
+            rev: Some("5b140361a".to_string()),
+            features: vec!["alloc".to_string()],
+        };
+        let format =
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"alloc\"] }"
+                .to_string();
+
         assert_eq!(
+            dependency,
             parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+alloc"),
-            Dependency::Repository {
-                name: "serde".to_string(),
-                url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
-                branch: None,
-                rev: Some("5b140361a".to_string()),
-                features: vec!["alloc".to_string()],
-            }
-        )
+        );
+        assert_eq!(format, run::format_dependency(&dependency));
     }
 }
