@@ -109,18 +109,6 @@ fn parse_dependency(s: &str) -> Dependency {
                 rev: caps.name("rev").map(|x| x.as_str().to_string()),
                 features,
             }
-        } else if let Some(_) = caps.name("version") {
-            Dependency::CrateIo {
-                name: caps.name("name").unwrap().as_str().to_string(),
-                version: caps.name("version").map(|x| x.as_str().to_string()),
-                features,
-            }
-        } else if let Some(_) = caps.name("features") {
-            Dependency::CrateIo {
-                name: caps.name("name").unwrap().as_str().to_string(),
-                version: None,
-                features,
-            }
         } else {
             Dependency::CrateIo {
                 name: caps.name("name").unwrap().as_str().to_string(),

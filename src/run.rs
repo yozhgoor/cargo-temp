@@ -111,12 +111,10 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
                     } else {
                         writeln!(toml, "{} = \"{}\"", n, version)?
                     }
+                } else if !f.is_empty() {
+                    writeln!(toml, "{} = {{ version = \"*\", features = {:?} }}", n, f)?
                 } else {
-                    if !f.is_empty() {
-                        writeln!(toml, "{} = {{ version = \"*\", features = {:?} }}", n, f)?
-                    } else {
-                        writeln!(toml, "{} = \"*\"", n)?
-                    }
+                    writeln!(toml, "{} = \"*\"", n)?
                 }
             }
             Dependency::Repository {
