@@ -69,14 +69,14 @@ pub enum Dependency {
     CrateIo {
         name: String,
         version: Option<String>,
-        features: Option<Vec<String>>,
+        features: Vec<String>,
     },
     Repository {
         branch: Option<String>,
         name: String,
         rev: Option<String>,
         url: String,
-        features: Option<Vec<String>>,
+        features: Vec<String>,
     },
 }
 
@@ -89,13 +89,17 @@ fn parse_dependency(s: &str) -> Dependency {
     });
 
     if let Some(caps) = RE.captures(s) {
-        let features = caps.name("features").map(|x| {
-            x.as_str()
-                .trim_start_matches('+')
-                .split('+')
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-        });
+        let features = caps
+            .name("features")
+            .map(|x| {
+                x.as_str()
+                    .split('+')
+                    .map(|x| x.to_string())
+                    .skip(1)
+                    .filter(|x| !x.is_empty())
+                    .collect::<Vec<String>>()
+            })
+            .unwrap();
 
         if let Some(url) = caps.name("url") {
             Dependency::Repository {
@@ -128,7 +132,7 @@ fn parse_dependency(s: &str) -> Dependency {
         Dependency::CrateIo {
             name: s.to_string(),
             version: None,
-            features: None,
+            features: Vec::new(),
         }
     }
 }
@@ -144,7 +148,7 @@ mod parse_dependency_tests {
             Dependency::CrateIo {
                 name: "anyhow".to_string(),
                 version: None,
-                features: None,
+                features: Vec::new(),
             }
         );
     }
@@ -156,7 +160,7 @@ mod parse_dependency_tests {
             Dependency::CrateIo {
                 name: "anyhow".to_string(),
                 version: Some("1.0".to_string()),
-                features: None,
+                features: Vec::new(),
             }
         )
     }
@@ -168,7 +172,7 @@ mod parse_dependency_tests {
             Dependency::CrateIo {
                 name: "serde".to_string(),
                 version: None,
-                features: Some(vec!["derive".to_string()]),
+                features: vec!["derive".to_string()],
             }
         )
     }
@@ -180,7 +184,7 @@ mod parse_dependency_tests {
             Dependency::CrateIo {
                 name: "serde".to_string(),
                 version: None,
-                features: Some(vec!["derive".to_string(), "alloc".to_string()])
+                features: vec!["derive".to_string(), "alloc".to_string()]
             }
         )
     }
@@ -192,7 +196,7 @@ mod parse_dependency_tests {
             Dependency::CrateIo {
                 name: "serde".to_string(),
                 version: Some("1.0".to_string()),
-                features: Some(vec!["derive".to_string()])
+                features: vec!["derive".to_string()]
             }
         )
     }
@@ -204,7 +208,7 @@ mod parse_dependency_tests {
             Dependency::CrateIo {
                 name: "serde".to_string(),
                 version: Some("1.0".to_string()),
-                features: Some(vec!["derive".to_string(), "alloc".to_string()])
+                features: vec!["derive".to_string(), "alloc".to_string()]
             }
         )
     }
@@ -218,7 +222,7 @@ mod parse_dependency_tests {
                 url: "https://github.com/dtolnay/anyhow.git".to_string(),
                 branch: None,
                 rev: None,
-                features: None,
+                features: Vec::new(),
             }
         )
     }
@@ -232,7 +236,7 @@ mod parse_dependency_tests {
                 url: "https://github.com/serde-rs/serde.git".to_string(),
                 branch: None,
                 rev: None,
-                features: Some(vec!["derive".to_string()]),
+                features: Vec::new()
             }
         )
     }
@@ -246,7 +250,7 @@ mod parse_dependency_tests {
                 url: "ssh://git@github.com/dtolnay/anyhow.git".to_string(),
                 branch: None,
                 rev: None,
-                features: None,
+                features: Vec::new(),
             }
         )
     }
@@ -260,7 +264,7 @@ mod parse_dependency_tests {
                 url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                 branch: None,
                 rev: None,
-                features: Some(vec!["alloc".to_string()])
+                features: vec!["alloc".to_string()]
             }
         )
     }
@@ -274,7 +278,7 @@ mod parse_dependency_tests {
                 url: "https://github.com/dtolnay/anyhow.git".to_string(),
                 branch: Some("main".to_string()),
                 rev: None,
-                features: None,
+                features: Vec::new(),
             }
         )
     }
@@ -288,7 +292,7 @@ mod parse_dependency_tests {
                 url: "https://github.com/serde-rs/serde.git".to_string(),
                 branch: Some("main".to_string()),
                 rev: None,
-                features: Some(vec!["derive".to_string()]),
+                features: vec!["derive".to_string()],
             }
         )
     }
@@ -302,7 +306,7 @@ mod parse_dependency_tests {
                 url: "https://github.com/dtolnay/anyhow.git".to_string(),
                 branch: None,
                 rev: Some("7e0f77a38".to_string()),
-                features: None,
+                features: Vec::new(),
             }
         )
     }
@@ -316,7 +320,7 @@ mod parse_dependency_tests {
                 url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                 branch: None,
                 rev: Some("5b140361a".to_string()),
-                features: Some(vec!["alloc".to_string()]),
+                features: vec!["alloc".to_string()],
             }
         )
     }

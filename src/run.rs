@@ -100,18 +100,25 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
                 name: n,
                 version: v,
                 features: f,
-            } => match (&v, &f) {
-                (Some(v), None) => writeln!(toml, "{} = \"{}\"", n, v)?,
-                (None, Some(f)) => {
-                    writeln!(toml, "{} = {{ version = \"*\", features = {:?} }}", n, f)?
+            } => {
+                if let Some(version) = v {
+                    if !f.is_empty() {
+                        writeln!(
+                            toml,
+                            "{} = {{ version = \"{}\", features = {:?} }}",
+                            n, version, f
+                        )?
+                    } else {
+                        writeln!(toml, "{} = \"{}\"", n, version)?
+                    }
+                } else {
+                    if !f.is_empty() {
+                        writeln!(toml, "{} = {{ version = \"*\", features = {:?} }}", n, f)?
+                    } else {
+                        writeln!(toml, "{} = \"*\"", n)?
+                    }
                 }
-                (Some(v), Some(f)) => writeln!(
-                    toml,
-                    "{} = {{ version = \"{}\", features = {:?} }}",
-                    n, v, f
-                )?,
-                (None, None) => writeln!(toml, "{} = \"*\"", n)?,
-            },
+            }
             Dependency::Repository {
                 name,
                 url,
@@ -126,7 +133,7 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
                 if let Some(rev) = rev {
                     write!(toml, ", rev = {:?}", rev)?;
                 }
-                if let Some(features) = features {
+                if !features.is_empty() {
                     write!(toml, ", features = {:?}", features)?;
                 }
                 writeln!(toml, " }}")?;
