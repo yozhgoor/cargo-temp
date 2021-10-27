@@ -95,9 +95,7 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
         .append(true)
         .open(tmp_dir.join("Cargo.toml"))?;
     for dependency in dependencies.iter() {
-        let string = format_dependency(dependency);
-
-        writeln!(toml, "{}", string)?;
+        writeln!(toml, "{}", format_dependency(dependency))?;
     }
 
     Ok(())
