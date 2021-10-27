@@ -78,6 +78,33 @@ To choose a branch or a revision:
 Without a branch or a revision, cargo will use the default branch of the
 repository.
 
+### Dependencies features
+
+You can add features to the dependency with `+`.
+
+Examples:
+
+* A dependency with a feature
+    ```
+    cargo-temp serde+derive
+    ```
+
+* A dependency with a version and a feature
+    ```
+    cargo-temp serde=1.0+derive
+    ```
+
+* A repository with branch and a feature
+    ```
+    cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
+    ```
+
+You can also chain the feature's arguments, like this:
+
+```
+cargo-temp serde=1.0+derive+alloc
+```
+
 ## Features
 
 ### The TO_DELETE file
