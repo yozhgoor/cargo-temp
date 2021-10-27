@@ -60,8 +60,8 @@ Examples:
     cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
     ```
 
-If you have some problems with this, please refer to this:
-[ssh-issue](ssh-issue). If it doesn't help, please fill an issue.
+If you have some problems to add a dependency over SSH, please refer to this:
+[Support SSH Git URLs](ssh-issue). If it doesn't help, please fill an issue.
 
 To choose a branch or a revision:
 
@@ -80,26 +80,26 @@ repository.
 
 ### Dependencies features
 
-You can add features to the dependency with `+`.
+You can add features to a dependency with `+`.
 
 Examples:
 
-* A dependency with a feature
+* A dependency with feature
     ```
     cargo-temp serde+derive
     ```
 
-* A dependency with a version and a feature
+* A dependency with version and feature
     ```
     cargo-temp serde=1.0+derive
     ```
 
-* A repository with branch and a feature
+* A repository with branch and feature
     ```
     cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
     ```
 
-You can also chain the feature's arguments, like this:
+If you want to add multiple features you can do it with `+`, like this:
 
 ```
 cargo-temp serde=1.0+derive+alloc
