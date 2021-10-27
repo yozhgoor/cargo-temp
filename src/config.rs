@@ -14,7 +14,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Result<Self> {
+    fn new() -> Result<Self> {
         #[cfg(unix)]
         let temporary_project_dir = {
             let cache_dir = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"))

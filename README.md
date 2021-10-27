@@ -60,6 +60,9 @@ Examples:
     cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
     ```
 
+If you have some problems to add a dependency over SSH, please refer to this:
+[Support SSH Git URLs](ssh-issue). If it doesn't help, please fill an issue.
+
 To choose a branch or a revision:
 
 * Branch:
@@ -74,6 +77,33 @@ To choose a branch or a revision:
 
 Without a branch or a revision, cargo will use the default branch of the
 repository.
+
+### Dependencies features
+
+You can add features to a dependency with `+`.
+
+Examples:
+
+* A dependency with feature
+    ```
+    cargo-temp serde+derive
+    ```
+
+* A dependency with version and feature
+    ```
+    cargo-temp serde=1.0+derive
+    ```
+
+* A repository with branch and feature
+    ```
+    cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
+    ```
+
+If you want to add multiple features you can do it with `+`, like this:
+
+```
+cargo-temp serde=1.0+derive+alloc
+```
 
 ## Features
 
@@ -147,7 +177,7 @@ This setting is unset by default and will be ignored if the `CARGO_TARGET_DIR`
 environment variable is already set.
 
 ```toml
-temporary_project_dir = "/home/name/repos/tmp"
+cargo_target_dir = "/home/name/repos/tmp"
 ```
 
 ### Editor
@@ -189,3 +219,4 @@ The `--vcs` value will be passed as is to cargo.
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [xdg]: https://docs.rs/xdg/2.2.0/xdg/
 [knownfolder]: https://docs.rs/dirs-2/3.0.1/dirs_2/
+[ssh-issue]: https://github.com/rust-lang/cargo/issues/1851

@@ -95,33 +95,58 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
         .append(true)
         .open(tmp_dir.join("Cargo.toml"))?;
     for dependency in dependencies.iter() {
-        match dependency {
-            Dependency::CrateIo {
-                name: s,
-                version: v,
-            } => match &v {
-                Some(version) => writeln!(toml, "{} = \"{}\"", s, version)?,
-                None => writeln!(toml, "{} = \"*\"", s)?,
-            },
-            Dependency::Repository {
-                name,
-                url,
-                branch,
-                rev,
-            } => {
-                write!(toml, "{name} = {{ git = {url:?}", name = name, url = url)?;
-                if let Some(branch) = branch {
-                    write!(toml, ", branch = {:?}", branch)?;
-                }
-                if let Some(rev) = rev {
-                    write!(toml, ", rev = {:?}", rev)?;
-                }
-                writeln!(toml, " }}")?;
-            }
-        }
+        writeln!(toml, "{}", format_dependency(dependency))?;
     }
 
     Ok(())
+}
+
+pub fn format_dependency(dependency: &Dependency) -> String {
+    match dependency {
+        Dependency::CrateIo {
+            name: n,
+            version: v,
+            features: f,
+        } => {
+            if let Some(version) = v {
+                if !f.is_empty() {
+                    format!(
+                        "{} = {{ version = \"{}\", features = {:?} }}",
+                        n, version, f
+                    )
+                } else {
+                    format!("{} = \"{}\"", n, version)
+                }
+            } else if !f.is_empty() {
+                format!("{} = {{ version = \"*\", features = {:?} }}", n, f)
+            } else {
+                format!("{} = \"*\"", n)
+            }
+        }
+        Dependency::Repository {
+            name,
+            url,
+            branch,
+            rev,
+            features,
+        } => {
+            let mut string = format!("{} = {{ git = {:?}", name, url);
+
+            if let Some(branch) = branch {
+                string.push_str(format!(" , branch = {:?}", branch).as_str())
+            }
+            if let Some(rev) = rev {
+                string.push_str(format!(", rev = {:?}", rev).as_str())
+            }
+            if !features.is_empty() {
+                string.push_str(format!(", features = {:?}", features).as_str())
+            }
+
+            string.push_str(" }");
+
+            string
+        }
+    }
 }
 
 pub fn generate_delete_file(tmp_dir: &Path) -> Result<PathBuf> {
@@ -192,7 +217,7 @@ pub fn clean_up(
     Ok(())
 }
 
-pub fn get_shell() -> String {
+fn get_shell() -> String {
     #[cfg(unix)]
     {
         env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())
