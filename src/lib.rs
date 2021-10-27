@@ -96,7 +96,6 @@ fn parse_dependency(s: &str) -> Dependency {
                     .split('+')
                     .map(|x| x.to_string())
                     .skip(1)
-                    .filter(|x| !x.is_empty())
                     .collect::<Vec<String>>()
             })
             .unwrap();
@@ -136,10 +135,9 @@ mod parse_and_format_dependency_tests {
             version: None,
             features: Vec::new(),
         };
-        let format = "anyhow = \"*\"";
 
-        assert_eq!(dependency, parse_dependency("anyhow"));
-        assert_eq!(format, run::format_dependency(&dependency))
+        assert_eq!(parse_dependency("anyhow"), dependency);
+        assert_eq!(run::format_dependency(&dependency), "anyhow = \"*\"")
     }
 
     #[test]
@@ -149,10 +147,12 @@ mod parse_and_format_dependency_tests {
             version: Some("1.0".to_string()),
             features: Vec::new(),
         };
-        let format = "anyhow = \"1.0\"".to_string();
 
         assert_eq!(dependency, parse_dependency("anyhow=1.0"));
-        assert_eq!(format, run::format_dependency(&dependency))
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "anyhow = \"1.0\"".to_string()
+        )
     }
 
     #[test]
@@ -162,10 +162,12 @@ mod parse_and_format_dependency_tests {
             version: None,
             features: vec!["derive".to_string()],
         };
-        let format = "serde = { version = \"*\", features = [\"derive\"] }".to_string();
 
-        assert_eq!(dependency, parse_dependency("serde+derive"));
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(parse_dependency("serde+derive"), dependency);
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "serde = { version = \"*\", features = [\"derive\"] }".to_string()
+        );
     }
 
     #[test]
@@ -175,10 +177,12 @@ mod parse_and_format_dependency_tests {
             version: None,
             features: vec!["derive".to_string(), "alloc".to_string()],
         };
-        let format = "serde = { version = \"*\", features = [\"derive\", \"alloc\"] }".to_string();
 
-        assert_eq!(dependency, parse_dependency("serde+derive+alloc"));
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(parse_dependency("serde+derive+alloc"), dependency);
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "serde = { version = \"*\", features = [\"derive\", \"alloc\"] }".to_string()
+        );
     }
 
     #[test]
@@ -188,10 +192,12 @@ mod parse_and_format_dependency_tests {
             version: Some("1.0".to_string()),
             features: vec!["derive".to_string()],
         };
-        let format = "serde = { version = \"1.0\", features = [\"derive\"] }".to_string();
 
-        assert_eq!(dependency, parse_dependency("serde=1.0+derive"));
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(parse_dependency("serde=1.0+derive"), dependency);
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "serde = { version = \"1.0\", features = [\"derive\"] }".to_string()
+        );
     }
 
     #[test]
@@ -201,11 +207,12 @@ mod parse_and_format_dependency_tests {
             version: Some("1.0".to_string()),
             features: vec!["derive".to_string(), "alloc".to_string()],
         };
-        let format =
-            "serde = { version = \"1.0\", features = [\"derive\", \"alloc\"] }".to_string();
 
-        assert_eq!(dependency, parse_dependency("serde=1.0+derive+alloc"));
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(parse_dependency("serde=1.0+derive+alloc"), dependency);
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "serde = { version = \"1.0\", features = [\"derive\", \"alloc\"] }".to_string()
+        );
     }
 
     #[test]
@@ -217,13 +224,15 @@ mod parse_and_format_dependency_tests {
             rev: None,
             features: Vec::new(),
         };
-        let format = "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\" }".to_string();
 
         assert_eq!(
-            dependency,
-            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git")
+            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git"),
+            dependency
         );
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\" }".to_string()
+        );
     }
 
     #[test]
@@ -235,15 +244,16 @@ mod parse_and_format_dependency_tests {
             rev: None,
             features: vec!["derive".to_string()],
         };
-        let format =
-            "serde = { git = \"https://github.com/serde-rs/serde.git\", features = [\"derive\"] }"
-                .to_string();
 
         assert_eq!(
-            dependency,
-            parse_dependency("serde=https://github.com/serde-rs/serde.git+derive")
+            parse_dependency("serde=https://github.com/serde-rs/serde.git+derive"),
+            dependency
         );
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "serde = { git = \"https://github.com/serde-rs/serde.git\", features = [\"derive\"] }"
+                .to_string()
+        );
     }
 
     #[test]
@@ -255,13 +265,15 @@ mod parse_and_format_dependency_tests {
             rev: None,
             features: Vec::new(),
         };
-        let format = "anyhow = { git = \"ssh://git@github.com/dtolnay/anyhow.git\" }".to_string();
 
         assert_eq!(
-            dependency,
-            parse_dependency("anyhow=ssh://git@github.com/dtolnay/anyhow.git")
+            parse_dependency("anyhow=ssh://git@github.com/dtolnay/anyhow.git"),
+            dependency
         );
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "anyhow = { git = \"ssh://git@github.com/dtolnay/anyhow.git\" }".to_string()
+        );
     }
 
     #[test]
@@ -273,15 +285,16 @@ mod parse_and_format_dependency_tests {
             rev: None,
             features: vec!["alloc".to_string()],
         };
-        let format =
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"alloc\"] }"
-                .to_string();
 
         assert_eq!(
+            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git+alloc"),
             dependency,
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git+alloc")
         );
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"alloc\"] }"
+                .to_string()
+        );
     }
 
     #[test]
@@ -293,15 +306,16 @@ mod parse_and_format_dependency_tests {
             rev: None,
             features: Vec::new(),
         };
-        let format =
-            "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\" , branch = \"main\" }"
-                .to_string();
 
         assert_eq!(
+            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#branch=main"),
             dependency,
-            parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#branch=main")
         );
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\" , branch = \"main\" }"
+                .to_string()
+        );
     }
 
     #[test]
@@ -313,15 +327,14 @@ mod parse_and_format_dependency_tests {
             rev: None,
             features: vec!["derive".to_string()],
         };
-        let format =
-            "serde = { git = \"https://github.com/serde-rs/serde.git\" , branch = \"main\", features = [\"derive\"] }"
-        .to_string();
-
         assert_eq!(
-            dependency,
             parse_dependency("serde=https://github.com/serde-rs/serde.git#branch=main+derive"),
+            dependency
         );
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "serde = { git = \"https://github.com/serde-rs/serde.git\" , branch = \"main\", features = [\"derive\"] }".to_string()
+        );
     }
 
     #[test]
@@ -333,15 +346,16 @@ mod parse_and_format_dependency_tests {
             rev: Some("7e0f77a38".to_string()),
             features: Vec::new(),
         };
-        let format =
-            "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\", rev = \"7e0f77a38\" }"
-                .to_string();
 
         assert_eq!(
-            dependency,
             parse_dependency("anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38"),
+            dependency
         );
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\", rev = \"7e0f77a38\" }"
+                .to_string()
+        );
     }
 
     #[test]
@@ -353,14 +367,14 @@ mod parse_and_format_dependency_tests {
             rev: Some("5b140361a".to_string()),
             features: vec!["alloc".to_string()],
         };
-        let format =
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"alloc\"] }"
-                .to_string();
 
         assert_eq!(
-            dependency,
             parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+alloc"),
+            dependency
         );
-        assert_eq!(format, run::format_dependency(&dependency));
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"alloc\"] }".to_string()
+        );
     }
 }
