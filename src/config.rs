@@ -11,6 +11,20 @@ pub struct Config {
     pub temporary_project_dir: PathBuf,
     pub git_repo_depth: Option<Depth>,
     pub vcs: Option<String>,
+    #[serde(rename = "subprocess")]
+    pub subprocesses: Option<SubProcess>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SubProcess {
+    command: String,
+    working_dir: Option<String>,
+    #[serde(default)]
+    kill_on_exit: bool,
+    #[serde(default)]
+    stdout: bool,
+    #[serde(default)]
+    foreground: bool,
 }
 
 impl Config {
@@ -34,6 +48,7 @@ impl Config {
             git_repo_depth: None,
             temporary_project_dir,
             vcs: None,
+            subprocesses: None,
         })
     }
 
