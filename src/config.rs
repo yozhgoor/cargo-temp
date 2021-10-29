@@ -102,7 +102,13 @@ impl SubProcess {
         #[cfg(windows)]
         process.arg("/k");
 
-        process.arg(self.command.clone()).spawn().ok()
+        match process.arg(self.command.clone()).spawn().ok() {
+            Some(child) => Some(child).filter(|_| self.kill_on_exit),
+            None => {
+                log::error!("An error occurred within the subprocess");
+                None
+            }
+        }
     }
 }
 

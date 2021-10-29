@@ -62,13 +62,7 @@ impl Cli {
         let subprocesses = config
             .subprocesses
             .iter()
-            .filter_map(|x| match x.kill_on_exit {
-                true => x.spawn(&tmp_dir.path()),
-                false => {
-                    x.spawn(&tmp_dir.path());
-                    None
-                }
-            })
+            .filter_map(|x| x.spawn(&tmp_dir.path()))
             .collect::<Vec<process::Child>>();
 
         run::clean_up(
