@@ -112,6 +112,18 @@ impl SubProcess {
     }
 }
 
+impl Default for SubProcess {
+    fn default() -> Self {
+        Self {
+            command: String::new(),
+            working_dir: None,
+            kill_on_exit: true,
+            stdout: false,
+            foreground: false,
+        }
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Depth {
