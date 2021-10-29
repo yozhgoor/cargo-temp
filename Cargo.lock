@@ -48,6 +48,7 @@ dependencies = [
  "cargo-temp-bindings",
  "clap",
  "dirs",
+ "libc",
  "log",
  "once_cell",
  "regex",

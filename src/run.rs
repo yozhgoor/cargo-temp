@@ -1,6 +1,7 @@
 use crate::config::{Config, Depth};
 use crate::Dependency;
 use anyhow::{ensure, Context, Result};
+use std::convert::TryInto;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env, fs, process};
@@ -196,6 +197,7 @@ pub fn clean_up(
     delete_file: PathBuf,
     tmp_dir: TempDir,
     worktree_branch: Option<Option<String>>,
+    subprocesses: Vec<process::Child>,
 ) -> Result<()> {
     if !delete_file.exists() {
         println!(
@@ -212,6 +214,36 @@ pub fn clean_up(
             command.status().context("Could not start git")?.success(),
             "Cannot remove working tree"
         );
+    }
+
+    if !subprocesses.is_empty() {
+        for mut subprocess in subprocesses {
+            #[cfg(unix)]
+            {
+                unsafe {
+                    libc::kill(
+                        subprocess.id().try_into().expect("cannot get process id"),
+                        libc::SIGTERM,
+                    );
+                }
+
+                std::thread::sleep(std::time::Duration::from_secs(2));
+
+                match subprocess.try_wait() {
+                    Ok(Some(_)) => {}
+                    _ => {
+                        let _ = subprocess.kill();
+                        let _ = subprocess.wait();
+                    }
+                }
+            }
+
+            #[cfg(windows)]
+            {
+                subprocess.kill();
+                subprocess.wait();
+            }
+        }
     }
 
     Ok(())
