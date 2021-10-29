@@ -1,7 +1,8 @@
+use crate::run;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::{fs, process};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -14,18 +15,6 @@ pub struct Config {
     #[serde(rename = "subprocess")]
     #[serde(default)]
     pub subprocesses: Vec<SubProcess>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SubProcess {
-    pub command: String,
-    pub working_dir: Option<String>,
-    #[serde(default)]
-    pub kill_on_exit: bool,
-    #[serde(default)]
-    pub stdout: bool,
-    #[serde(default)]
-    pub foreground: bool,
 }
 
 impl Config {
@@ -84,16 +73,17 @@ impl Config {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Depth {
-    Active(bool),
-    Level(u8),
+#[derive(Serialize, Deserialize)]
+pub struct SubProcess {
+    pub command: String,
+    pub working_dir: Option<String>,
+    #[serde(default)]
+    pub kill_on_exit: bool,
+    #[serde(default)]
+    pub stdout: bool,
+    #[serde(default)]
+    pub foreground: bool,
 }
-
-use crate::run;
-use std::path::Path;
-use std::process;
 
 impl SubProcess {
     pub fn spawn(&self, tmp_dir: &Path) -> Option<process::Child> {
@@ -114,4 +104,11 @@ impl SubProcess {
 
         process.arg(self.command.clone()).spawn().ok()
     }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Depth {
+    Active(bool),
+    Level(u8),
 }
