@@ -217,7 +217,7 @@ pub fn clean_up(
     Ok(())
 }
 
-fn get_shell() -> String {
+pub fn get_shell() -> String {
     #[cfg(unix)]
     {
         env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())

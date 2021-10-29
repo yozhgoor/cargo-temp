@@ -12,19 +12,19 @@ pub struct Config {
     pub git_repo_depth: Option<Depth>,
     pub vcs: Option<String>,
     #[serde(rename = "subprocess")]
-    pub subprocesses: Option<SubProcess>,
+    pub subprocesses: Option<Vec<SubProcess>>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct SubProcess {
-    command: String,
-    working_dir: Option<String>,
+    pub command: String,
+    pub working_dir: Option<String>,
     #[serde(default)]
-    kill_on_exit: bool,
+    pub kill_on_exit: bool,
     #[serde(default)]
-    stdout: bool,
+    pub stdout: bool,
     #[serde(default)]
-    foreground: bool,
+    pub foreground: bool,
 }
 
 impl Config {
@@ -88,4 +88,29 @@ impl Config {
 pub enum Depth {
     Active(bool),
     Level(u8),
+}
+
+use crate::run;
+use std::path::Path;
+use std::process;
+
+impl SubProcess {
+    pub fn spawn(&self, tmp_dir: &Path) -> Option<process::Child> {
+        let current_dir = if let Some(working_dir) = &self.working_dir {
+            Path::new(working_dir)
+        } else {
+            tmp_dir
+        };
+
+        let mut process = process::Command::new(run::get_shell());
+
+        process.current_dir(&current_dir);
+
+        #[cfg(unix)]
+        process.arg("-c");
+        #[cfg(windows)]
+        process.arg("/k");
+
+        process.arg(self.command.clone()).spawn().ok()
+    }
 }

@@ -3,6 +3,7 @@ use anyhow::Result;
 use clap::Parser;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::process;
 
 pub mod config;
 pub mod run;
@@ -57,6 +58,16 @@ impl Cli {
         let delete_file = run::generate_delete_file(tmp_dir.path())?;
 
         run::start_shell(config, tmp_dir.path())?;
+
+        let subprocess = config
+            .subprocesses
+            .as_ref()
+            .map(|x| {
+                x.iter()
+                    .filter_map(|x| x.spawn(&tmp_dir.path()))
+                    .collect::<Vec<process::Child>>()
+            })
+            .unwrap_or_default();
 
         run::clean_up(delete_file, tmp_dir, self.worktree_branch.clone())?;
 
