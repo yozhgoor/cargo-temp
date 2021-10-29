@@ -78,7 +78,7 @@ pub struct SubProcess {
     pub command: String,
     pub working_dir: Option<String>,
     #[serde(default)]
-    pub kill_on_exit: bool,
+    pub keep_on_exit: bool,
     #[serde(default)]
     pub stdout: bool,
     #[serde(default)]
@@ -103,23 +103,11 @@ impl SubProcess {
         process.arg("/k");
 
         match process.arg(self.command.clone()).spawn().ok() {
-            Some(child) => Some(child).filter(|_| self.kill_on_exit),
+            Some(child) => Some(child).filter(|_| !self.keep_on_exit),
             None => {
                 log::error!("An error occurred within the subprocess");
                 None
             }
-        }
-    }
-}
-
-impl Default for SubProcess {
-    fn default() -> Self {
-        Self {
-            command: String::new(),
-            working_dir: None,
-            kill_on_exit: true,
-            stdout: false,
-            foreground: false,
         }
     }
 }
