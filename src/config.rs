@@ -102,8 +102,20 @@ impl SubProcess {
         #[cfg(windows)]
         process.arg("/k");
 
+        process.arg(self.command.clone());
+
+        if self.foreground {
+            match process.status() {
+                Ok(status) => log::info!("Process exited with status {}", status),
+                Err(err) => log::error!(
+                    "An error occurred within the foreground subprocess: {}",
+                    err
+                ),
+            }
+        }
+
         match process.arg(self.command.clone()).spawn().ok() {
-            Some(child) => Some(child).filter(|_| !self.keep_on_exit),
+            Some(child) => Some(child).filter(|_| !self.keep_on_exit && self.foreground),
             None => {
                 log::error!("An error occurred within the subprocess");
                 None
