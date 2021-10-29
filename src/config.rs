@@ -104,21 +104,26 @@ impl SubProcess {
 
         process.arg(self.command.clone());
 
-        if self.foreground {
-            match process.status() {
-                Ok(status) => log::info!("Process exited with status {}", status),
-                Err(err) => log::error!(
-                    "An error occurred within the foreground subprocess: {}",
-                    err
-                ),
-            }
-        }
+        if self.foreground {}
 
-        match process.arg(self.command.clone()).spawn().ok() {
-            Some(child) => Some(child).filter(|_| !self.keep_on_exit && self.foreground),
-            None => {
-                log::error!("An error occurred within the subprocess");
-                None
+        if !self.foreground {
+            match process.arg(self.command.clone()).spawn().ok() {
+                Some(child) => Some(child).filter(|_| !self.keep_on_exit && self.foreground),
+                None => {
+                    log::error!("An error occurred within the subprocess");
+                    None
+                }
+            }
+        } else {
+            match process.status() {
+                Ok(_) => None,
+                Err(err) => {
+                    log::error!(
+                        "An error occurred within the foreground subprocess: {}",
+                        err
+                    );
+                    None
+                }
             }
         }
     }
