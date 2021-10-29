@@ -12,7 +12,8 @@ pub struct Config {
     pub git_repo_depth: Option<Depth>,
     pub vcs: Option<String>,
     #[serde(rename = "subprocess")]
-    pub subprocesses: Option<Vec<SubProcess>>,
+    #[serde(default)]
+    pub subprocesses: Vec<SubProcess>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -48,7 +49,7 @@ impl Config {
             git_repo_depth: None,
             temporary_project_dir,
             vcs: None,
-            subprocesses: None,
+            subprocesses: Default::default(),
         })
     }
 

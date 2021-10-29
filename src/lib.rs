@@ -61,13 +61,9 @@ impl Cli {
 
         let subprocess = config
             .subprocesses
-            .as_ref()
-            .map(|x| {
-                x.iter()
-                    .filter_map(|x| x.spawn(&tmp_dir.path()))
-                    .collect::<Vec<process::Child>>()
-            })
-            .unwrap_or_default();
+            .iter()
+            .filter_map(|x| x.spawn(&tmp_dir.path()))
+            .collect::<Vec<process::Child>>();
 
         run::clean_up(delete_file, tmp_dir, self.worktree_branch.clone())?;
 
