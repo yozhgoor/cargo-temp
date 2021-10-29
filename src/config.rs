@@ -82,6 +82,8 @@ pub struct SubProcess {
     #[serde(default)]
     pub stdout: bool,
     #[serde(default)]
+    pub stderr: bool,
+    #[serde(default)]
     pub foreground: bool,
 }
 
@@ -101,6 +103,14 @@ impl SubProcess {
         process.arg("-c");
         #[cfg(windows)]
         process.arg("/k");
+
+        if !self.stdout {
+            process.stdout(process::Stdio::null());
+        }
+
+        if !self.stderr {
+            process.stderr(process::Stdio::null());
+        }
 
         process.arg(self.command.clone());
 
