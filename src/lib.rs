@@ -57,13 +57,13 @@ impl Cli {
 
         let delete_file = run::generate_delete_file(tmp_dir.path())?;
 
-        run::start_shell(config, tmp_dir.path())?;
-
         let subprocesses = config
             .subprocesses
             .iter()
             .filter_map(|x| x.spawn(tmp_dir.path()))
             .collect::<Vec<process::Child>>();
+
+        run::start_shell(config, tmp_dir.path())?;
 
         run::clean_up(
             delete_file,
