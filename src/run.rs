@@ -216,33 +216,31 @@ pub fn clean_up(
         );
     }
 
-    if !subprocesses.is_empty() {
-        for mut subprocess in subprocesses {
-            #[cfg(unix)]
-            {
-                unsafe {
-                    libc::kill(
-                        subprocess.id().try_into().expect("cannot get process id"),
-                        libc::SIGTERM,
-                    );
-                }
-
-                std::thread::sleep(std::time::Duration::from_secs(2));
-
-                match subprocess.try_wait() {
-                    Ok(Some(_)) => {}
-                    _ => {
-                        let _ = subprocess.kill();
-                        let _ = subprocess.wait();
-                    }
-                }
+    for mut subprocess in subprocesses {
+        #[cfg(unix)]
+        {
+            unsafe {
+                libc::kill(
+                    subprocess.id().try_into().expect("cannot get process id"),
+                    libc::SIGTERM,
+                );
             }
 
-            #[cfg(windows)]
-            {
-                subprocess.kill();
-                subprocess.wait();
+            std::thread::sleep(std::time::Duration::from_secs(2));
+
+            match subprocess.try_wait() {
+                Ok(Some(_)) => {}
+                _ => {
+                    let _ = subprocess.kill();
+                    let _ = subprocess.wait();
+                }
             }
+        }
+
+        #[cfg(windows)]
+        {
+            subprocess.kill();
+            subprocess.wait();
         }
     }
 

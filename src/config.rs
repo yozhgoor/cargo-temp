@@ -76,55 +76,63 @@ impl Config {
 #[derive(Serialize, Deserialize)]
 pub struct SubProcess {
     pub command: String,
-    pub working_dir: Option<String>,
+    pub working_dir: Option<PathBuf>,
+    pub foreground: bool,
     #[serde(default)]
     pub keep_on_exit: bool,
-    #[serde(default)]
-    pub stdout: bool,
-    #[serde(default)]
-    pub stderr: bool,
-    #[serde(default)]
-    pub foreground: bool,
+    pub stdout: Option<bool>,
+    pub stderr: Option<bool>,
 }
 
 impl SubProcess {
     pub fn spawn(&self, tmp_dir: &Path) -> Option<process::Child> {
-        let current_dir = if let Some(working_dir) = &self.working_dir {
-            Path::new(working_dir)
-        } else {
-            tmp_dir
-        };
-
         let mut process = process::Command::new(run::get_shell());
 
-        process.current_dir(&current_dir);
+        process.current_dir(self.working_dir.as_ref().unwrap_or(&tmp_dir.to_path_buf()));
 
         #[cfg(unix)]
         process.arg("-c");
         #[cfg(windows)]
         process.arg("/k");
 
-        if !self.stdout {
-            process.stdout(process::Stdio::null());
-        }
-
-        if !self.stderr {
-            process.stderr(process::Stdio::null());
-        }
-
-        process.arg(self.command.clone());
-
-        if self.foreground {}
+        process.arg(&self.command);
 
         if !self.foreground {
-            match process.arg(self.command.clone()).spawn().ok() {
-                Some(child) => Some(child).filter(|_| !self.keep_on_exit && self.foreground),
+            match self.stdout {
+                Some(true) => {}
+                _ => {
+                    process.stdout(process::Stdio::null());
+                }
+            }
+
+            match self.stderr {
+                Some(true) => {}
+                _ => {
+                    process.stderr(process::Stdio::null());
+                }
+            }
+
+            match process.arg(&self.command).spawn().ok() {
+                Some(child) => Some(child).filter(|_| !self.keep_on_exit),
                 None => {
                     log::error!("An error occurred within the subprocess");
                     None
                 }
             }
         } else {
+            match self.stdout {
+                Some(false) => {
+                    process.stdout(process::Stdio::null());
+                }
+                _ => {}
+            }
+
+            match self.stderr {
+                Some(false) => {
+                    process.stderr(process::Stdio::null());
+                }
+                _ => {}
+            }
             match process.status() {
                 Ok(_) => None,
                 Err(err) => {
