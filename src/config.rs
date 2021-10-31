@@ -100,14 +100,14 @@ impl SubProcess {
         if !self.foreground {
             match self.stdout {
                 Some(true) => {}
-                _ => {
+                None | Some(false) => {
                     process.stdout(process::Stdio::null());
                 }
             }
 
             match self.stderr {
                 Some(true) => {}
-                _ => {
+                None | Some(false) => {
                     process.stderr(process::Stdio::null());
                 }
             }
@@ -124,14 +124,14 @@ impl SubProcess {
                 Some(false) => {
                     process.stdout(process::Stdio::null());
                 }
-                _ => {}
+                Some(true) | None => {}
             }
 
             match self.stderr {
                 Some(false) => {
                     process.stderr(process::Stdio::null());
                 }
-                _ => {}
+                Some(true) | None => {}
             }
             match process.status() {
                 Ok(_) => None,
