@@ -203,7 +203,7 @@ pub fn clean_up(
     delete_file: PathBuf,
     tmp_dir: TempDir,
     worktree_branch: Option<Option<String>>,
-    subprocesses: Vec<process::Child>,
+    mut subprocesses: Vec<process::Child>,
 ) -> Result<()> {
     if !delete_file.exists() {
         println!(
@@ -222,7 +222,7 @@ pub fn clean_up(
         );
     }
 
-    for subprocess in &subprocesses {
+    for subprocess in subprocesses.iter() {
         #[cfg(unix)]
         {
             unsafe {
@@ -239,14 +239,17 @@ pub fn clean_up(
         }
     }
 
-    std::thread::sleep(std::time::Duration::from_secs(2));
+    #[cfg(unix)]
+    {
+        std::thread::sleep(std::time::Duration::from_secs(2));
 
-    for mut subprocess in subprocesses {
-        match subprocess.try_wait() {
-            Ok(Some(_)) => {}
-            _ => {
-                let _ = subprocess.kill();
-                let _ = subprocess.wait();
+        for subprocess in subprocesses.iter_mut() {
+            match subprocess.try_wait() {
+                Ok(Some(_)) => {}
+                _ => {
+                    let _ = subprocess.kill();
+                    let _ = subprocess.wait();
+                }
             }
         }
     }
