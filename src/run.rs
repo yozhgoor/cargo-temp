@@ -222,7 +222,7 @@ pub fn clean_up(
         );
     }
 
-    for mut subprocess in subprocesses {
+    for subprocess in &subprocesses {
         #[cfg(unix)]
         {
             unsafe {
@@ -231,20 +231,23 @@ pub fn clean_up(
                     libc::SIGTERM,
                 );
             }
-
-            match subprocess.try_wait() {
-                Ok(Some(_)) => {}
-                _ => {
-                    let _ = subprocess.kill();
-                    let _ = subprocess.wait();
-                }
-            }
         }
-
         #[cfg(windows)]
         {
             subprocess.kill();
             subprocess.wait();
+        }
+    }
+
+    std::thread::sleep(std::time::Duration::from_secs(2));
+
+    for mut subprocess in subprocesses {
+        match subprocess.try_wait() {
+            Ok(Some(_)) => {}
+            _ => {
+                let _ = subprocess.kill();
+                let _ = subprocess.wait();
+            }
         }
     }
 
