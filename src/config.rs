@@ -88,14 +88,14 @@ impl SubProcess {
     pub fn spawn(&self, tmp_dir: &Path) -> Option<process::Child> {
         let mut process = process::Command::new(run::get_shell());
 
-        process.current_dir(self.working_dir.as_deref().unwrap_or(&tmp_dir));
+        process.current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir));
 
         #[cfg(unix)]
         process.arg("-c");
         #[cfg(windows)]
         process.arg("/k");
 
-        process.arg(&self.command);
+        process.arg(&self.command).stdin(process::Stdio::null());
 
         if !self.foreground {
             if !self.stdout.unwrap_or(false) {

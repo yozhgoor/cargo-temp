@@ -160,7 +160,7 @@ pub fn generate_delete_file(tmp_dir: &Path) -> Result<PathBuf> {
     Ok(delete_file)
 }
 
-pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<()> {
+pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child>> {
     let mut shell_process = match config.editor {
         None => process::Command::new(get_shell()),
         Some(ref editor) => {
@@ -178,6 +178,12 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<()> {
         }
     }
 
+    let subprocesses = config
+        .subprocesses
+        .iter()
+        .filter_map(|x| x.spawn(tmp_dir))
+        .collect::<Vec<process::Child>>();
+
     shell_process
         .current_dir(&tmp_dir)
         .status()
@@ -190,7 +196,7 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<()> {
         }
     }
 
-    Ok(())
+    Ok(subprocesses)
 }
 
 pub fn clean_up(
