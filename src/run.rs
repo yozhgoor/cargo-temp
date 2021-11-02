@@ -222,7 +222,7 @@ pub fn clean_up(
         );
     }
 
-    for subprocess in subprocesses.iter() {
+    for subprocess in subprocesses.iter_mut() {
         #[cfg(unix)]
         {
             unsafe {
