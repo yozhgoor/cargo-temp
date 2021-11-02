@@ -98,18 +98,12 @@ impl SubProcess {
         process.arg(&self.command);
 
         if !self.foreground {
-            match self.stdout {
-                Some(true) => {}
-                None | Some(false) => {
-                    process.stdout(process::Stdio::null());
-                }
+            if !self.stdout.unwrap_or(false) {
+                process.stdout(process::Stdio::null());
             }
 
-            match self.stderr {
-                Some(true) => {}
-                None | Some(false) => {
-                    process.stderr(process::Stdio::null());
-                }
+            if !self.stderr.unwrap_or(false) {
+                process.stderr(process::Stdio::null());
             }
 
             match process.arg(&self.command).spawn().ok() {
@@ -120,19 +114,14 @@ impl SubProcess {
                 }
             }
         } else {
-            match self.stdout {
-                Some(false) => {
-                    process.stdout(process::Stdio::null());
-                }
-                Some(true) | None => {}
+            if !self.stdout.unwrap_or(true) {
+                process.stdout(process::Stdio::null());
             }
 
-            match self.stderr {
-                Some(false) => {
-                    process.stderr(process::Stdio::null());
-                }
-                Some(true) | None => {}
+            if !self.stderr.unwrap_or(true) {
+                process.stderr(process::Stdio::null());
             }
+
             match process.status() {
                 Ok(_) => None,
                 Err(err) => {
