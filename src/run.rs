@@ -174,7 +174,7 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
 
     if env::var("CARGO_TARGET_DIR").is_err() {
         if let Some(path) = &config.cargo_target_dir {
-            shell_process.env("CARGO_TARGET_DIR", path);
+            env::set_var("CARGO_TARGET_DIR", path);
         }
     }
 
@@ -231,8 +231,6 @@ pub fn clean_up(
                     libc::SIGTERM,
                 );
             }
-
-            std::thread::sleep(std::time::Duration::from_secs(2));
 
             match subprocess.try_wait() {
                 Ok(Some(_)) => {}
