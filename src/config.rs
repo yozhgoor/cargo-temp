@@ -76,10 +76,10 @@ impl Config {
 #[derive(Serialize, Deserialize)]
 pub struct SubProcess {
     pub command: String,
-    pub working_dir: Option<PathBuf>,
     pub foreground: bool,
     #[serde(default)]
     pub keep_on_exit: bool,
+    pub working_dir: Option<PathBuf>,
     pub stdout: Option<bool>,
     pub stderr: Option<bool>,
 }
@@ -107,7 +107,7 @@ impl SubProcess {
             }
 
             match process.spawn().ok() {
-                Some(child) => Some(child).filter(|_| self.keep_on_exit),
+                Some(child) => Some(child).filter(|_| !self.keep_on_exit),
                 None => {
                     log::error!("An error occurred within the subprocess");
                     None

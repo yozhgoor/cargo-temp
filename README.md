@@ -216,6 +216,45 @@ The possible values are
 
 The `--vcs` value will be passed as is to cargo.
 
+### Subprocesses
+
+You can spawn subprocess along your temporary shell like this:
+
+```toml
+[[subprocess]]
+command = "xterm -e cargo-watch -x run"
+foreground = false
+```
+
+The `command` field is a shell command like `echo Hello`.
+The `foreground` allows to run the program in foreground instead of background.
+
+#### Additional settings
+
+* `working_dir` override the default working directory. The default is the
+temporary directory.
+* `keep_on_exit` is used to know if the process will be killed when exiting the
+  shell or not. The default will be false and this setting doesn't work with
+  foreground process.
+* `stdout` enable or disable stdout..
+* `stderr` enable or disable stderr.
+
+For the `stdout` and `stderr` settings, the default will be disabled when the
+subprocess is in the background and inherit when the subprocess is in
+foreground.
+
+#### Example
+
+```toml
+[[subprocess]]
+command = "alacritty -e cargo watch -x run"
+foreground = false
+
+[[subprocess]]
+command = "firefox"
+foreground = true
+```
+
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [xdg]: https://docs.rs/xdg/2.2.0/xdg/
 [knownfolder]: https://docs.rs/dirs-2/3.0.1/dirs_2/
