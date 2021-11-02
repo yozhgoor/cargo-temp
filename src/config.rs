@@ -88,7 +88,7 @@ impl SubProcess {
     pub fn spawn(&self, tmp_dir: &Path) -> Option<process::Child> {
         let mut process = process::Command::new(run::get_shell());
 
-        process.current_dir(self.working_dir.as_ref().unwrap_or(&tmp_dir.to_path_buf()));
+        process.current_dir(self.working_dir.as_deref().unwrap_or(&tmp_dir));
 
         #[cfg(unix)]
         process.arg("-c");
@@ -106,8 +106,8 @@ impl SubProcess {
                 process.stderr(process::Stdio::null());
             }
 
-            match process.arg(&self.command).spawn().ok() {
-                Some(child) => Some(child).filter(|_| !self.keep_on_exit),
+            match process.spawn().ok() {
+                Some(child) => Some(child).filter(|_| self.keep_on_exit),
                 None => {
                     log::error!("An error occurred within the subprocess");
                     None
