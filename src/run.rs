@@ -177,20 +177,22 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
         }
     }
 
-    let mut main_process = shell_process
-        .current_dir(&tmp_dir)
-        .spawn()
-        .context("Cannot start shell")?;
+    let main_process = shell_process.current_dir(&tmp_dir).spawn();
 
-    let subprocesses = config
-        .subprocesses
-        .iter()
-        .filter_map(|x| x.spawn(tmp_dir))
-        .collect::<Vec<process::Child>>();
+    let subprocesses = if main_process.is_ok() {
+        config
+            .subprocesses
+            .iter()
+            .filter_map(|x| x.spawn(tmp_dir))
+            .collect::<Vec<process::Child>>()
+    } else {
+        Default::default()
+    };
 
     let main_process = main_process
-        .wait()
-        .context("failed to wait the main process")?;
+            .context("cannot spawn main process")?
+            .wait()
+            .context("failed to wait the main process")?;
 
     #[cfg(windows)]
     if config.editor.is_some() {
