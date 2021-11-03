@@ -1,7 +1,6 @@
 use crate::config::{Config, Depth};
 use crate::Dependency;
 use anyhow::{ensure, Context, Result};
-use std::convert::TryInto;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env, fs, process};
@@ -225,6 +224,8 @@ pub fn clean_up(
     for subprocess in subprocesses.iter_mut() {
         #[cfg(unix)]
         {
+            use std::convert::TryInto;
+
             unsafe {
                 libc::kill(
                     subprocess.id().try_into().expect("cannot get process id"),
@@ -247,8 +248,8 @@ pub fn clean_up(
             match subprocess.try_wait() {
                 Ok(Some(_)) => {}
                 _ => {
-                    let _ = subprocess.kill();
-                    let _ = subprocess.wait();
+                    let _ = subprocess.kill()?;
+                    let _ = subprocess.wait()?;
                 }
             }
         }
