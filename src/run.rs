@@ -177,8 +177,8 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
         }
     }
 
-    match shell_process.current_dir(&tmp_dir).status() {
-        Ok(_) => {
+    match shell_process.current_dir(&tmp_dir).spawn() {
+        Ok(mut process) => {
             #[cfg(windows)]
             if config.editor.is_some() {
                 unsafe {
@@ -192,6 +192,8 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
                 .filter_map(|x| x.spawn(tmp_dir))
                 .collect::<Vec<process::Child>>();
             dbg!(&subprocesses);
+
+            process.wait().context("Cannot wait shell process")?;
 
             Ok(subprocesses)
         }
