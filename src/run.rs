@@ -191,7 +191,6 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
                 .iter()
                 .filter_map(|x| x.spawn(tmp_dir))
                 .collect::<Vec<process::Child>>();
-            dbg!(&subprocesses);
 
             process.wait().context("Cannot wait shell process")?;
 
