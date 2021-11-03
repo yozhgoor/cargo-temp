@@ -93,7 +93,7 @@ impl SubProcess {
         #[cfg(unix)]
         process.arg("-c");
         #[cfg(windows)]
-        process.arg("/k");
+        process.arg("/c");
 
         process.arg(&self.command).stdin(process::Stdio::null());
 
