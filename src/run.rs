@@ -235,8 +235,8 @@ pub fn clean_up(
         }
         #[cfg(windows)]
         {
-            subprocess.kill();
-            subprocess.wait();
+            subprocess.kill()?;
+            subprocess.wait()?;
         }
     }
 
@@ -248,8 +248,8 @@ pub fn clean_up(
             match subprocess.try_wait() {
                 Ok(Some(_)) => {}
                 _ => {
-                    let _ = subprocess.kill()?;
-                    let _ = subprocess.wait()?;
+                    let _ = subprocess.kill();
+                    let _ = subprocess.wait();
                 }
             }
         }
