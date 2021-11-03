@@ -245,8 +245,8 @@ pub fn clean_up(
         }
         #[cfg(windows)]
         {
-            subprocess.kill()?;
-            subprocess.wait()?;
+            let _ = subprocess.kill();
+            let _ = subprocess.wait();
         }
     }
 
