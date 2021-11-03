@@ -1,6 +1,6 @@
 use crate::config::{Config, Depth};
 use crate::Dependency;
-use anyhow::{ensure, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env, fs, process};
@@ -177,31 +177,24 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
         }
     }
 
-    let main_process = shell_process.current_dir(&tmp_dir).spawn();
+    match shell_process.current_dir(&tmp_dir).status() {
+        Ok(_) => {
+            #[cfg(windows)]
+            if config.editor.is_some() {
+                unsafe {
+                    cargo_temp_bindings::Windows::Win32::SystemServices::FreeConsole();
+                }
+            }
 
-    let subprocesses = if main_process.is_ok() {
-        config
-            .subprocesses
-            .iter()
-            .filter_map(|x| x.spawn(tmp_dir))
-            .collect::<Vec<process::Child>>()
-    } else {
-        Default::default()
-    };
+            let subprocesses = config.subprocesses.iter().filter_map(|x| x.spawn(tmp_dir)).collect::<Vec<process::Child>>();
+            dbg!(&subprocesses);
 
-    main_process
-        .context("cannot spawn main process")?
-        .wait()
-        .context("failed to wait the main process")?;
-
-    #[cfg(windows)]
-    if config.editor.is_some() {
-        unsafe {
-            cargo_temp_bindings::Windows::Win32::SystemServices::FreeConsole();
+            Ok(subprocesses)
+        },
+        Err(err) => {
+            bail!("an error occurred: {}", err);
         }
     }
-
-    Ok(subprocesses)
 }
 
 pub fn clean_up(
