@@ -1,6 +1,6 @@
 use crate::config::{Config, Depth};
 use crate::Dependency;
-use anyhow::{ensure, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env, fs, process};
@@ -177,16 +177,20 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
         }
     }
 
+    let mut main_process = shell_process
+        .current_dir(&tmp_dir)
+        .spawn()
+        .context("Cannot start shell")?;
+
     let subprocesses = config
         .subprocesses
         .iter()
         .filter_map(|x| x.spawn(tmp_dir))
         .collect::<Vec<process::Child>>();
 
-    shell_process
-        .current_dir(&tmp_dir)
-        .status()
-        .context("Cannot start shell")?;
+    let main_process = main_process
+        .wait()
+        .context("failed to wait the main process")?;
 
     #[cfg(windows)]
     if config.editor.is_some() {
@@ -195,7 +199,11 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
         }
     }
 
-    Ok(subprocesses)
+    if main_process.success() {
+        Ok(subprocesses)
+    } else {
+        bail!("cannot start shell");
+    }
 }
 
 pub fn clean_up(
