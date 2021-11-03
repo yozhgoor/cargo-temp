@@ -13,6 +13,7 @@ pub struct Config {
     pub git_repo_depth: Option<Depth>,
     pub vcs: Option<String>,
     #[serde(rename = "subprocess")]
+    #[serde(default)]
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub subprocesses: Vec<SubProcess>,
 }
