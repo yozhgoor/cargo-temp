@@ -186,11 +186,15 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
                 }
             }
 
-            let subprocesses = config.subprocesses.iter().filter_map(|x| x.spawn(tmp_dir)).collect::<Vec<process::Child>>();
+            let subprocesses = config
+                .subprocesses
+                .iter()
+                .filter_map(|x| x.spawn(tmp_dir))
+                .collect::<Vec<process::Child>>();
             dbg!(&subprocesses);
 
             Ok(subprocesses)
-        },
+        }
         Err(err) => {
             bail!("an error occurred: {}", err);
         }
