@@ -1,6 +1,6 @@
 use crate::config::{Config, Depth};
 use crate::Dependency;
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{ensure, Context, Result};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env, fs, process};
@@ -159,7 +159,7 @@ pub fn generate_delete_file(tmp_dir: &Path) -> Result<PathBuf> {
     Ok(delete_file)
 }
 
-pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child>> {
+pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<process::Child> {
     let mut shell_process = match config.editor {
         None => process::Command::new(get_shell()),
         Some(ref editor) => {
@@ -177,29 +177,17 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<Vec<process::Child
         }
     }
 
-    match shell_process.current_dir(&tmp_dir).spawn() {
-        Ok(mut process) => {
-            #[cfg(windows)]
-            if config.editor.is_some() {
-                unsafe {
-                    cargo_temp_bindings::Windows::Win32::SystemServices::FreeConsole();
-                }
-            }
+    shell_process
+        .current_dir(&tmp_dir)
+        .spawn().context("cannot spawn shell process")
+}
 
-            let subprocesses = config
-                .subprocesses
-                .iter()
-                .filter_map(|x| x.spawn(tmp_dir))
-                .collect::<Vec<process::Child>>();
-
-            process.wait().context("Cannot wait shell process")?;
-
-            Ok(subprocesses)
-        }
-        Err(err) => {
-            bail!("an error occurred: {}", err);
-        }
-    }
+pub fn start_subprocesses(config: &Config, tmp_dir: &Path) -> Vec<process::Child> {
+    config
+        .subprocesses
+        .iter()
+        .filter_map(|x| x.spawn(tmp_dir))
+        .collect::<Vec<process::Child>>()
 }
 
 pub fn clean_up(
