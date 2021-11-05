@@ -232,17 +232,16 @@ background.
 
 #### Additional settings
 
-* `working_dir` override the default working directory which is the temporary
+* `working_dir` overrides the default working directory which is the temporary
   directory.
 * `keep_on_exit` is used to know if the process will be killed when exiting the
   shell or not. The default will be false and this setting doesn't work with
   foreground process.
-* `stdout` enable or disable stdout.
-* `stderr` enable or disable stderr.
 
-For the `stdout` and `stderr` settings, the default will be disabled when the
-subprocess is in the background and inherit when the subprocess is in
-foreground. Note that `stdin` is disabled by default.
+`stdout` and `stderr` settings allows enabling or disabling.
+the default will be disabled when the subprocess is in the background and
+inherit when the subprocess is in foreground.
+Note that `stdin` is disabled by default.
 
 #### Example
 
