@@ -179,7 +179,8 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<process::Child> {
 
     shell_process
         .current_dir(&tmp_dir)
-        .spawn().context("cannot spawn shell process")
+        .spawn()
+        .context("cannot spawn shell process")
 }
 
 pub fn start_subprocesses(config: &Config, tmp_dir: &Path) -> Vec<process::Child> {
