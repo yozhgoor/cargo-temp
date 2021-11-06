@@ -94,7 +94,7 @@ impl Cli {
                     self.worktree_branch.clone(),
                     subprocesses,
                 )?;
-                bail!("an error occurred: {}", err);
+                bail!("cannot wait shell process: {}", err);
             }
         }
 

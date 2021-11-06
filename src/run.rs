@@ -221,7 +221,10 @@ pub fn clean_up(
 
             unsafe {
                 libc::kill(
-                    subprocess.id().try_into().expect("cannot get process id"),
+                    subprocess
+                        .id()
+                        .try_into()
+                        .context("cannot get process id")?,
                     libc::SIGTERM,
                 );
             }
