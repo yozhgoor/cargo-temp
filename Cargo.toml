@@ -20,9 +20,9 @@ tempfile = "3"
 toml = "0.5"
 regex = "1.5.4"
 once_cell = "1.8.0"
-windows-sys = { version = "0.28", features = ["Win32_System_Console", "Win32_Foundation"] }
 
 [target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.28", features = ["Win32_System_Console", "Win32_Foundation"] }
 dirs = "4"
 
 [target.'cfg(unix)'.dependencies]
