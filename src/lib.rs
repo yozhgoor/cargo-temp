@@ -78,27 +78,20 @@ impl Cli {
             }
         }
 
-        match shell.wait() {
-            Ok(_) => {
-                run::clean_up(
-                    delete_file,
-                    tmp_dir,
-                    self.worktree_branch.clone(),
-                    subprocesses,
-                )?;
-            }
-            Err(err) => {
-                run::clean_up(
-                    delete_file,
-                    tmp_dir,
-                    self.worktree_branch.clone(),
-                    subprocesses,
-                )?;
-                bail!("cannot wait shell process: {}", err);
-            }
-        }
+        let res = shell.wait();
 
-        Ok(())
+        run::clean_up(
+            delete_file,
+            tmp_dir,
+            self.worktree_branch.clone(),
+            subprocesses,
+        )?;
+
+        if !res.is_ok() {
+            bail!("cannot wait shell process")
+        } else {
+            Ok(())
+        }
     }
 }
 
