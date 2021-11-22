@@ -222,7 +222,7 @@ You can spawn subprocess along your temporary shell like this:
 
 ```toml
 [[subprocess]]
-command = "xterm -e cargo-watch -x run"
+command = "alacritty -e cargo-watch -x run"
 foreground = false
 ```
 
