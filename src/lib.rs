@@ -74,7 +74,7 @@ impl Cli {
         #[cfg(windows)]
         if config.editor.is_some() {
             unsafe {
-                Windows::Win32::SystemServices::FreeConsole();
+                windows_sys::Win32::SystemServices::FreeConsole();
             }
         }
 
