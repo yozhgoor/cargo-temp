@@ -92,13 +92,13 @@ pub struct SubProcess {
 }
 #[cfg(windows)]
 #[derive(Serialize, Deserialize)]
-pub struct Subprocess {
+pub struct SubProcess {
     pub command: String,
     pub foreground: bool,
     #[serde(default)]
     pub keep_on_exit: bool,
     pub working_dir: Option<PathBuf>,
-    pub inherit_handles: option<bool>,
+    pub inherit_handles: Option<bool>,
 }
 
 impl SubProcess {
