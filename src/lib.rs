@@ -56,6 +56,8 @@ impl Cli {
 
         let delete_file = run::generate_delete_file(tmp_dir.path())?;
 
+        let subprocesses = run::start_subprocesses(config, tmp_dir.path());
+
         let mut shell = match run::start_shell(config, tmp_dir.path()) {
             Ok(shell) => shell,
             Err(err) => {
@@ -68,8 +70,6 @@ impl Cli {
                 bail!("{}", err);
             }
         };
-
-        let subprocesses = run::start_subprocesses(config, tmp_dir.path());
 
         #[cfg(windows)]
         if config.editor.is_some() {
