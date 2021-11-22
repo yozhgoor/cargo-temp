@@ -137,7 +137,7 @@ impl SubProcess {
                 let mut process = create_process_w::Command::new(&self.command);
                 process
                     .current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir))
-                    .inherit_handles(self.inherit_handles);
+                    .inherit_handles(self.inherit_handles.unwrap_or(false));
 
                 process
             }
