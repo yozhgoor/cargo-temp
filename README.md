@@ -238,6 +238,8 @@ background.
   shell or not. The default will be false and this setting doesn't work with
   foreground process.
 
+##### Unix only
+
 `stdout` and `stderr` settings allows enabling or disabling.
 the default will be disabled when the subprocess is in the background and
 inherit when the subprocess is in foreground.
@@ -245,15 +247,28 @@ Note that `stdin` is disabled by default.
 
 #### Example
 
-```toml
-[[subprocess]]
-command = "alacritty -e cargo watch -x run"
-foreground = false
+* Unix:
+    ```toml
+    [[subprocess]]
+    command = "alacritty -e cargo watch -x run"
+    working_dir = "home/<user>/repos/<repo_name>"
+    foreground = false
 
-[[subprocess]]
-command = "firefox"
-foreground = true
-```
+    [[subprocess]]
+    command = "firefox"
+    foreground = true
+    ```
+* Windows
+    ```toml
+    [[subprocess]]
+    command = "cargo.exe watch -x run"
+    working_dir = "C:\\User\\<user>\\repos\\<repo_name>"
+    foreground = false
+
+    [[subprocess]]
+    command = "firefox.exe"
+    foreground = true
+    ```
 
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [xdg]: https://docs.rs/xdg/2.2.0/xdg/
