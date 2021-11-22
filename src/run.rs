@@ -241,19 +241,12 @@ pub fn clean_up(
     }
 
     for subprocess in subprocesses.iter_mut() {
-        #[cfg(unix)]
         match subprocess.try_wait() {
             Ok(Some(_)) => {}
             _ => {
                 let _ = subprocess.kill();
                 let _ = subprocess.wait();
             }
-        }
-
-        #[cfg(windows)]
-        {
-            let _ = subprocess.kill();
-            let _ = subprocess.wait();
         }
     }
 
