@@ -3,6 +3,16 @@
 version = 3
 
 [[package]]
+name = "CreateProcessW"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7fc3144411d62dcc5f8698b3a708c1115461277ed619c759aaf4844a610da35"
+dependencies = [
+ "thiserror",
+ "windows 0.28.0",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "0.7.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -44,6 +54,7 @@ checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 name = "cargo-temp"
 version = "0.2.5"
 dependencies = [
+ "CreateProcessW",
  "anyhow",
  "cargo-temp-bindings",
  "clap",
@@ -62,7 +73,7 @@ dependencies = [
 name = "cargo-temp-bindings"
 version = "0.0.1"
 dependencies = [
- "windows",
+ "windows 0.9.1",
 ]
 
 [[package]]
@@ -418,6 +429,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "thiserror"
+version = "1.0.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "854babe52e4df1653706b98fcfc05843010039b406875930a70e4d9644e5c417"
+dependencies = [
+ "thiserror-impl",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "1.0.30"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa32fd3f627f367fe16f893e2597ae3c05020f8bba2666a4e6ea73d377e5714b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "toml"
 version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -508,6 +539,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "windows"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "054d31561409bbf7e1ee4a4f0a1233ac2bb79cfadf2a398438a04d8dda69225f"
+dependencies = [
+ "windows-sys",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82ca39602d5cbfa692c4b67e3bcbb2751477355141c1ed434c94da4186836ff6"
+dependencies = [
+ "windows_aarch64_msvc",
+ "windows_i686_gnu",
+ "windows_i686_msvc",
+ "windows_x86_64_gnu",
+ "windows_x86_64_msvc",
+]
+
+[[package]]
+name = "windows_aarch64_msvc"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52695a41e536859d5308cc613b4a022261a274390b25bd29dfff4bf08505f3c2"
+
+[[package]]
 name = "windows_gen"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -515,6 +574,18 @@ checksum = "54154dbc515d58723f6b6053c12f1065da7389f733660581b2391bd1af480452"
 dependencies = [
  "syn",
 ]
+
+[[package]]
+name = "windows_i686_gnu"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f54725ac23affef038fecb177de6c9bf065787c2f432f79e3c373da92f3e1d8a"
+
+[[package]]
+name = "windows_i686_msvc"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51d5158a43cc43623c0729d1ad6647e62fa384a3d135fd15108d37c683461f64"
 
 [[package]]
 name = "windows_macros"
@@ -525,6 +596,18 @@ dependencies = [
  "syn",
  "windows_gen",
 ]
+
+[[package]]
+name = "windows_x86_64_gnu"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc31f409f565611535130cfe7ee8e6655d3fa99c1c61013981e491921b5ce954"
+
+[[package]]
+name = "windows_x86_64_msvc"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f2b8c7cbd3bfdddd9ab98769f9746a7fad1bca236554cd032b78d768bc0e89f"
 
 [[package]]
 name = "xdg"

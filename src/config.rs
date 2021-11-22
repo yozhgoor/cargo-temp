@@ -1,8 +1,8 @@
 use crate::run;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::path::{Path, PathBuf};
-use std::{fs, process};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -74,6 +74,11 @@ impl Config {
     }
 }
 
+#[cfg(unix)]
+type Child = std::process::Child;
+#[cfg(windows)]
+type Child = create_process_w::Child;
+
 #[derive(Serialize, Deserialize)]
 pub struct SubProcess {
     pub command: String,
@@ -86,27 +91,47 @@ pub struct SubProcess {
 }
 
 impl SubProcess {
-    pub fn spawn(&self, tmp_dir: &Path) -> Option<process::Child> {
-        let mut process = process::Command::new(run::get_shell());
+    pub fn spawn(&self, tmp_dir: &Path) -> Option<Child> {
+        let mut process = {
+            #[cfg(unix)]
+            {
+                let mut process = std::process::Command::new(run::get_shell());
+                process
+                    .current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir))
+                    .args(["-c", &self.command])
+                    .stdin(std::process::Stdio::null());
 
-        process.current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir));
+                if !self.foreground {
+                    if !self.stdout.unwrap_or(false) {
+                        process.stdout(std::process::Stdio::null());
+                    }
 
-        #[cfg(unix)]
-        process.arg("-c");
-        #[cfg(windows)]
-        process.arg("/c");
+                    if !self.stderr.unwrap_or(false) {
+                        process.stderr(std::process::Stdio::null());
+                    }
+                } else {
+                    if !self.stdout.unwrap_or(true) {
+                        process.stdout(std::process::Stdio::null());
+                    }
 
-        process.arg(&self.command).stdin(process::Stdio::null());
+                    if !self.stderr.unwrap_or(true) {
+                        process.stderr(std::process::Stdio::null());
+                    }
+                }
+
+                process
+            }
+            #[cfg(windows)]
+            {
+                create_process_w::Command::new(run::get_shell())
+                    .current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir))
+                    .arg(&self.command);
+
+                process
+            }
+        };
 
         if !self.foreground {
-            if !self.stdout.unwrap_or(false) {
-                process.stdout(process::Stdio::null());
-            }
-
-            if !self.stderr.unwrap_or(false) {
-                process.stderr(process::Stdio::null());
-            }
-
             match process.spawn().ok() {
                 Some(child) => Some(child).filter(|_| !self.keep_on_exit),
                 None => {
@@ -115,14 +140,6 @@ impl SubProcess {
                 }
             }
         } else {
-            if !self.stdout.unwrap_or(true) {
-                process.stdout(process::Stdio::null());
-            }
-
-            if !self.stderr.unwrap_or(true) {
-                process.stderr(process::Stdio::null());
-            }
-
             match process.status() {
                 Ok(_) => None,
                 Err(err) => {

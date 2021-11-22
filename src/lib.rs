@@ -87,7 +87,7 @@ impl Cli {
             subprocesses,
         )?;
 
-        if !res.is_ok() {
+        if res.is_err() {
             bail!("cannot wait shell process")
         } else {
             Ok(())
