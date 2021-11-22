@@ -58,18 +58,7 @@ impl Cli {
 
         let subprocesses = run::start_subprocesses(config, tmp_dir.path());
 
-        let mut shell = match run::start_shell(config, tmp_dir.path()) {
-            Ok(shell) => shell,
-            Err(err) => {
-                run::clean_up(
-                    delete_file,
-                    tmp_dir,
-                    self.worktree_branch.clone(),
-                    Vec::new(),
-                )?;
-                bail!("{}", err);
-            }
-        };
+        let shell = run::start_shell(config, tmp_dir.path());
 
         #[cfg(windows)]
         if config.editor.is_some() {
@@ -78,7 +67,12 @@ impl Cli {
             }
         }
 
-        let res = shell.wait();
+        let res = match shell {
+            Ok(mut child) => child.wait(),
+            Err(err) => {
+                bail!("{}", err)
+            }
+        };
 
         run::clean_up(
             delete_file,
@@ -87,10 +81,10 @@ impl Cli {
             subprocesses,
         )?;
 
-        if res.is_err() {
-            bail!("cannot wait shell process")
-        } else {
+        if res.is_ok() {
             Ok(())
+        } else {
+            bail!("cannot wait shell process")
         }
     }
 }
