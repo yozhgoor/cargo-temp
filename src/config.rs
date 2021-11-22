@@ -123,11 +123,8 @@ impl SubProcess {
             }
             #[cfg(windows)]
             {
-                create_process_w::Command::new(run::get_shell())
+                create_process_w::Command::new(&self.command)
                     .current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir))
-                    .arg(&self.command);
-
-                process
             }
         };
 
