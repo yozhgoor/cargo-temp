@@ -238,12 +238,17 @@ background.
   shell or not. The default will be false and this setting doesn't work with
   foreground process.
 
-##### Unix only
+##### Platform specific
 
-`stdout` and `stderr` settings allows enabling or disabling.
-the default will be disabled when the subprocess is in the background and
-inherit when the subprocess is in foreground.
-Note that `stdin` is disabled by default.
+* Unix:
+    * `stdout` and `stderr` settings allows enabling or disabling.the default will be disabled when the subprocess is in the background and
+    inherit when the subprocess is in foreground.
+    Note that `stdin` is disabled by default.
+* Windows:
+    * `inherit_handles` - If this parameter is true, each inheritable handle in
+      the calling process is inherited by the new process. If the parameter is
+      false, the handles are not inherited (see
+      [CreateProcessW][CreateProcessW])
 
 #### Example
 
@@ -274,3 +279,4 @@ Note that `stdin` is disabled by default.
 [xdg]: https://docs.rs/xdg/2.2.0/xdg/
 [knownfolder]: https://docs.rs/dirs-2/3.0.1/dirs_2/
 [ssh-issue]: https://github.com/rust-lang/cargo/issues/1851
+[CreateProcessW]: https://docs.rs/CreateProcessW/0.1.0/CreateProcessW/struct.Command.html#method.inherit_handles

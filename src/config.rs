@@ -79,6 +79,7 @@ type Child = std::process::Child;
 #[cfg(windows)]
 type Child = create_process_w::Child;
 
+#[cfg(unix)]
 #[derive(Serialize, Deserialize)]
 pub struct SubProcess {
     pub command: String,
@@ -88,6 +89,16 @@ pub struct SubProcess {
     pub working_dir: Option<PathBuf>,
     pub stdout: Option<bool>,
     pub stderr: Option<bool>,
+}
+#[cfg(windows)]
+#[derive(Serialize, Deserialize)]
+pub struct Subprocess {
+    pub command: String,
+    pub foreground: bool,
+    #[serde(default)]
+    pub keep_on_exit: bool,
+    pub working_dir: Option<PathBuf>,
+    pub inherit_handles: option<bool>,
 }
 
 impl SubProcess {
@@ -124,7 +135,9 @@ impl SubProcess {
             #[cfg(windows)]
             {
                 let mut process = create_process_w::Command::new(&self.command);
-                process.current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir));
+                process
+                    .current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir))
+                    .inherit_handles(self.inherit_handles);
 
                 process
             }
