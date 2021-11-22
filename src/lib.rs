@@ -74,7 +74,7 @@ impl Cli {
         #[cfg(windows)]
         if config.editor.is_some() {
             unsafe {
-                cargo_temp_bindings::Windows::Win32::SystemServices::FreeConsole();
+                Windows::Win32::SystemServices::FreeConsole();
             }
         }
 
