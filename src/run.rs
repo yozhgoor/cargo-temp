@@ -185,7 +185,7 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<()> {
     #[cfg(windows)]
     if config.editor.is_some() {
         unsafe {
-            cargo_temp_bindings::Windows::Win32::SystemServices::FreeConsole();
+            windows_sys::Win32::System::Console::FreeConsole();
         }
     }
 
