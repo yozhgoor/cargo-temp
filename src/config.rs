@@ -123,8 +123,10 @@ impl SubProcess {
             }
             #[cfg(windows)]
             {
-                create_process_w::Command::new(&self.command)
-                    .current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir))
+                let mut process = create_process_w::Command::new(&self.command)
+                    .current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir));
+
+                process
             }
         };
 
