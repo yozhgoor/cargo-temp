@@ -232,23 +232,24 @@ background.
 
 #### Additional settings
 
-* `working_dir` overrides the default working directory which is the temporary
-  directory.
-* `keep_on_exit` is used to know if the process will be killed when exiting the
-  shell or not. The default will be false and this setting doesn't work with
-  foreground process.
+* `working_dir` overrides the default working directory. The default is to use
+  the temporary directory that has been created.
+* `keep_on_exit` is used to keep the process alive after exiting the shell.
+  The default is to kill the process when the shell exits. This setting doesn't
+  work with foreground process.
 
 ##### Platform specific
 
-* Unix:
-    * `stdout` and `stderr` settings allows enabling or disabling.the default will be disabled when the subprocess is in the background and
-    inherit when the subprocess is in foreground.
-    Note that `stdin` is disabled by default.
-* Windows:
-    * `inherit_handles` - If this parameter is true, each inheritable handle in
-      the calling process is inherited by the new process. If the parameter is
-      false, the handles are not inherited (see
-      [CreateProcessW][CreateProcessW])
+Unix:
+* `stdout` and `stderr` settings allows enabling or disabling. With a background
+  process, the default will be false, with a foreground process, the default
+  will be true. The `stdin` setting doesn't exist since it's always disabled.
+
+Windows:
+* `inherit_handles` allows handles inheritance - If this parameter is true, each
+  inheritable handle in the calling process is inherited by the new process. If
+  the parameter is false, the handles are not inherited
+  (see [CreateProcessW][CreateProcessW]).
 
 #### Example
 
