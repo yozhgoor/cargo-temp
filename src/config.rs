@@ -23,13 +23,13 @@ impl Config {
         #[cfg(unix)]
         let temporary_project_dir = {
             let cache_dir = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"))
-                .context("Could not find HOME directory")?;
+                .context("could not find HOME directory")?;
 
             cache_dir.get_cache_home()
         };
         #[cfg(windows)]
         let temporary_project_dir = dirs::cache_dir()
-            .context("Could not get cache directory")?
+            .context("could not get cache directory")?
             .join(env!("CARGO_PKG_NAME"));
 
         Ok(Self {
@@ -52,7 +52,7 @@ impl Config {
         #[cfg(windows)]
         let config_file_path = {
             let config_dir = dirs::config_dir()
-                .context("Could not get config directory")?
+                .context("could not get config directory")?
                 .join(env!("CARGO_PKG_NAME"));
             let _ = fs::create_dir_all(&config_dir);
 
@@ -142,7 +142,7 @@ impl SubProcess {
             match process.spawn().ok() {
                 Some(child) => Some(child).filter(|_| !self.keep_on_exit),
                 None => {
-                    log::error!("An error occurred within the subprocess");
+                    log::error!("an error occurred within the subprocess");
                     None
                 }
             }
@@ -151,7 +151,7 @@ impl SubProcess {
                 Ok(_) => None,
                 Err(err) => {
                     log::error!(
-                        "An error occurred within the foreground subprocess: {}",
+                        "an error occurred within the foreground subprocess: {}",
                         err
                     );
                     None

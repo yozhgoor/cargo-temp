@@ -47,7 +47,7 @@ pub fn generate_tmp_project(
 
         ensure!(
             command.status().context("Could not start git")?.success(),
-            "Cannot create working tree"
+            "cannot create working tree"
         );
     } else if let Some(url) = git {
         let mut command = std::process::Command::new("git");
@@ -65,7 +65,7 @@ pub fn generate_tmp_project(
 
         ensure!(
             command.status().context("Could not start git")?.success(),
-            "Cannot clone repository"
+            "cannot clone repository"
         );
     } else {
         let mut command = std::process::Command::new("cargo");
@@ -83,7 +83,7 @@ pub fn generate_tmp_project(
 
         ensure!(
             command.status().context("Could not start cargo")?.success(),
-            "Cargo command failed"
+            "cargo command failed"
         );
     }
 
@@ -215,7 +215,7 @@ pub fn clean_up(
             .arg("--force");
         ensure!(
             command.status().context("Could not start git")?.success(),
-            "Cannot remove working tree"
+            "cannot remove working tree"
         );
     }
 
