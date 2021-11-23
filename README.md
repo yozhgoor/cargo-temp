@@ -251,7 +251,7 @@ Windows:
   the parameter is false, the handles are not inherited
   (see [CreateProcessW][CreateProcessW]).
 
-#### Example
+#### Examples
 
 * Unix:
     ```toml

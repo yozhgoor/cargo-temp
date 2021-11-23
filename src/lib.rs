@@ -60,13 +60,6 @@ impl Cli {
 
         let res = run::start_shell(config, tmp_dir.path());
 
-        #[cfg(windows)]
-        if config.editor.is_some() {
-            unsafe {
-                windows_sys::Win32::System::Console::FreeConsole();
-            }
-        }
-
         run::clean_up(
             delete_file,
             tmp_dir,

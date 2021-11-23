@@ -1,6 +1,6 @@
 use crate::config::{Config, Depth};
 use crate::Dependency;
-use anyhow::{ensure, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
@@ -177,10 +177,19 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<std::process::Exit
         }
     }
 
-    shell_process
-        .current_dir(&tmp_dir)
-        .status()
-        .context("cannot spawn shell process")
+    let res = shell_process.current_dir(&tmp_dir).spawn();
+
+    #[cfg(windows)]
+    if config.editor.is_some() {
+        unsafe {
+            windows_sys::Win32::System::Console::FreeConsole();
+        }
+    }
+
+    match res {
+        Ok(mut child) => child.wait().context("cannot wait shell process"),
+        Err(err) => bail!("cannot spawn shell process: {}", err),
+    }
 }
 
 #[cfg(unix)]
