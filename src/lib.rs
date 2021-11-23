@@ -1,5 +1,5 @@
 use crate::config::Config;
-use anyhow::{bail, Result};
+use anyhow::{bail, ensure, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -58,7 +58,7 @@ impl Cli {
 
         let subprocesses = run::start_subprocesses(config, tmp_dir.path());
 
-        let shell = run::start_shell(config, tmp_dir.path());
+        let res = run::start_shell(config, tmp_dir.path());
 
         #[cfg(windows)]
         if config.editor.is_some() {
@@ -67,7 +67,7 @@ impl Cli {
             }
         }
 
-        let res = match shell {
+        let res = match res {
             Ok(mut child) => child.wait(),
             Err(err) => {
                 bail!("{}", err)
@@ -81,11 +81,7 @@ impl Cli {
             subprocesses,
         )?;
 
-        if res.is_ok() {
-            Ok(())
-        } else {
-            bail!("cannot wait shell process")
-        }
+        Ok(ensure!(res.is_ok(), "cannot wait shell process"))
     }
 }
 
