@@ -159,7 +159,7 @@ pub fn generate_delete_file(tmp_dir: &Path) -> Result<PathBuf> {
     Ok(delete_file)
 }
 
-pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<std::process::Child> {
+pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<std::process::ExitStatus> {
     let mut shell_process = match config.editor {
         None => std::process::Command::new(get_shell()),
         Some(ref editor) => {
@@ -179,7 +179,7 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<std::process::Chil
 
     shell_process
         .current_dir(&tmp_dir)
-        .spawn()
+        .status()
         .context("cannot spawn shell process")
 }
 

@@ -67,13 +67,6 @@ impl Cli {
             }
         }
 
-        let res = match res {
-            Ok(mut child) => child.wait(),
-            Err(err) => {
-                bail!("{}", err)
-            }
-        };
-
         run::clean_up(
             delete_file,
             tmp_dir,
@@ -81,7 +74,10 @@ impl Cli {
             subprocesses,
         )?;
 
-        Ok(ensure!(res.is_ok(), "cannot wait shell process"))
+        match res {
+            Ok(_exit_status) => Ok(()),
+            Err(err) => bail!("problem within the shell process: {}", err),
+        }
     }
 }
 
