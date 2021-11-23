@@ -79,7 +79,6 @@ type Child = std::process::Child;
 #[cfg(windows)]
 type Child = create_process_w::Child;
 
-#[cfg(unix)]
 #[derive(Serialize, Deserialize)]
 pub struct SubProcess {
     pub command: String,
