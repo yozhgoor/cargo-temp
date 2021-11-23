@@ -1,5 +1,5 @@
 use crate::config::Config;
-use anyhow::{bail, ensure, Result};
+use anyhow::{bail, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
 use regex::Regex;
