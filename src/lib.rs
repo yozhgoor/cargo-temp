@@ -216,6 +216,26 @@ mod parse_and_format_dependency_tests {
     }
 
     #[test]
+    fn repository_without_package_name() {
+        let dependency = Dependency::Repository {
+            name: "anyhow".to_string(),
+            url: "https://github.com/dtolnay/anyhow.git".to_string(),
+            branch: None,
+            rev: None,
+            features: Vec::new(),
+        };
+
+        assert_eq!(
+            parse_dependency("https://github.com/dtolnay/anyhow.git"),
+            dependency
+        );
+        assert_eq!(
+            run::format_dependency(&dependency),
+            "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\" }",
+        );
+    }
+
+    #[test]
     fn repository_with_http() {
         let dependency = Dependency::Repository {
             name: "anyhow".to_string(),

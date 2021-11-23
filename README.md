@@ -63,6 +63,13 @@ Examples:
 If you have some problems to add a dependency over SSH, please refer to this:
 [Support SSH Git URLs](ssh-issue). If it doesn't help, please fill an issue.
 
+* Without package name
+    ```
+    cargo-temp https://github.com/dtolnay/anyhow.git
+    ```
+
+Note that you can't specify features, branch or revision without package name.
+
 To choose a branch or a revision:
 
 * Branch:
