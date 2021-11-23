@@ -88,41 +88,44 @@ fn parse_dependency(s: &str) -> Dependency {
             .unwrap()
     });
 
-    if let Some(caps) = RE.captures(s) {
-        let features = caps
-            .name("features")
-            .map(|x| {
-                x.as_str()
-                    .split('+')
-                    .map(|x| x.to_string())
-                    .skip(1)
-                    .collect::<Vec<String>>()
-            })
-            .unwrap();
+    match RE.captures(s) {
+        Some(caps) => {
+            let features = caps
+                .name("features")
+                .map(|x| {
+                    x.as_str()
+                        .split('+')
+                        .map(|x| x.to_string())
+                        .skip(1)
+                        .collect::<Vec<String>>()
+                })
+                .unwrap();
 
-        if let Some(url) = caps.name("url") {
-            Dependency::Repository {
-                name: caps.name("name").unwrap().as_str().to_string(),
-                url: url.as_str().to_string(),
-                branch: caps.name("branch").map(|x| x.as_str().to_string()),
-                rev: caps.name("rev").map(|x| x.as_str().to_string()),
-                features,
-            }
-        } else {
-            Dependency::CrateIo {
-                name: caps.name("name").unwrap().as_str().to_string(),
-                version: caps.name("version").map(|x| x.as_str().to_string()),
-                features,
+            if let Some(url) = caps.name("url") {
+                Dependency::Repository {
+                    name: caps.name("name").unwrap().as_str().to_string(),
+                    url: url.as_str().to_string(),
+                    branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                    rev: caps.name("rev").map(|x| x.as_str().to_string()),
+                    features,
+                }
+            } else {
+                Dependency::CrateIo {
+                    name: caps.name("name").unwrap().as_str().to_string(),
+                    version: caps.name("version").map(|x| x.as_str().to_string()),
+                    features,
+                }
             }
         }
-    } else {
-        let mut it = s.split('+').map(|x| x.to_string());
-        let name = it.next().unwrap();
-        let features = it.collect::<Vec<_>>();
-        Dependency::CrateIo {
-            name,
-            version: None,
-            features,
+        None => {
+            let mut it = s.split('+').map(|x| x.to_string());
+            let name = it.next().unwrap();
+            let features = it.collect::<Vec<_>>();
+            Dependency::CrateIo {
+                name,
+                version: None,
+                features,
+            }
         }
     }
 }
