@@ -228,7 +228,66 @@ The possible values are
 
 The `--vcs` value will be passed as is to cargo.
 
+### Subprocesses
+
+You can spawn subprocess along your temporary shell like this:
+
+```toml
+[[subprocess]]
+command = "alacritty -e cargo-watch -x run"
+foreground = false
+```
+
+The `command` field is a shell command like `echo Hello`.
+The `foreground` field allows to run the program in foreground instead of
+background.
+
+#### Additional settings
+
+* `working_dir` overrides the default working directory. The default is to use
+  the temporary directory that has been created.
+* `keep_on_exit` is used to keep the process alive after exiting the shell.
+  The default is to kill the process when the shell exits. This setting doesn't
+  work with foreground process.
+
+##### Platform specific
+
+Unix:
+* `stdout` and `stderr` settings allows enabling or disabling. With a background
+  process, the default will be false, with a foreground process, the default
+  will be true. The `stdin` setting doesn't exist since it's always disabled.
+
+Windows:
+* `inherit_handles` allows handles inheritance - If this parameter is true, each
+  inheritable handle in the calling process is inherited by the new process. If
+  the parameter is false, the handles are not inherited
+  (see [CreateProcessW][CreateProcessW]).
+
+#### Examples
+
+* Unix:
+    ```toml
+    [[subprocess]]
+    command = "alacritty -e cargo watch -x run"
+    foreground = false
+
+    [[subprocess]]
+    command = "firefox"
+    foreground = false
+    ```
+* Windows
+    ```toml
+    [[subprocess]]
+    command = "cargo.exe watch -x run"
+    foreground = false
+
+    [[subprocess]]
+    command = "firefox.exe"
+    foreground = false
+    ```
+
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [xdg]: https://docs.rs/xdg/2.2.0/xdg/
 [knownfolder]: https://docs.rs/dirs-2/3.0.1/dirs_2/
 [ssh-issue]: https://github.com/rust-lang/cargo/issues/1851
+[CreateProcessW]: https://docs.rs/CreateProcessW/0.1.0/CreateProcessW/struct.Command.html#method.inherit_handles

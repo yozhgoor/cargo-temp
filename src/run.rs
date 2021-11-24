@@ -1,9 +1,9 @@
 use crate::config::{Config, Depth};
 use crate::Dependency;
-use anyhow::{ensure, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::{env, fs, process};
+use std::{env, fs};
 use tempfile::TempDir;
 
 pub fn generate_tmp_project(
@@ -37,7 +37,7 @@ pub fn generate_tmp_project(
     });
 
     if let Some(maybe_branch) = worktree_branch.as_ref() {
-        let mut command = process::Command::new("git");
+        let mut command = std::process::Command::new("git");
         command.args(["worktree", "add"]);
 
         match maybe_branch {
@@ -47,10 +47,10 @@ pub fn generate_tmp_project(
 
         ensure!(
             command.status().context("Could not start git")?.success(),
-            "Cannot create working tree"
+            "cannot create working tree"
         );
     } else if let Some(url) = git {
-        let mut command = process::Command::new("git");
+        let mut command = std::process::Command::new("git");
         command.arg("clone").arg(url).arg(&tmp_dir.as_ref());
 
         match git_repo_depth {
@@ -65,10 +65,10 @@ pub fn generate_tmp_project(
 
         ensure!(
             command.status().context("Could not start git")?.success(),
-            "Cannot clone repository"
+            "cannot clone repository"
         );
     } else {
-        let mut command = process::Command::new("cargo");
+        let mut command = std::process::Command::new("cargo");
         command
             .current_dir(&tmp_dir)
             .args(["init", "--name", project_name.as_str()]);
@@ -83,7 +83,7 @@ pub fn generate_tmp_project(
 
         ensure!(
             command.status().context("Could not start cargo")?.success(),
-            "Cargo command failed"
+            "cargo command failed"
         );
     }
 
@@ -159,11 +159,11 @@ pub fn generate_delete_file(tmp_dir: &Path) -> Result<PathBuf> {
     Ok(delete_file)
 }
 
-pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<()> {
+pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<std::process::ExitStatus> {
     let mut shell_process = match config.editor {
-        None => process::Command::new(get_shell()),
+        None => std::process::Command::new(get_shell()),
         Some(ref editor) => {
-            let mut ide_process = process::Command::new(editor);
+            let mut ide_process = std::process::Command::new(editor);
             ide_process
                 .args(config.editor_args.iter().flatten())
                 .arg(tmp_dir);
@@ -173,14 +173,11 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<()> {
 
     if env::var("CARGO_TARGET_DIR").is_err() {
         if let Some(path) = &config.cargo_target_dir {
-            shell_process.env("CARGO_TARGET_DIR", path);
+            env::set_var("CARGO_TARGET_DIR", path);
         }
     }
 
-    shell_process
-        .current_dir(&tmp_dir)
-        .status()
-        .context("Cannot start shell")?;
+    let res = shell_process.current_dir(&tmp_dir).spawn();
 
     #[cfg(windows)]
     if config.editor.is_some() {
@@ -189,13 +186,30 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<()> {
         }
     }
 
-    Ok(())
+    match res {
+        Ok(mut child) => child.wait().context("cannot wait shell process"),
+        Err(err) => bail!("cannot spawn shell process: {}", err),
+    }
+}
+
+#[cfg(unix)]
+type Child = std::process::Child;
+#[cfg(windows)]
+type Child = create_process_w::Child;
+
+pub fn start_subprocesses(config: &Config, tmp_dir: &Path) -> Vec<Child> {
+    config
+        .subprocesses
+        .iter()
+        .filter_map(|x| x.spawn(tmp_dir))
+        .collect::<Vec<Child>>()
 }
 
 pub fn clean_up(
     delete_file: PathBuf,
     tmp_dir: TempDir,
     worktree_branch: Option<Option<String>>,
+    mut subprocesses: Vec<Child>,
 ) -> Result<()> {
     if !delete_file.exists() {
         println!(
@@ -203,21 +217,52 @@ pub fn clean_up(
             tmp_dir.into_path().display()
         );
     } else if worktree_branch.is_some() {
-        let mut command = process::Command::new("git");
+        let mut command = std::process::Command::new("git");
         command
             .args(["worktree", "remove"])
             .arg(&tmp_dir.path())
             .arg("--force");
         ensure!(
             command.status().context("Could not start git")?.success(),
-            "Cannot remove working tree"
+            "cannot remove working tree"
         );
+    }
+
+    #[cfg(unix)]
+    {
+        for subprocess in subprocesses.iter_mut() {
+            {
+                use std::convert::TryInto;
+
+                unsafe {
+                    libc::kill(
+                        subprocess
+                            .id()
+                            .try_into()
+                            .context("cannot get process id")?,
+                        libc::SIGTERM,
+                    );
+                }
+            }
+        }
+
+        std::thread::sleep(std::time::Duration::from_secs(2));
+    }
+
+    for subprocess in subprocesses.iter_mut() {
+        match subprocess.try_wait() {
+            Ok(Some(_)) => {}
+            _ => {
+                let _ = subprocess.kill();
+                let _ = subprocess.wait();
+            }
+        }
     }
 
     Ok(())
 }
 
-fn get_shell() -> String {
+pub fn get_shell() -> String {
     #[cfg(unix)]
     {
         env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())

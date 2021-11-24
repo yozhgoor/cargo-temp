@@ -1,5 +1,5 @@
 use crate::config::Config;
-use anyhow::Result;
+use anyhow::{bail, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -56,11 +56,21 @@ impl Cli {
 
         let delete_file = run::generate_delete_file(tmp_dir.path())?;
 
-        run::start_shell(config, tmp_dir.path())?;
+        let subprocesses = run::start_subprocesses(config, tmp_dir.path());
 
-        run::clean_up(delete_file, tmp_dir, self.worktree_branch.clone())?;
+        let res = run::start_shell(config, tmp_dir.path());
 
-        Ok(())
+        run::clean_up(
+            delete_file,
+            tmp_dir,
+            self.worktree_branch.clone(),
+            subprocesses,
+        )?;
+
+        match res {
+            Ok(_exit_status) => Ok(()),
+            Err(err) => bail!("problem within the shell process: {}", err),
+        }
     }
 }
 
