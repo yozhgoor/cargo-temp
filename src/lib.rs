@@ -88,83 +88,58 @@ fn parse_dependency(s: &str) -> Dependency {
             .unwrap()
     });
 
-    match RE.captures(s) {
-        Some(caps) => {
-            if let Some(name) = caps.name("name") {
-                if name.as_str().ends_with("git") {
-                    Dependency::Repository {
-                        name: name.as_str().to_string(),
-                        url: name.as_str().to_string(),
-                        branch: None,
-                        rev: None,
-                        features: Vec::new(),
-                    }
-                } else {
-                    let features = caps
-                        .name("features")
-                        .map(|x| {
-                            x.as_str()
-                                .split('+')
-                                .map(|x| x.to_string())
-                                .skip(1)
-                                .collect::<Vec<String>>()
-                        })
-                        .unwrap();
-
-                    if let Some(url) = caps.name("url") {
-                        Dependency::Repository {
-                            name: caps.name("name").unwrap().as_str().to_string(),
-                            url: url.as_str().to_string(),
-                            branch: caps.name("branch").map(|x| x.as_str().to_string()),
-                            rev: caps.name("rev").map(|x| x.as_str().to_string()),
-                            features,
-                        }
-                    } else {
-                        Dependency::CrateIo {
-                            name: caps.name("name").unwrap().as_str().to_string(),
-                            version: caps.name("version").map(|x| x.as_str().to_string()),
-                            features,
-                        }
-                    }
-                }
-            } else {
-                let mut it = s.split('+').map(|x| x.to_string());
-                let name = it.next().unwrap();
-                let features = it.collect::<Vec<_>>();
-                Dependency::CrateIo {
-                    name,
-                    version: None,
-                    features,
-                }
+    if let Some(caps) = RE.captures(s) {
+        let features = caps
+            .name("features")
+            .map(|x| {
+                x.as_str()
+                    .split('+')
+                    .map(|x| x.to_string())
+                    .skip(1)
+                    .collect::<Vec<String>>()
+            })
+            .unwrap();
+        if let Some(url) = caps.name("url") {
+            Dependency::Repository {
+                name: caps.name("name").unwrap().as_str().to_string(),
+                url: url.as_str().to_string(),
+                branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                rev: caps.name("rev").map(|x| x.as_str().to_string()),
+                features,
+            }
+        } else {
+            Dependency::CrateIo {
+                name: caps.name("name").unwrap().as_str().to_string(),
+                version: caps.name("version").map(|x| x.as_str().to_string()),
+                features,
             }
         }
-        None => {
-            let mut it = s.split('+').map(|x| x.to_string());
-            let name = it.next().unwrap();
-            let features = it.collect::<Vec<_>>();
+    } else {
+        let mut it = s.split('+').map(|x| x.to_string());
+        let name = it.next().unwrap();
+        let features = it.collect::<Vec<_>>();
 
-            if name.ends_with(".git") {
-                let url = name.clone();
-                let name = std::path::Path::new(&name)
-                    .file_stem()
-                    .expect("cannot parse repo name")
-                    .to_str()
-                    .expect("cannot convert repo name")
-                    .to_string();
+        if name.ends_with(".git") {
+            let url = name.clone();
+            let name = std::path::Path::new(&name)
+                .file_stem()
+                .expect("cannot parse repo name")
+                .to_str()
+                .expect("cannot convert repo name")
+                .to_string();
 
-                Dependency::Repository {
-                    name,
-                    url,
-                    branch: None,
-                    rev: None,
-                    features: Vec::new(),
-                }
-            } else {
-                Dependency::CrateIo {
-                    name,
-                    version: None,
-                    features,
-                }
+            Dependency::Repository {
+                name,
+                url,
+                branch: None,
+                rev: None,
+                features: Vec::new(),
+            }
+        } else {
+            Dependency::CrateIo {
+                name,
+                version: None,
+                features,
             }
         }
     }
