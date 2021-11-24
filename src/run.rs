@@ -133,7 +133,7 @@ pub fn format_dependency(dependency: &Dependency) -> String {
             let mut string = format!("{} = {{ git = {:?}", name, url);
 
             if let Some(branch) = branch {
-                string.push_str(format!(" , branch = {:?}", branch).as_str())
+                string.push_str(format!(", branch = {:?}", branch).as_str())
             }
             if let Some(rev) = rev {
                 string.push_str(format!(", rev = {:?}", rev).as_str())
