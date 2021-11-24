@@ -254,82 +254,42 @@ mod parse_and_format_dependency_tests {
     }
 
     #[test]
-    fn repository_without_package_name_and_a_branch() {
+    fn repository_without_package_name_and_a_feature() {
         let dependency = Dependency::Repository {
             name: "tokio".to_string(),
-            url: "https://github.com/tokio-rs/anyhow.git".to_string(),
-            branch: Some("compat".to_string()),
-            rev: None,
-            features: Vec::new(),
-        };
-
-        assert_eq!(
-            parse_dependency("https://github.com/tokio.rs/tokio.git#branch=compat"),
-            dependency
-        );
-        assert_eq!(
-            run::format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\" }"
-        );
-    }
-
-    #[test]
-    fn repository_without_package_name_a_branch_and_a_feature() {
-        let dependency = Dependency::Repository {
-            name: "tokio".to_string(),
-            url: "https://github.com/tokio-rs/anyhow.git".to_string(),
-            branch: Some("compat".to_string()),
+            url: "https://github.com/tokio-rs/tokio.git".to_string(),
+            branch: None,
             rev: None,
             features: vec!["io_std".to_string()],
         };
 
         assert_eq!(
-            parse_dependency("https://github.com/tokio.rs/tokio.git#branch=compat+io_std"),
+            parse_dependency("https://github.com/tokio-rs/tokio.git+io_std"),
             dependency
         );
         assert_eq!(
             run::format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\"] }"
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\"] }"
         );
     }
 
     #[test]
-    fn repository_without_package_name_and_a_rev() {
+    fn repository_without_package_name_and_features() {
         let dependency = Dependency::Repository {
             name: "serde".to_string(),
             url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
             branch: None,
-            rev: Some("5b140361a".to_string()),
-            features: vec!["alloc".to_string()],
+            rev: None,
+            features: vec!["derive".to_string(), "alloc".to_string()],
         };
 
         assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a"),
-            dependency
+            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git+derive+alloc"),
+            dependency,
         );
         assert_eq!(
             run::format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\" }"
-        );
-    }
-
-    #[test]
-    fn repository_without_package_name_a_rev_and_a_feature() {
-        let dependency = Dependency::Repository {
-            name: "serde".to_string(),
-            url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
-            branch: None,
-            rev: Some("5b140361a".to_string()),
-            features: vec!["alloc".to_string()],
-        };
-
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+alloc"),
-            dependency
-        );
-        assert_eq!(
-            run::format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"alloc\"] }"
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\", \"alloc\"] }"
         );
     }
 
