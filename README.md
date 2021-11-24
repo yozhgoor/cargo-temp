@@ -68,7 +68,7 @@ If you have some problems to add a dependency over SSH, please refer to this:
     cargo-temp https://github.com/dtolnay/anyhow.git
     ```
 
-Note that you can't specify features, branch or revision without package name.
+Note that you can't specify branch or revision without package name.
 
 To choose a branch or a revision:
 
@@ -104,6 +104,11 @@ Examples:
 * A repository with branch and feature
     ```
     cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
+    ```
+
+* Without specifying package name
+    ```
+    cargo-temp https://github.com/tokio-rs/tokio.git+io_std
     ```
 
 If you want to add multiple features you can do it with `+`, like this:
