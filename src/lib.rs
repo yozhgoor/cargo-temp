@@ -76,7 +76,7 @@ impl Cli {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Dependency {
-    CrateIo {
+    CratesIo {
         name: String,
         version: Option<String>,
         features: Vec<String>,
@@ -94,59 +94,108 @@ fn parse_dependency(s: &str) -> Dependency {
     // This will change when `std::lazy` is released.
     // See https://github.com/rust-lang/rust/issues/74465.
     static RE: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"^(?P<name>[^+=]+)=(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]+)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(?P<features>(\+[^+]+)*)")
+        Regex::new(r"^((?P<name>[^+=]+)=)?(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]+)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(?P<features>(\+[^+]+)*)")
             .unwrap()
     });
 
-    if let Some(caps) = RE.captures(s) {
-        let features = caps
-            .name("features")
-            .map(|x| {
-                x.as_str()
-                    .split('+')
-                    .map(|x| x.to_string())
-                    .skip(1)
-                    .collect::<Vec<String>>()
-            })
-            .unwrap();
-        if let Some(url) = caps.name("url") {
-            Dependency::Repository {
-                name: caps.name("name").unwrap().as_str().to_string(),
-                url: url.as_str().to_string(),
-                branch: caps.name("branch").map(|x| x.as_str().to_string()),
-                rev: caps.name("rev").map(|x| x.as_str().to_string()),
-                features,
-            }
-        } else {
-            Dependency::CrateIo {
-                name: caps.name("name").unwrap().as_str().to_string(),
-                version: caps.name("version").map(|x| x.as_str().to_string()),
-                features,
+    match RE.captures(s) {
+        Some(caps) => {
+            let features = caps
+                .name("features")
+                .map(|x| {
+                    x.as_str()
+                        .split('+')
+                        .map(|x| x.to_string())
+                        .skip(1)
+                        .collect::<Vec<String>>()
+                })
+                .unwrap();
+
+            if let Some(name) = caps.name("name") {
+                if let Some(url) = caps.name("url") {
+                    Dependency::Repository {
+                        name: name.as_str().to_string(),
+                        url: url.as_str().to_string(),
+                        branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                        rev: caps.name("rev").map(|x| x.as_str().to_string()),
+                        features,
+                    }
+                } else {
+                    let mut it = name.as_str().split('#').map(|x| x);
+                    let url = it.next().unwrap();
+                    let name = std::path::Path::new(&url)
+                        .file_stem()
+                        .expect("cannot get repo name")
+                        .to_str()
+                        .expect("cannot convert repo name")
+                        .to_string();
+                    let res = match it.next() {
+                        Some("branch") => Some(true),
+                        Some("rev") => Some(false),
+                        _ => None,
+                    };
+
+                    if let Some(res) = res {
+                        if res {
+                            Dependency::Repository {
+                                name,
+                                url: url.to_string(),
+                                branch: caps.name("version").map(|x| x.as_str().to_string()),
+                                rev: None,
+                                features,
+                            }
+                        } else {
+                            Dependency::Repository {
+                                name,
+                                url: url.to_string(),
+                                branch: None,
+                                rev: caps.name("version").map(|x| x.as_str().to_string()),
+                                features,
+                            }
+                        }
+                    } else {
+                        Dependency::CratesIo {
+                            name,
+                            version: caps.name("version").map(|x| x.as_str().to_string()),
+                            features,
+                        }
+                    }
+                }
+            } else {
+                if let Some(url) = caps.name("url") {
+                    let url = url.as_str();
+                    let name = std::path::Path::new(&url)
+                        .file_stem()
+                        .expect("cannot get repo name")
+                        .to_str()
+                        .expect("cannot convert repo name");
+
+                    Dependency::Repository {
+                        name: name.to_string(),
+                        url: url.to_string(),
+                        branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                        rev: caps.name("rev").map(|x| x.as_str().to_string()),
+                        features,
+                    }
+                } else {
+                    let mut it = s.split('+').map(|x| x.to_string());
+                    let name = it.next().unwrap();
+                    let features = it.collect::<Vec<_>>();
+
+                    Dependency::CratesIo {
+                        name,
+                        version: None,
+                        features,
+                    }
+                }
             }
         }
-    } else {
-        let mut it = s.split('+').map(|x| x.to_string());
-        let name = it.next().unwrap();
-        let features = it.collect::<Vec<_>>();
+        None => {
+            let mut it = s.split('+').map(|x| x.to_string());
+            let name = it.next().unwrap();
+            let features = it.collect::<Vec<_>>();
 
-        if name.ends_with(".git") {
-            let url = name.clone();
-            let name = std::path::Path::new(&name)
-                .file_stem()
-                .expect("cannot parse repo name")
-                .to_str()
-                .expect("cannot convert repo name")
-                .to_string();
-
-            Dependency::Repository {
-                name,
-                url,
-                branch: None,
-                rev: None,
-                features,
-            }
-        } else {
-            Dependency::CrateIo {
+            Dependency::CratesIo {
                 name,
                 version: None,
                 features,
@@ -157,7 +206,7 @@ fn parse_dependency(s: &str) -> Dependency {
 
 pub fn format_dependency(dependency: &Dependency) -> String {
     match dependency {
-        Dependency::CrateIo {
+        Dependency::CratesIo {
             name: n,
             version: v,
             features: f,
@@ -209,7 +258,7 @@ mod parse_and_format_dependency_tests {
 
     #[test]
     fn dependency() {
-        let dependency = Dependency::CrateIo {
+        let dependency = Dependency::CratesIo {
             name: "anyhow".to_string(),
             version: None,
             features: Vec::new(),
@@ -229,7 +278,7 @@ mod parse_and_format_dependency_tests {
 
     #[test]
     fn dependency_with_version() {
-        let dependency = Dependency::CrateIo {
+        let dependency = Dependency::CratesIo {
             name: "anyhow".to_string(),
             version: Some("0.1".to_string()),
             features: Vec::new(),
@@ -249,7 +298,7 @@ mod parse_and_format_dependency_tests {
 
     #[test]
     fn dependency_with_feature() {
-        let dependency = Dependency::CrateIo {
+        let dependency = Dependency::CratesIo {
             name: "tokio".to_string(),
             version: None,
             features: vec!["io_std".to_string()],
@@ -269,7 +318,7 @@ mod parse_and_format_dependency_tests {
 
     #[test]
     fn dependency_with_features() {
-        let dependency = Dependency::CrateIo {
+        let dependency = Dependency::CratesIo {
             name: "tokio".to_string(),
             version: None,
             features: vec!["io_std".to_string(), "io_utils".to_string()],
@@ -289,7 +338,7 @@ mod parse_and_format_dependency_tests {
 
     #[test]
     fn dependency_with_version_and_feature() {
-        let dependency = Dependency::CrateIo {
+        let dependency = Dependency::CratesIo {
             name: "tokio".to_string(),
             version: Some("1.0".to_string()),
             features: vec!["io_std".to_string()],
@@ -309,7 +358,7 @@ mod parse_and_format_dependency_tests {
 
     #[test]
     fn dependency_with_version_and_features() {
-        let dependency = Dependency::CrateIo {
+        let dependency = Dependency::CratesIo {
             name: "tokio".to_string(),
             version: Some("1.0".to_string()),
             features: vec!["io_std".to_string(), "io_utils".to_string()],
@@ -504,14 +553,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("https://github.com/tokio-rs/tokio.git#branch=compat"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\" }",
@@ -534,14 +580,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("ssh://git@github.com/serde-rs/serde.git#branch=watt"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\" }",
@@ -564,14 +607,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("https://github.com/tokio-rs/tokio.git#branch=compat+io_std"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\"] }",
@@ -594,14 +634,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("ssh://git@github.com/serde-rs/serde.git#branch=watt+derive"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\"] }",
@@ -626,14 +663,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\", \"io_utils\"] }",
@@ -658,14 +692,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\", \"alloc\"] }",
@@ -688,14 +719,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("https://github.com/tokio-rs/tokio.git#rev=75c0777"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\" }",
@@ -718,14 +746,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\" }",
@@ -748,14 +773,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\"] }",
@@ -778,14 +800,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\"] }",
@@ -810,14 +829,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\", \"io_utils\"] }",
@@ -842,14 +858,11 @@ mod parse_and_format_dependency_tests {
             dependency,
             "cannot parse dependency"
         );
-        /*
-        not implemented
         assert_eq!(
             parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc"),
             dependency,
             "cannot parse dependency without package name"
         );
-        */
         assert_eq!(
             format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\", \"alloc\"] }",
