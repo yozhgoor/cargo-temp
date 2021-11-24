@@ -304,12 +304,12 @@ mod parse_and_format_dependency_tests {
         };
 
         assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+alloc"),
+            parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a"),
             dependency
         );
         assert_eq!(
             run::format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"alloc\"] }"
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\" }"
         );
     }
 
