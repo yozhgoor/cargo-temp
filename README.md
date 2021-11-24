@@ -257,7 +257,6 @@ Windows:
     ```toml
     [[subprocess]]
     command = "alacritty -e cargo watch -x run"
-    working_dir = "home/<user>/repos/<repo_name>"
     foreground = false
 
     [[subprocess]]
@@ -268,7 +267,6 @@ Windows:
     ```toml
     [[subprocess]]
     command = "cargo.exe watch -x run"
-    working_dir = "C:\\User\\<user>\\repos\\<repo_name>"
     foreground = false
 
     [[subprocess]]
