@@ -261,7 +261,7 @@ Windows:
 
     [[subprocess]]
     command = "firefox"
-    foreground = true
+    foreground = false
     ```
 * Windows
     ```toml
@@ -271,7 +271,7 @@ Windows:
 
     [[subprocess]]
     command = "firefox.exe"
-    foreground = true
+    foreground = false
     ```
 
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
