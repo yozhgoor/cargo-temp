@@ -155,6 +155,54 @@ fn parse_dependency(s: &str) -> Dependency {
     }
 }
 
+pub fn format_dependency(dependency: &Dependency) -> String {
+    match dependency {
+        Dependency::CrateIo {
+            name: n,
+            version: v,
+            features: f,
+        } => {
+            if let Some(version) = v {
+                if !f.is_empty() {
+                    format!(
+                        "{} = {{ version = \"{}\", features = {:?} }}",
+                        n, version, f
+                    )
+                } else {
+                    format!("{} = \"{}\"", n, version)
+                }
+            } else if !f.is_empty() {
+                format!("{} = {{ version = \"*\", features = {:?} }}", n, f)
+            } else {
+                format!("{} = \"*\"", n)
+            }
+        }
+        Dependency::Repository {
+            name,
+            url,
+            branch,
+            rev,
+            features,
+        } => {
+            let mut string = format!("{} = {{ git = {:?}", name, url);
+
+            if let Some(branch) = branch {
+                string.push_str(format!(", branch = {:?}", branch).as_str())
+            }
+            if let Some(rev) = rev {
+                string.push_str(format!(", rev = {:?}", rev).as_str())
+            }
+            if !features.is_empty() {
+                string.push_str(format!(", features = {:?}", features).as_str())
+            }
+
+            string.push_str(" }");
+
+            string
+        }
+    }
+}
+
 #[cfg(test)]
 mod parse_and_format_dependency_tests {
     use super::*;
@@ -168,7 +216,7 @@ mod parse_and_format_dependency_tests {
         };
 
         assert_eq!(parse_dependency("anyhow"), dependency);
-        assert_eq!(run::format_dependency(&dependency), "anyhow = \"*\"");
+        assert_eq!(format_dependency(&dependency), "anyhow = \"*\"");
     }
 
     #[test]
@@ -180,7 +228,7 @@ mod parse_and_format_dependency_tests {
         };
 
         assert_eq!(dependency, parse_dependency("anyhow=1.0"));
-        assert_eq!(run::format_dependency(&dependency), "anyhow = \"1.0\"");
+        assert_eq!(format_dependency(&dependency), "anyhow = \"1.0\"");
     }
 
     #[test]
@@ -193,7 +241,7 @@ mod parse_and_format_dependency_tests {
 
         assert_eq!(parse_dependency("serde+derive"), dependency);
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "serde = { version = \"*\", features = [\"derive\"] }"
         );
     }
@@ -208,7 +256,7 @@ mod parse_and_format_dependency_tests {
 
         assert_eq!(parse_dependency("serde+derive+alloc"), dependency);
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "serde = { version = \"*\", features = [\"derive\", \"alloc\"] }"
         );
     }
@@ -223,7 +271,7 @@ mod parse_and_format_dependency_tests {
 
         assert_eq!(parse_dependency("serde=1.0+derive"), dependency);
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "serde = { version = \"1.0\", features = [\"derive\"] }"
         );
     }
@@ -238,7 +286,7 @@ mod parse_and_format_dependency_tests {
 
         assert_eq!(parse_dependency("serde=1.0+derive+alloc"), dependency);
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "serde = { version = \"1.0\", features = [\"derive\", \"alloc\"] }"
         );
     }
@@ -258,7 +306,7 @@ mod parse_and_format_dependency_tests {
             dependency
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\" }",
         );
     }
@@ -278,7 +326,7 @@ mod parse_and_format_dependency_tests {
             dependency
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\"] }"
         );
     }
@@ -298,7 +346,7 @@ mod parse_and_format_dependency_tests {
             dependency,
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\", \"alloc\"] }"
         );
     }
@@ -318,7 +366,7 @@ mod parse_and_format_dependency_tests {
             dependency
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\" }"
         );
     }
@@ -338,7 +386,7 @@ mod parse_and_format_dependency_tests {
             dependency
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "serde = { git = \"https://github.com/serde-rs/serde.git\", features = [\"derive\"] }"
         );
     }
@@ -358,7 +406,7 @@ mod parse_and_format_dependency_tests {
             dependency
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "anyhow = { git = \"ssh://git@github.com/dtolnay/anyhow.git\" }"
         );
     }
@@ -378,7 +426,7 @@ mod parse_and_format_dependency_tests {
             dependency,
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"alloc\"] }"
         );
     }
@@ -398,7 +446,7 @@ mod parse_and_format_dependency_tests {
             dependency,
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\", branch = \"main\" }"
         );
     }
@@ -417,7 +465,7 @@ mod parse_and_format_dependency_tests {
             dependency
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "serde = { git = \"https://github.com/serde-rs/serde.git\", branch = \"main\", features = [\"derive\"] }"
         );
     }
@@ -437,7 +485,7 @@ mod parse_and_format_dependency_tests {
             dependency
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "anyhow = { git = \"https://github.com/dtolnay/anyhow.git\", rev = \"7e0f77a38\" }"
         );
     }
@@ -457,7 +505,7 @@ mod parse_and_format_dependency_tests {
             dependency
         );
         assert_eq!(
-            run::format_dependency(&dependency),
+            format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"alloc\"] }"
         );
     }
