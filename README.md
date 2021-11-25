@@ -52,7 +52,7 @@ Examples:
 
 * HTTP:
     ```
-    cargo-temp anyhow=https://github.com/dtolnay/anyhow.git
+    cargo-temp anyhow=https://github.com/dtolnay/anyhow
     ```
 
 * SSH
@@ -106,7 +106,7 @@ Examples:
 
 * Without specifying package name
     ```
-    cargo-temp https://github.com/tokio-rs/tokio.git+io_std
+    cargo-temp https://github.com/tokio-rs/tokio#branch=compat+io_std
     ```
 
 If you want to add multiple features you can do it with `+`, like this:
