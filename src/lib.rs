@@ -243,6 +243,46 @@ mod parse_and_format_dependency_tests {
     }
 
     #[test]
+    fn dependency_with_exact_version() {
+        let dependency = Dependency::CratesIo {
+            name: "anyhow".to_string(),
+            version: Some("=0.1".to_string()),
+            features: Vec::new(),
+        };
+
+        assert_eq!(
+            parse_dependency("anyhow==0.1").unwrap(),
+            dependency,
+            "cannot parse dependency"
+        );
+        assert_eq!(
+            format_dependency(&dependency),
+            "anyhow = \"=0.1\"",
+            "cannot format dependency"
+        );
+    }
+
+    #[test]
+    fn dependency_with_maximal_version() {
+        let dependency = Dependency::CratesIo {
+            name: "anyhow".to_string(),
+            version: Some("<1.0.2".to_string()),
+            features: Vec::new(),
+        };
+
+        assert_eq!(
+            parse_dependency("anyhow=<1.0.2").unwrap(),
+            dependency,
+            "cannot parse dependency"
+        );
+        assert_eq!(
+            format_dependency(&dependency),
+            "anyhow = \"<1.0.2\"",
+            "cannot format dependency"
+        );
+    }
+
+    #[test]
     fn dependency_with_feature() {
         let dependency = Dependency::CratesIo {
             name: "tokio".to_string(),
@@ -350,6 +390,33 @@ mod parse_and_format_dependency_tests {
     }
 
     #[test]
+    fn repository_with_http_url_and_no_extension() {
+        let dependency = Dependency::Repository {
+            name: "tokio".to_string(),
+            url: "https://github.com/tokio-rs/tokio".to_string(),
+            branch: None,
+            rev: None,
+            features: Vec::new(),
+        };
+
+        assert_eq!(
+            parse_dependency("tokio=https://github.com/tokio-rs/tokio").unwrap(),
+            dependency,
+            "cannot parse dependency"
+        );
+        assert_eq!(
+            parse_dependency("https://github.com/tokio-rs/tokio").unwrap(),
+            dependency,
+            "cannot parse dependency without package name"
+        );
+        assert_eq!(
+            format_dependency(&dependency),
+            "tokio = { git = \"https://github.com/tokio-rs/tokio\" }",
+            "cannot format dependency"
+        );
+    }
+
+    #[test]
     fn repository_with_ssh_url() {
         let dependency = Dependency::Repository {
             name: "serde".to_string(),
@@ -372,6 +439,33 @@ mod parse_and_format_dependency_tests {
         assert_eq!(
             format_dependency(&dependency),
             "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\" }",
+            "cannot format dependency"
+        );
+    }
+
+    #[test]
+    fn repository_with_ssh_url_and_no_extension() {
+        let dependency = Dependency::Repository {
+            name: "serde".to_string(),
+            url: "ssh://git@github.com/serde-rs/serde".to_string(),
+            branch: None,
+            rev: None,
+            features: Vec::new(),
+        };
+
+        assert_eq!(
+            parse_dependency("serde=ssh://git@github.com/serde-rs/serde").unwrap(),
+            dependency,
+            "cannot parse dependency"
+        );
+        assert_eq!(
+            parse_dependency("ssh://git@github.com/serde-rs/serde").unwrap(),
+            dependency,
+            "cannot parse dependency without package name"
+        );
+        assert_eq!(
+            format_dependency(&dependency),
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde\" }",
             "cannot format dependency"
         );
     }
