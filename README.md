@@ -268,7 +268,7 @@ Windows:
     ```toml
     [[subprocess]]
     command = "cargo run"
-    foreground = foreground
+    foreground = true
 
     [[subprocess]]
     command = "firefox"
