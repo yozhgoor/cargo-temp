@@ -251,9 +251,10 @@ background.
 ##### Platform specific
 
 Unix:
-* `stdout` and `stderr` settings allows enabling or disabling. With a background
-  process, the default will be false, with a foreground process, the default
-  will be true. The `stdin` setting doesn't exist since it's always disabled.
+* `stdout` and `stderr` settings allows enabling or disabling outputs. With a
+  background process, the default will be false, with a foreground process, the
+  default will be true. The `stdin` setting doesn't exist since it's always
+  disabled.
 
 Windows:
 * `inherit_handles` allows handles inheritance - If this parameter is true, each
