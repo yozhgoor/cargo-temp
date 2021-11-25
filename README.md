@@ -232,7 +232,7 @@ You can spawn subprocess along your temporary shell like this:
 
 ```toml
 [[subprocess]]
-command = "alacritty -e cargo-watch -x run"
+command = "alacritty -e cargo watch -x run"
 foreground = false
 ```
 
@@ -266,8 +266,8 @@ Windows:
 * Unix:
     ```toml
     [[subprocess]]
-    command = "alacritty -e cargo watch -x run"
-    foreground = false
+    command = "cargo run"
+    foreground = foreground
 
     [[subprocess]]
     command = "firefox"
@@ -276,7 +276,7 @@ Windows:
 * Windows
     ```toml
     [[subprocess]]
-    command = "cargo.exe watch -x run"
+    command = "cargo.exe run"
     foreground = false
 
     [[subprocess]]
