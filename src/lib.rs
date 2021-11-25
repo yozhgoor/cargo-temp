@@ -117,7 +117,7 @@ fn parse_dependency(s: &str) -> Result<Dependency> {
                     name
                 } else if let Some(url_end) = caps.name("url_end").map(|x| x.as_str()) {
                     url_end
-                        .trim_start_matches("/")
+                        .trim_start_matches('/')
                         .trim_end_matches(".git")
                         .to_string()
                 } else {
