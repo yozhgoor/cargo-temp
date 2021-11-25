@@ -121,7 +121,7 @@ fn parse_dependency(s: &str) -> Dependency {
                         features,
                     }
                 } else {
-                    let mut it = name.as_str().split('#').map(|x| x);
+                    let mut it = name.as_str().split('#');
                     let url = it.next().unwrap();
                     let name = std::path::Path::new(&url)
                         .file_stem()
@@ -161,32 +161,30 @@ fn parse_dependency(s: &str) -> Dependency {
                         }
                     }
                 }
+            } else if let Some(url) = caps.name("url") {
+                let url = url.as_str();
+                let name = std::path::Path::new(&url)
+                    .file_stem()
+                    .expect("cannot get repo name")
+                    .to_str()
+                    .expect("cannot convert repo name");
+
+                Dependency::Repository {
+                    name: name.to_string(),
+                    url: url.to_string(),
+                    branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                    rev: caps.name("rev").map(|x| x.as_str().to_string()),
+                    features,
+                }
             } else {
-                if let Some(url) = caps.name("url") {
-                    let url = url.as_str();
-                    let name = std::path::Path::new(&url)
-                        .file_stem()
-                        .expect("cannot get repo name")
-                        .to_str()
-                        .expect("cannot convert repo name");
+                let mut it = s.split('+').map(|x| x.to_string());
+                let name = it.next().unwrap();
+                let features = it.collect::<Vec<_>>();
 
-                    Dependency::Repository {
-                        name: name.to_string(),
-                        url: url.to_string(),
-                        branch: caps.name("branch").map(|x| x.as_str().to_string()),
-                        rev: caps.name("rev").map(|x| x.as_str().to_string()),
-                        features,
-                    }
-                } else {
-                    let mut it = s.split('+').map(|x| x.to_string());
-                    let name = it.next().unwrap();
-                    let features = it.collect::<Vec<_>>();
-
-                    Dependency::CratesIo {
-                        name,
-                        version: None,
-                        features,
-                    }
+                Dependency::CratesIo {
+                    name,
+                    version: None,
+                    features,
                 }
             }
         }
