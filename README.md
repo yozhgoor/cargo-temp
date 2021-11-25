@@ -68,8 +68,6 @@ If you have some problems to add a dependency over SSH, please refer to this:
     cargo-temp https://github.com/dtolnay/anyhow.git
     ```
 
-Note that you can't specify branch or revision without package name.
-
 To choose a branch or a revision:
 
 * Branch:
