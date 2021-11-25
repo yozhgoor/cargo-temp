@@ -29,7 +29,7 @@ Create a new temporary project:
 
 * When specifying a version:
     ```
-    cargo-temp anyhow=1.0`
+    cargo-temp anyhow=1.0
     ```
 
 Using the [cargo's comparison requirements][comparison]:
@@ -52,7 +52,7 @@ Examples:
 
 * HTTP:
     ```
-    cargo-temp anyhow=https://github.com/dtolnay/anyhow.git
+    cargo-temp anyhow=https://github.com/dtolnay/anyhow
     ```
 
 * SSH
@@ -106,7 +106,7 @@ Examples:
 
 * Without specifying package name
     ```
-    cargo-temp https://github.com/tokio-rs/tokio.git+io_std
+    cargo-temp https://github.com/tokio-rs/tokio#branch=compat+io_std
     ```
 
 If you want to add multiple features you can do it with `+`, like this:
@@ -278,7 +278,7 @@ Windows:
     ```toml
     [[subprocess]]
     command = "cargo.exe run"
-    foreground = false
+    foreground = true
 
     [[subprocess]]
     command = "firefox.exe"
