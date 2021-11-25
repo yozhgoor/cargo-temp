@@ -63,6 +63,11 @@ Examples:
 If you have some problems to add a dependency over SSH, please refer to this:
 [Support SSH Git URLs](ssh-issue). If it doesn't help, please fill an issue.
 
+* Without package name
+    ```
+    cargo-temp https://github.com/dtolnay/anyhow.git
+    ```
+
 To choose a branch or a revision:
 
 * Branch:
@@ -97,6 +102,11 @@ Examples:
 * A repository with branch and feature
     ```
     cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
+    ```
+
+* Without specifying package name
+    ```
+    cargo-temp https://github.com/tokio-rs/tokio.git+io_std
     ```
 
 If you want to add multiple features you can do it with `+`, like this:
@@ -222,7 +232,7 @@ You can spawn subprocess along your temporary shell like this:
 
 ```toml
 [[subprocess]]
-command = "alacritty -e cargo-watch -x run"
+command = "alacritty -e cargo watch -x run"
 foreground = false
 ```
 
@@ -241,9 +251,10 @@ background.
 ##### Platform specific
 
 Unix:
-* `stdout` and `stderr` settings allows enabling or disabling. With a background
-  process, the default will be false, with a foreground process, the default
-  will be true. The `stdin` setting doesn't exist since it's always disabled.
+* `stdout` and `stderr` settings allows enabling or disabling outputs. With a
+  background process, the default will be false, with a foreground process, the
+  default will be true. The `stdin` setting doesn't exist since it's always
+  disabled.
 
 Windows:
 * `inherit_handles` allows handles inheritance - If this parameter is true, each
@@ -256,8 +267,8 @@ Windows:
 * Unix:
     ```toml
     [[subprocess]]
-    command = "alacritty -e cargo watch -x run"
-    foreground = false
+    command = "cargo run"
+    foreground = foreground
 
     [[subprocess]]
     command = "firefox"
@@ -266,7 +277,7 @@ Windows:
 * Windows
     ```toml
     [[subprocess]]
-    command = "cargo.exe watch -x run"
+    command = "cargo.exe run"
     foreground = false
 
     [[subprocess]]
