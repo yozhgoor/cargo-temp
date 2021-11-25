@@ -129,36 +129,27 @@ fn parse_dependency(s: &str) -> Dependency {
                         .to_str()
                         .expect("cannot convert repo name")
                         .to_string();
-                    let res = match it.next() {
-                        Some("branch") => Some(true),
-                        Some("rev") => Some(false),
-                        _ => None,
-                    };
 
-                    if let Some(res) = res {
-                        if res {
-                            Dependency::Repository {
-                                name,
-                                url: url.to_string(),
-                                branch: caps.name("version").map(|x| x.as_str().to_string()),
-                                rev: None,
-                                features,
-                            }
-                        } else {
-                            Dependency::Repository {
-                                name,
-                                url: url.to_string(),
-                                branch: None,
-                                rev: caps.name("version").map(|x| x.as_str().to_string()),
-                                features,
-                            }
-                        }
-                    } else {
-                        Dependency::CratesIo {
+                    match it.next() {
+                        Some("branch") => Dependency::Repository {
+                            name,
+                            url: url.to_string(),
+                            branch: caps.name("version").map(|x| x.as_str().to_string()),
+                            rev: None,
+                            features,
+                        },
+                        Some("rev") => Dependency::Repository {
+                            name,
+                            url: url.to_string(),
+                            branch: None,
+                            rev: caps.name("version").map(|x| x.as_str().to_string()),
+                            features,
+                        },
+                        _ => Dependency::CratesIo {
                             name,
                             version: caps.name("version").map(|x| x.as_str().to_string()),
                             features,
-                        }
+                        },
                     }
                 }
             } else if let Some(url) = caps.name("url") {
