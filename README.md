@@ -29,7 +29,7 @@ Create a new temporary project:
 
 * When specifying a version:
     ```
-    cargo-temp anyhow=1.0`
+    cargo-temp anyhow=1.0
     ```
 
 Using the [cargo's comparison requirements][comparison]:
@@ -278,7 +278,7 @@ Windows:
     ```toml
     [[subprocess]]
     command = "cargo.exe run"
-    foreground = false
+    foreground = true
 
     [[subprocess]]
     command = "firefox.exe"
