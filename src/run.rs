@@ -36,10 +36,9 @@ pub fn execute(cli: &Cli, config: &Config) -> Result<()> {
         subprocesses,
     )?;
 
-    match res {
-        Ok(_exit_status) => Ok(()),
-        Err(err) => bail!("problem within the shell process: {}", err),
-    }
+    ensure!(res.is_ok(), "problem within the shell process");
+
+    Ok(())
 }
 
 pub fn generate_tmp_project(

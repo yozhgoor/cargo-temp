@@ -7,9 +7,9 @@ mod dependency;
 mod run;
 
 use crate::{
-    config::Config,
-    dependency::{parse_dependency, Dependency},
-    run::execute,
+    config::*,
+    dependency::*,
+    run::*,
 };
 
 /// This tool allow you to create a new Rust temporary project in a temporary
