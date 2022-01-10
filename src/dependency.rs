@@ -1,78 +1,6 @@
-use crate::config::Config;
 use anyhow::{bail, Result};
-use clap::Parser;
 use once_cell::sync::Lazy;
 use regex::Regex;
-
-pub mod config;
-pub mod run;
-
-/// This tool allow you to create a new Rust temporary project in a temporary
-/// directory.
-///
-/// The dependencies can be provided in arguments (e.g.`cargo-temp anyhow
-/// tokio`). When the shell is exited, the temporary directory is deleted unless
-/// you removed the file `TO_DELETE`.
-#[derive(Parser, Debug)]
-pub struct Cli {
-    /// Dependencies to add to `Cargo.toml`.
-    ///
-    /// The default version used is `*` but this can be replaced using `=`.
-    /// E.g. `cargo-temp anyhow=1.0.13`
-    #[clap(parse(try_from_str = parse_dependency))]
-    pub dependencies: Vec<Dependency>,
-
-    /// Create a library instead of a binary.
-    #[clap(long)]
-    pub lib: bool,
-
-    /// Name of the temporary crate.
-    #[clap(long = "name")]
-    pub project_name: Option<String>,
-
-    /// Create a temporary Git working tree based on the repository in the
-    /// current directory.
-    #[clap(long = "worktree")]
-    pub worktree_branch: Option<Option<String>>,
-
-    /// Create a temporary clone of a Git repository.
-    #[clap(long = "git")]
-    pub git: Option<String>,
-}
-
-impl Cli {
-    pub fn run(&self, config: &Config) -> Result<()> {
-        let tmp_dir = run::generate_tmp_project(
-            self.worktree_branch.clone(),
-            self.project_name.clone(),
-            self.lib,
-            self.git.clone(),
-            config.temporary_project_dir.clone(),
-            config.git_repo_depth.clone(),
-            config.vcs.clone(),
-        )?;
-
-        run::add_dependencies_to_project(tmp_dir.path(), &self.dependencies)?;
-
-        let delete_file = run::generate_delete_file(tmp_dir.path())?;
-
-        let subprocesses = run::start_subprocesses(config, tmp_dir.path());
-
-        let res = run::start_shell(config, tmp_dir.path());
-
-        run::clean_up(
-            delete_file,
-            tmp_dir,
-            self.worktree_branch.clone(),
-            subprocesses,
-        )?;
-
-        match res {
-            Ok(_exit_status) => Ok(()),
-            Err(err) => bail!("problem within the shell process: {}", err),
-        }
-    }
-}
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Dependency {
@@ -90,7 +18,7 @@ pub enum Dependency {
     },
 }
 
-fn parse_dependency(s: &str) -> Result<Dependency> {
+pub fn parse_dependency(s: &str) -> Result<Dependency> {
     // This will change when `std::lazy` is released.
     // See https://github.com/rust-lang/rust/issues/74465.
     static RE: Lazy<Regex> = Lazy::new(|| {
