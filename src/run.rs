@@ -173,9 +173,10 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<std::process::Exit
         }
     }
 
-    match res {
-        Ok(mut child) => child.wait().context("cannot wait shell process"),
-        Err(err) => bail!("cannot spawn shell process: {}", err),
+    if let Ok(mut child) = res {
+        child.wait().context("cannot wait shell process")
+    } else {
+        bail!("cannot spawn shell process")
     }
 }
 
