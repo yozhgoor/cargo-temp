@@ -6,11 +6,7 @@ mod config;
 mod dependency;
 mod run;
 
-use crate::{
-    config::*,
-    dependency::*,
-    run::*,
-};
+use crate::{config::*, dependency::*, run::*};
 
 /// This tool allow you to create a new Rust temporary project in a temporary
 /// directory.
