@@ -3,13 +3,13 @@ use clap::Parser;
 use std::{env, fs};
 
 mod config;
-mod run;
 mod dependency;
+mod run;
 
 use crate::{
     config::Config,
+    dependency::{parse_dependency, Dependency},
     run::execute,
-    dependency::{Dependency, parse_dependency}
 };
 
 /// This tool allow you to create a new Rust temporary project in a temporary

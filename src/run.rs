@@ -6,7 +6,7 @@ use tempfile::TempDir;
 
 use crate::{
     config::{Config, Depth},
-    dependency::{Dependency, format_dependency},
+    dependency::{format_dependency, Dependency},
     Cli,
 };
 
