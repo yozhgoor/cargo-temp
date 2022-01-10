@@ -1,10 +1,46 @@
-use crate::config::{Config, Depth};
-use crate::Dependency;
 use anyhow::{bail, ensure, Context, Result};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::{env, fs};
 use tempfile::TempDir;
+
+use crate::{
+    config::{Config, Depth},
+    dependency::{Dependency, format_dependency},
+    Cli,
+};
+
+pub fn execute(cli: &Cli, config: &Config) -> Result<()> {
+    let tmp_dir = generate_tmp_project(
+        cli.worktree_branch.clone(),
+        cli.project_name.clone(),
+        cli.lib,
+        cli.git.clone(),
+        config.temporary_project_dir.clone(),
+        config.git_repo_depth.clone(),
+        config.vcs.clone(),
+    )?;
+
+    add_dependencies_to_project(tmp_dir.path(), &cli.dependencies)?;
+
+    let delete_file = generate_delete_file(tmp_dir.path())?;
+
+    let subprocesses = start_subprocesses(config, tmp_dir.path());
+
+    let res = start_shell(config, tmp_dir.path());
+
+    clean_up(
+        delete_file,
+        tmp_dir,
+        cli.worktree_branch.clone(),
+        subprocesses,
+    )?;
+
+    match res {
+        Ok(_exit_status) => Ok(()),
+        Err(err) => bail!("problem within the shell process: {}", err),
+    }
+}
 
 pub fn generate_tmp_project(
     worktree_branch: Option<Option<String>>,
@@ -95,7 +131,7 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
         .append(true)
         .open(tmp_dir.join("Cargo.toml"))?;
     for dependency in dependencies.iter() {
-        writeln!(toml, "{}", crate::format_dependency(dependency))?;
+        writeln!(toml, "{}", format_dependency(dependency))?;
     }
 
     Ok(())
