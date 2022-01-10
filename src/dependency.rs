@@ -1,5 +1,4 @@
 use anyhow::{bail, Result};
-use clap::Parser;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
