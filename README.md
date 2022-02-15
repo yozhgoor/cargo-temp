@@ -2,12 +2,15 @@
 
 [![actions status][actions-badge]][actions-url]
 [![crate version][crates-version-badge]][crates-url]
+[![dependencies status][deps-badge]][deps-url]
 ![licenses][licenses-badge]
 
 [actions-badge]: https://github.com/yozhgoor/cargo-temp/workflows/main/badge.svg
 [actions-url]: https://github.com/yozhgoor/cargo-temp/actions
 [crates-version-badge]: https://img.shields.io/crates/v/cargo-temp
 [crates-url]: https://crates.io/crates/cargo-temp
+[deps-badge]: https://deps.rs/crate/cargo-temp/0.2.8/status.svg
+[deps-url]: https://deps.rs/crate/cargo-temp
 [licenses-badge]: https://img.shields.io/crates/l/cargo-temp
 
 A CLI tool that allows you to create a new rust project in a temporary directory
