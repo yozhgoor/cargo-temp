@@ -21,7 +21,11 @@ pub fn execute(cli: &Cli, config: &Config) -> Result<()> {
         config.vcs.clone(),
     )?;
 
-    add_dependencies_to_project(tmp_dir.path(), &cli.dependencies, cli.bench.clone())?;
+    add_dependencies_to_project(tmp_dir.path(), &cli.dependencies)?;
+
+    if let Some(maybe_bench_name) = &cli.bench {
+        generate_benchmarking(tmp_dir.path(), maybe_bench_name.clone())?;
+    }
 
     let delete_file = generate_delete_file(tmp_dir.path())?;
 
@@ -125,11 +129,7 @@ pub fn generate_tmp_project(
     Ok(tmp_dir)
 }
 
-pub fn add_dependencies_to_project(
-    tmp_dir: &Path,
-    dependencies: &[Dependency],
-    bench: Option<Option<String>>,
-) -> Result<()> {
+pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) -> Result<()> {
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(tmp_dir.join("Cargo.toml"))?;
@@ -138,13 +138,51 @@ pub fn add_dependencies_to_project(
         writeln!(toml, "{}", format_dependency(dependency))?
     }
 
-    if let Some(maybe_bench_name) = bench {
-        let bench = format_bench(maybe_bench_name.clone());
-        writeln!(toml, "{}", bench)?;
-        generate_bench_files(tmp_dir, maybe_bench_name)?;
-    }
+    Ok(())
+}
+
+fn generate_benchmarking(tmp_dir: &Path, maybe_name: Option<String>) -> Result<()> {
+    let name = if let Some(name) = maybe_name {
+        name
+    } else {
+        "benchmark".to_string()
+    };
+
+    let mut toml = fs::OpenOptions::new()
+        .append(true)
+        .open(tmp_dir.join("Cargo.toml"))?;
+
+    writeln!(toml, "{}", format_benchmarking(&name))?;
+
+    let bench_folder = tmp_dir.join("benches");
+    fs::create_dir_all(&bench_folder)?;
+    let mut bench_file = bench_folder.join(name);
+    bench_file.set_extension("rs");
+
+    fs::write(
+        bench_file,
+        "use criterion::{black_box, criterion_group, criterion_main, Criterion};\n\n\
+        fn criterion_benchmark(_c: &mut Criterion) {\n\tprintln!(\"Hello, world!\");\n}\n\n\
+        criterion_group!(\n\tbenches,\n\tcriterion_benchmark\n);\ncriterion_main!(benches);",
+    )?;
 
     Ok(())
+}
+
+fn format_benchmarking(name: &str) -> String {
+    format!(
+        "
+[dev-dependencies]
+criterion = \"*\"
+
+[profile.release]
+debug = true
+
+[[bench]]
+name = \"{}\"
+harness = false",
+        name
+    )
 }
 
 pub fn generate_delete_file(tmp_dir: &Path) -> Result<PathBuf> {
@@ -271,46 +309,4 @@ pub fn get_shell() -> String {
     {
         env::var("COMSPEC").unwrap_or_else(|_| "cmd".to_string())
     }
-}
-
-fn format_bench(maybe_name: Option<String>) -> String {
-    let name = if let Some(name) = maybe_name {
-        name
-    } else {
-        "benchmark".to_string()
-    };
-
-    format!(
-        "
-[dev-dependencies]
-criterion = \"*\"
-
-[profile.release]
-debug = true
-
-[[bench]]
-name = \"{}\"
-harness = false",
-        name
-    )
-}
-
-fn generate_bench_files(tmp_dir: &Path, maybe_name: Option<String>) -> Result<()> {
-    let bench_folder = tmp_dir.join("benches");
-    fs::create_dir_all(&bench_folder)?;
-
-    let bench_file = if let Some(name) = maybe_name {
-        bench_folder.join(format!("{}.rs", name))
-    } else {
-        bench_folder.join("benchmark.rs")
-    };
-
-    fs::write(
-        &bench_file,
-        "use criterion::{black_box, criterion_group, criterion_main, Criterion};\n\n\
-        fn criterion_benchmark(_c: &mut Criterion) {\n\tprintln!(\"Hello, world!\");\n}\n\n\
-        criterion_group!(\n\tbenches,\n\tcriterion_benchmark\n);\ncriterion_main!(benches);",
-    )?;
-
-    Ok(())
 }
