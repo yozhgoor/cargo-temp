@@ -21,7 +21,7 @@ pub fn execute(cli: &Cli, config: &Config) -> Result<()> {
         config.vcs.clone(),
     )?;
 
-    add_dependencies_to_project(tmp_dir.path(), &cli.dependencies)?;
+    add_dependencies_to_project(tmp_dir.path(), &cli.dependencies, cli.bench.clone())?;
 
     let delete_file = generate_delete_file(tmp_dir.path())?;
 
@@ -125,12 +125,23 @@ pub fn generate_tmp_project(
     Ok(tmp_dir)
 }
 
-pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) -> Result<()> {
+pub fn add_dependencies_to_project(
+    tmp_dir: &Path,
+    dependencies: &[Dependency],
+    bench: Option<Option<String>>,
+) -> Result<()> {
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(tmp_dir.join("Cargo.toml"))?;
+
     for dependency in dependencies.iter() {
-        writeln!(toml, "{}", format_dependency(dependency))?;
+        writeln!(toml, "{}", format_dependency(dependency))?
+    }
+
+    if let Some(maybe_bench_name) = bench {
+        let bench = format_bench(maybe_bench_name.clone());
+        writeln!(toml, "{}", bench)?;
+        generate_bench_files(tmp_dir, maybe_bench_name)?;
     }
 
     Ok(())
@@ -260,4 +271,46 @@ pub fn get_shell() -> String {
     {
         env::var("COMSPEC").unwrap_or_else(|_| "cmd".to_string())
     }
+}
+
+fn format_bench(maybe_name: Option<String>) -> String {
+    let name = if let Some(name) = maybe_name {
+        name
+    } else {
+        "benchmark".to_string()
+    };
+
+    format!(
+        "
+[dev-dependencies]
+criterion = \"*\"
+
+[profile.release]
+debug = true
+
+[[bench]]
+name = \"{}\"
+harness = false",
+        name
+    )
+}
+
+fn generate_bench_files(tmp_dir: &Path, maybe_name: Option<String>) -> Result<()> {
+    let bench_folder = tmp_dir.join("benches");
+    fs::create_dir_all(&bench_folder)?;
+
+    let bench_file = if let Some(name) = maybe_name {
+        bench_folder.join(format!("{}.rs", name))
+    } else {
+        bench_folder.join("benchmark.rs")
+    };
+
+    fs::write(
+        &bench_file,
+        "use criterion::{black_box, criterion_group, criterion_main, Criterion};\n\n\
+        fn criterion_benchmark(_c: &mut Criterion) {\n\tprintln!(\"Hello, world!\");\n}\n\n\
+        criterion_group!(\n\tbenches,\n\tcriterion_benchmark\n);\ncriterion_main!(benches);",
+    )?;
+
+    Ok(())
 }
