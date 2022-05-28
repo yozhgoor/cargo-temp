@@ -23,6 +23,10 @@ pub fn execute(cli: &Cli, config: &Config) -> Result<()> {
 
     add_dependencies_to_project(tmp_dir.path(), &cli.dependencies)?;
 
+    if let Some(maybe_bench_name) = &cli.bench {
+        generate_benchmarking(tmp_dir.path(), maybe_bench_name.clone())?;
+    }
+
     let delete_file = generate_delete_file(tmp_dir.path())?;
 
     let subprocesses = start_subprocesses(config, tmp_dir.path());
@@ -129,11 +133,56 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(tmp_dir.join("Cargo.toml"))?;
+
     for dependency in dependencies.iter() {
-        writeln!(toml, "{}", format_dependency(dependency))?;
+        writeln!(toml, "{}", format_dependency(dependency))?
     }
 
     Ok(())
+}
+
+fn generate_benchmarking(tmp_dir: &Path, maybe_name: Option<String>) -> Result<()> {
+    let name = if let Some(name) = maybe_name {
+        name
+    } else {
+        "benchmark".to_string()
+    };
+
+    let mut toml = fs::OpenOptions::new()
+        .append(true)
+        .open(tmp_dir.join("Cargo.toml"))?;
+
+    writeln!(toml, "{}", format_benchmarking(&name))?;
+
+    let bench_folder = tmp_dir.join("benches");
+    fs::create_dir_all(&bench_folder)?;
+    let mut bench_file = bench_folder.join(name);
+    bench_file.set_extension("rs");
+
+    fs::write(
+        bench_file,
+        "use criterion::{black_box, criterion_group, criterion_main, Criterion};\n\n\
+        fn criterion_benchmark(_c: &mut Criterion) {\n\tprintln!(\"Hello, world!\");\n}\n\n\
+        criterion_group!(\n\tbenches,\n\tcriterion_benchmark\n);\ncriterion_main!(benches);",
+    )?;
+
+    Ok(())
+}
+
+fn format_benchmarking(name: &str) -> String {
+    format!(
+        "
+[dev-dependencies]
+criterion = \"*\"
+
+[profile.release]
+debug = true
+
+[[bench]]
+name = \"{}\"
+harness = false",
+        name
+    )
 }
 
 pub fn generate_delete_file(tmp_dir: &Path) -> Result<PathBuf> {

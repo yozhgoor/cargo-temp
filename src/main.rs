@@ -37,8 +37,12 @@ pub struct Cli {
     pub worktree_branch: Option<Option<String>>,
 
     /// Create a temporary clone of a Git repository.
-    #[clap(long = "git")]
+    #[clap(long)]
     pub git: Option<String>,
+
+    /// Add benchmarking to the temporary project
+    #[clap(long)]
+    pub bench: Option<Option<String>>,
 }
 
 fn main() -> Result<()> {
