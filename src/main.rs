@@ -41,6 +41,9 @@ pub struct Cli {
     pub git: Option<String>,
 
     /// Add benchmarking to the temporary project.
+    ///
+    /// You can choose a custom benchmark file name as argument.
+    /// The default is `benchmark.rs`
     #[clap(long)]
     pub bench: Option<Option<String>>,
 
