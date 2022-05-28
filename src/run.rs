@@ -10,12 +10,9 @@ use crate::{
     Cli,
 };
 
-pub fn execute(cli: &Cli, config: &Config) -> Result<()> {
+pub fn execute(cli: Cli, config: Config) -> Result<()> {
     let tmp_dir = generate_tmp_project(
-        cli.worktree_branch.clone(),
-        cli.project_name.clone(),
-        cli.lib,
-        cli.git.clone(),
+        cli.clone(),
         config.temporary_project_dir.clone(),
         config.git_repo_depth.clone(),
         config.vcs.clone(),
@@ -29,16 +26,11 @@ pub fn execute(cli: &Cli, config: &Config) -> Result<()> {
 
     let delete_file = generate_delete_file(tmp_dir.path())?;
 
-    let subprocesses = start_subprocesses(config, tmp_dir.path());
+    let subprocesses = start_subprocesses(&config, tmp_dir.path());
 
-    let res = start_shell(config, tmp_dir.path());
+    let res = start_shell(&config, tmp_dir.path());
 
-    clean_up(
-        delete_file,
-        tmp_dir,
-        cli.worktree_branch.clone(),
-        subprocesses,
-    )?;
+    clean_up(delete_file, tmp_dir, cli.worktree_branch, subprocesses)?;
 
     ensure!(res.is_ok(), "problem within the shell process");
 
@@ -46,10 +38,7 @@ pub fn execute(cli: &Cli, config: &Config) -> Result<()> {
 }
 
 pub fn generate_tmp_project(
-    worktree_branch: Option<Option<String>>,
-    project_name: Option<String>,
-    lib: bool,
-    git: Option<String>,
+    cli: Cli,
     temporary_project_dir: PathBuf,
     git_repo_depth: Option<Depth>,
     vcs: Option<String>,
@@ -57,7 +46,7 @@ pub fn generate_tmp_project(
     let tmp_dir = {
         let mut builder = tempfile::Builder::new();
 
-        if worktree_branch.is_some() {
+        if cli.worktree_branch.is_some() {
             builder.prefix("wk-");
         } else {
             builder.prefix("tmp-");
@@ -66,7 +55,7 @@ pub fn generate_tmp_project(
         builder.tempdir_in(temporary_project_dir)?
     };
 
-    let project_name = project_name.unwrap_or_else(|| {
+    let project_name = cli.project_name.unwrap_or_else(|| {
         tmp_dir
             .path()
             .file_name()
@@ -75,7 +64,7 @@ pub fn generate_tmp_project(
             .to_lowercase()
     });
 
-    if let Some(maybe_branch) = worktree_branch.as_ref() {
+    if let Some(maybe_branch) = cli.worktree_branch.as_ref() {
         let mut command = std::process::Command::new("git");
         command.args(["worktree", "add"]);
 
@@ -88,7 +77,7 @@ pub fn generate_tmp_project(
             command.status().context("Could not start git")?.success(),
             "cannot create working tree"
         );
-    } else if let Some(url) = git {
+    } else if let Some(url) = cli.git {
         let mut command = std::process::Command::new("git");
         command.arg("clone").arg(url).arg(&tmp_dir.as_ref());
 
@@ -112,12 +101,27 @@ pub fn generate_tmp_project(
             .current_dir(&tmp_dir)
             .args(["init", "--name", project_name.as_str()]);
 
-        if lib {
+        if cli.lib {
             command.arg("--lib");
         }
 
         if let Some(arg) = vcs {
             command.args(["--vcs", arg.as_str()]);
+        }
+
+        if let Some(num) = cli.edition {
+            match num {
+                15 | 2015 => {
+                    command.args(["--edition", "2015"]);
+                }
+                18 | 2018 => {
+                    command.args(["--edition", "2018"]);
+                }
+                21 | 2021 => {
+                    command.args(["--edition", "2021"]);
+                }
+                _ => log::error!("cannot find the {} edition, using the latest", num),
+            }
         }
 
         ensure!(

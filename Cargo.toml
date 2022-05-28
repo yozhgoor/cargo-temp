@@ -15,6 +15,7 @@ include = ["src/**/*.rs", "README.md", "LICENSE.Apache-2.0", "LICENSE.MIT"]
 [dependencies]
 anyhow = "1.0"
 clap = { version = "3.0", features = ["derive"] }
+env_logger = "0.9"
 libc = "0.2"
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }

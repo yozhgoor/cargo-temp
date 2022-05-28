@@ -2,7 +2,7 @@ use anyhow::{bail, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Dependency {
     CratesIo {
         name: String,

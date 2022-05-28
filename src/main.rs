@@ -14,7 +14,7 @@ use crate::{config::*, dependency::*, run::*};
 /// The dependencies can be provided in arguments (e.g.`cargo-temp anyhow
 /// tokio`). When the shell is exited, the temporary directory is deleted unless
 /// you removed the file `TO_DELETE`.
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 pub struct Cli {
     /// Dependencies to add to `Cargo.toml`.
     ///
@@ -40,12 +40,18 @@ pub struct Cli {
     #[clap(long)]
     pub git: Option<String>,
 
-    /// Add benchmarking to the temporary project
+    /// Add benchmarking to the temporary project.
     #[clap(long)]
     pub bench: Option<Option<String>>,
+
+    /// Select the Rust's edition of the temporary project.
+    #[clap(long)]
+    pub edition: Option<u32>,
 }
 
 fn main() -> Result<()> {
+    env_logger::init();
+
     // Parse the command line input.
     let mut args = env::args().peekable();
     let command = args.next();
@@ -57,7 +63,7 @@ fn main() -> Result<()> {
     let config = Config::get_or_create()?;
     let _ = fs::create_dir(&config.temporary_project_dir);
 
-    execute(&cli, &config)?;
+    execute(cli, config)?;
 
     Ok(())
 }
