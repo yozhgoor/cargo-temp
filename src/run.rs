@@ -273,6 +273,8 @@ pub fn clean_up(
     {
         for subprocess in subprocesses.iter_mut() {
             {
+                let now = std::time::Instant::now();
+
                 unsafe {
                     libc::kill(
                         subprocess
@@ -282,10 +284,15 @@ pub fn clean_up(
                         libc::SIGTERM,
                     );
                 }
+
+                while now.elapsed().as_secs() < 2 {
+                    std::thread::sleep(std::time::Duration::from_millis(200));
+                    if let Ok(Some(_)) = subprocess.try_wait() {
+                        break;
+                    }
+                }
             }
         }
-
-        std::thread::sleep(std::time::Duration::from_secs(2));
     }
 
     for subprocess in subprocesses.iter_mut() {
