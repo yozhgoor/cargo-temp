@@ -50,6 +50,8 @@ pub struct Cli {
 }
 
 fn main() -> Result<()> {
+    env_logger::init();
+
     // Parse the command line input.
     let mut args = env::args().peekable();
     let command = args.next();
