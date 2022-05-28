@@ -40,14 +40,21 @@ pub struct Cli {
     #[clap(long)]
     pub git: Option<String>,
 
-    /// Add benchmarking to the temporary project.
+    /// Add a `benches` to the temporary project.
     ///
-    /// You can choose a custom benchmark file name as argument.
+    /// You can choose the name of the benchmark file name as argument.
     /// The default is `benchmark.rs`
     #[clap(long)]
     pub bench: Option<Option<String>>,
 
     /// Select the Rust's edition of the temporary project.
+    ///
+    /// Available options are:
+    /// * 15 | 2015 => edition 2015,
+    /// * 18 | 2018 => edition 2018,
+    /// * 21 | 2021 => edition 2021,
+    ///
+    /// If the argument doesn't match any of the options, the default is the latest edition
     #[clap(long)]
     pub edition: Option<u32>,
 }
