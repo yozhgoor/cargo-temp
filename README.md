@@ -9,7 +9,7 @@
 [actions-url]: https://github.com/yozhgoor/cargo-temp/actions
 [crates-version-badge]: https://img.shields.io/crates/v/cargo-temp
 [crates-url]: https://crates.io/crates/cargo-temp
-[deps-badge]: https://deps.rs/crate/cargo-temp/0.2.9/status.svg
+[deps-badge]: https://deps.rs/crate/cargo-temp/0.2.10/status.svg
 [deps-url]: https://deps.rs/crate/cargo-temp
 [licenses-badge]: https://img.shields.io/crates/l/cargo-temp
 
@@ -156,13 +156,15 @@ Equivalent to `git worktree prune`.
 
 ### Temporary Git Clone
 
-If you want to create a temporary project from a Git repository, you can use the `--git` option with the repository's URL:
+If you want to create a temporary project from a Git repository, you can use the `--git` option with
+the repository's URL:
 
 ```
 cargo-temp --git <url>
 ```
 
-Cargo-temp truncates the history to the last commit by default. You can change this behavior in the config file:
+Cargo-temp truncates the history to the last commit by default. You can change this behavior in the
+config file:
 
 * You can choose how many commits will stay in the history.
     ```toml
@@ -176,6 +178,74 @@ Cargo-temp truncates the history to the last commit by default. You can change t
     ```
 
 `git_repo_depth = true` is the same as the default behavior.
+
+### Benchmarking
+
+If you want to create a temporary project with benchmarking using [`criterion-rs`][criterion], you
+can use the `--bench` option with an optional name for the benchmark file:
+
+```
+cargo-temp --bench my_benchmark
+```
+
+The resulting directory layout will look like this:
+
+```
+tmp-id/
+├── benches
+│   └── my_benchmark.rs
+├── Cargo.toml
+├── src
+│   └── main.rs
+└── TO_DELETE
+```
+
+This will also adds these lines to the `Cargo.toml` of the project:
+
+```toml
+[dev-dependencies]
+criterion = "*"
+
+[profile.release]
+debug = true
+
+[[bench]]
+name = "my_benchmark"
+harness = false
+```
+
+And finally, the benchmark file contains some imports and a `Hello, world!` example:
+
+```rust
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+
+fn criterion_benchmark(_c: &mut Criterion) {
+    println!("Hello, world!");
+}
+
+criterion_group!(
+    benches,
+    criterion_benchmark
+);
+criterion_main!(benches);
+```
+
+### Edition
+
+If you want to specify a specific edition for the temporary project, you can use the `--edition`
+option:
+
+```
+cargo-temp --edition 2015
+```
+
+The available options are:
+
+* 15 or 2015
+* 18 or 2018
+* 21 or 2021
+
+If the argument doesn't match these options, the default is the latest edition.
 
 ## Settings
 
@@ -299,7 +369,8 @@ Windows:
     ```
 
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
-[xdg]: https://docs.rs/xdg/2.2.0/xdg/
-[knownfolder]: https://docs.rs/dirs-2/3.0.1/dirs_2/
+[criterion]: https://docs.rs/criterion/latest/criterion
+[xdg]: https://docs.rs/xdg/latest/xdg/
+[knownfolder]: https://docs.rs/dirs-2/latest/dirs_2/
 [ssh-issue]: https://github.com/rust-lang/cargo/issues/1851
-[CreateProcessW]: https://docs.rs/CreateProcessW/0.1.0/CreateProcessW/struct.Command.html#method.inherit_handles
+[CreateProcessW]: https://docs.rs/CreateProcessW/latest/CreateProcessW/struct.Command.html#method.inherit_handles
