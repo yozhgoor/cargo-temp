@@ -40,9 +40,13 @@ pub struct Cli {
     #[clap(long)]
     pub git: Option<String>,
 
-    /// Add benchmarking to the temporary project
+    /// Add benchmarking to the temporary project.
     #[clap(long)]
     pub bench: Option<Option<String>>,
+
+    /// Select the Rust's edition of the temporary project.
+    #[clap(long)]
+    pub edition: Option<u32>,
 }
 
 fn main() -> Result<()> {

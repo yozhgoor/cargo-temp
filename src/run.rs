@@ -16,6 +16,7 @@ pub fn execute(cli: &Cli, config: &Config) -> Result<()> {
         cli.project_name.clone(),
         cli.lib,
         cli.git.clone(),
+        cli.edition,
         config.temporary_project_dir.clone(),
         config.git_repo_depth.clone(),
         config.vcs.clone(),
@@ -50,6 +51,7 @@ pub fn generate_tmp_project(
     project_name: Option<String>,
     lib: bool,
     git: Option<String>,
+    edition: Option<u32>,
     temporary_project_dir: PathBuf,
     git_repo_depth: Option<Depth>,
     vcs: Option<String>,
@@ -118,6 +120,21 @@ pub fn generate_tmp_project(
 
         if let Some(arg) = vcs {
             command.args(["--vcs", arg.as_str()]);
+        }
+
+        if let Some(num) = edition {
+            match num {
+                15 | 2015 => {
+                    command.args(["--edition", "2015"]);
+                }
+                18 | 2018 => {
+                    command.args(["--edition", "2018"]);
+                }
+                21 | 2021 => {
+                    command.args(["--edition", "2021"]);
+                }
+                _ => log::error!("cannot find the {} edition, using the latest", num),
+            }
         }
 
         ensure!(
