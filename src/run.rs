@@ -273,8 +273,6 @@ pub fn clean_up(
     {
         for subprocess in subprocesses.iter_mut() {
             {
-                use std::convert::TryInto;
-
                 unsafe {
                     libc::kill(
                         subprocess
