@@ -93,16 +93,21 @@ pub fn generate_tmp_project(
         );
     } else {
         let mut command = std::process::Command::new("cargo");
-        command.current_dir(&tmp_dir).args(["init", "--name"]).arg(
-            cli.project_name.as_deref().unwrap_or_else(|| {
+        command.current_dir(&tmp_dir);
+
+        if let Some(project_name) = cli.project_name.as_deref() {
+            command.args(["init", "--name", project_name]);
+        } else {
+            command.args([
+                "init",
                 &tmp_dir
                     .path()
                     .file_name()
                     .unwrap()
                     .to_string_lossy()
-                    .to_lowercase()
-            }),
-        );
+                    .to_lowercase(),
+            ]);
+        }
 
         if cli.lib {
             command.arg("--lib");
