@@ -26,6 +26,12 @@ Requires Rust 1.51.
 cargo install cargo-temp
 ```
 
+If you want to use the `generate` feature, Rust 1.61 is required.
+
+```
+cargo install --all-features cargo-temp
+```
+
 ## Usage
 
 Create a new temporary project:
@@ -247,6 +253,10 @@ The available options are:
 
 If the argument doesn't match these options, the default is the latest edition.
 
+### Generate
+
+Generate a temporary project from a template using [`cargo-generate`][cargo-generate]
+
 ## Settings
 
 The config file is located at `{CONFIG_DIR}/cargo-temp/config.toml`.
@@ -370,6 +380,7 @@ Windows:
 
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [criterion]: https://docs.rs/criterion/latest/criterion
+[cargo-generate]: https://github.com/cargo-generate/cargo-generate
 [xdg]: https://docs.rs/xdg/latest/xdg/
 [knownfolder]: https://docs.rs/dirs-2/latest/dirs_2/
 [ssh-issue]: https://github.com/rust-lang/cargo/issues/1851

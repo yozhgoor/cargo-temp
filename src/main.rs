@@ -57,6 +57,17 @@ pub struct Cli {
     /// If the argument doesn't match any of the options, the default is the latest edition
     #[clap(long)]
     pub edition: Option<u32>,
+
+    #[cfg(feature = "generate")]
+    #[clap(subcommand)]
+    pub subcommand: Subcommand,
+}
+
+#[derive(Clone, Debug, Parser)]
+pub enum Subcommand {
+    /// Generate a temporary project from a template using `cargo-generate`.
+    #[cfg(feature = "generate")]
+    Generate(cargo_generate::Args),
 }
 
 fn main() -> Result<()> {
