@@ -13,24 +13,29 @@ use crate::{
 pub fn execute(cli: Cli, config: Config) -> Result<()> {
     let tmp_dir = generate_tmp_project(
         cli.clone(),
-        config.temporary_project_dir.clone(),
-        config.git_repo_depth.clone(),
-        config.vcs.clone(),
+        &config.temporary_project_dir,
+        config.git_repo_depth.as_ref(),
+        config.vcs.as_deref(),
     )?;
 
     add_dependencies_to_project(tmp_dir.path(), &cli.dependencies)?;
 
     if let Some(maybe_bench_name) = &cli.bench {
-        generate_benchmarking(tmp_dir.path(), maybe_bench_name.clone())?;
+        generate_benchmarking(tmp_dir.path(), maybe_bench_name.as_deref())?;
     }
 
     let delete_file = generate_delete_file(tmp_dir.path())?;
 
-    let subprocesses = start_subprocesses(&config, tmp_dir.path());
+    let mut subprocesses = start_subprocesses(&config, tmp_dir.path());
 
     let res = start_shell(&config, tmp_dir.path());
 
-    clean_up(delete_file, tmp_dir, cli.worktree_branch, subprocesses)?;
+    clean_up(
+        &delete_file,
+        tmp_dir,
+        cli.worktree_branch.flatten().as_deref(),
+        &mut subprocesses,
+    )?;
 
     ensure!(res.is_ok(), "problem within the shell process");
 
@@ -39,9 +44,9 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
 
 pub fn generate_tmp_project(
     cli: Cli,
-    temporary_project_dir: PathBuf,
-    git_repo_depth: Option<Depth>,
-    vcs: Option<String>,
+    temporary_project_dir: &Path,
+    git_repo_depth: Option<&Depth>,
+    vcs: Option<&str>,
 ) -> Result<TempDir> {
     let tmp_dir = {
         let mut builder = tempfile::Builder::new();
@@ -54,15 +59,6 @@ pub fn generate_tmp_project(
 
         builder.tempdir_in(temporary_project_dir)?
     };
-
-    let project_name = cli.project_name.unwrap_or_else(|| {
-        tmp_dir
-            .path()
-            .file_name()
-            .unwrap()
-            .to_string_lossy()
-            .to_lowercase()
-    });
 
     if let Some(maybe_branch) = cli.worktree_branch.as_ref() {
         let mut command = std::process::Command::new("git");
@@ -77,7 +73,7 @@ pub fn generate_tmp_project(
             command.status().context("Could not start git")?.success(),
             "cannot create working tree"
         );
-    } else if let Some(url) = cli.git {
+    } else if let Some(url) = &cli.git {
         let mut command = std::process::Command::new("git");
         command.arg("clone").arg(url).arg(&tmp_dir.as_ref());
 
@@ -97,19 +93,31 @@ pub fn generate_tmp_project(
         );
     } else {
         let mut command = std::process::Command::new("cargo");
-        command
-            .current_dir(&tmp_dir)
-            .args(["init", "--name", project_name.as_str()]);
+        command.current_dir(&tmp_dir);
+
+        if let Some(project_name) = cli.project_name.as_deref() {
+            command.args(["init", "--name", project_name]);
+        } else {
+            command.args([
+                "init",
+                &tmp_dir
+                    .path()
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_lowercase(),
+            ]);
+        }
 
         if cli.lib {
             command.arg("--lib");
         }
 
         if let Some(arg) = vcs {
-            command.args(["--vcs", arg.as_str()]);
+            command.args(["--vcs", arg]);
         }
 
-        if let Some(num) = cli.edition {
+        if let Some(num) = &cli.edition {
             match num {
                 15 | 2015 => {
                     command.args(["--edition", "2015"]);
@@ -145,18 +153,18 @@ pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) 
     Ok(())
 }
 
-fn generate_benchmarking(tmp_dir: &Path, maybe_name: Option<String>) -> Result<()> {
+fn generate_benchmarking(tmp_dir: &Path, maybe_name: Option<&str>) -> Result<()> {
     let name = if let Some(name) = maybe_name {
         name
     } else {
-        "benchmark".to_string()
+        "benchmark"
     };
 
     let mut toml = fs::OpenOptions::new()
         .append(true)
         .open(tmp_dir.join("Cargo.toml"))?;
 
-    writeln!(toml, "{}", format_benchmarking(&name))?;
+    writeln!(toml, "{}", format_benchmarking(name))?;
 
     let bench_folder = tmp_dir.join("benches");
     fs::create_dir_all(&bench_folder)?;
@@ -247,10 +255,10 @@ pub fn start_subprocesses(config: &Config, tmp_dir: &Path) -> Vec<Child> {
 }
 
 pub fn clean_up(
-    delete_file: PathBuf,
+    delete_file: &Path,
     tmp_dir: TempDir,
-    worktree_branch: Option<Option<String>>,
-    mut subprocesses: Vec<Child>,
+    worktree_branch: Option<&str>,
+    subprocesses: &mut [Child],
 ) -> Result<()> {
     if !delete_file.exists() {
         println!(
