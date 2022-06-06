@@ -60,7 +60,7 @@ pub struct Cli {
 
     #[cfg(feature = "generate")]
     #[clap(subcommand)]
-    pub subcommand: Subcommand,
+    pub subcommand: Option<Subcommand>,
 }
 
 #[derive(Clone, Debug, Parser)]
@@ -84,6 +84,16 @@ fn main() -> Result<()> {
     let config = Config::get_or_create()?;
     let _ = fs::create_dir(&config.temporary_project_dir);
 
+    #[cfg(feature = "generate")]
+    if let Some(subcommand) = cli.subcommand {
+        let Subcommand::Generate(args) = subcommand;
+
+        execute_template(args, config)?;
+    } else {
+        execute(cli, config)?;
+    }
+
+    #[cfg(not(feature = "generate"))]
     execute(cli, config)?;
 
     Ok(())
