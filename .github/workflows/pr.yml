@@ -20,7 +20,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace
+          args: --all-features
 
       - name: rustfmt
         uses: actions-rs/cargo@v1
@@ -32,7 +32,7 @@ jobs:
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: -- -D warnings
+          args: --all --all-features --tests -- -D warnings
 
   test-windows:
     runs-on: windows-latest
@@ -46,7 +46,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace
+          args: --all-features
 
   test-osx:
     runs-on: macos-latest
@@ -60,4 +60,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --workspace
+          args: --all-features
