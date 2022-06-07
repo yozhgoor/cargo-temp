@@ -10,27 +10,6 @@ use crate::{
     Cli,
 };
 
-#[cfg(feature = "generate")]
-pub fn execute_template(args: cargo_generate::Args, config: Config) -> Result<()> {
-    let tmp_dir = tempfile::Builder::new()
-        .prefix("tmp-")
-        .tempdir_in(&config.temporary_project_dir)?;
-
-    cargo_generate::generate(args, Some(tmp_dir.path()))?;
-
-    let delete_file = generate_delete_file(tmp_dir.path())?;
-
-    let mut subprocesses = start_subprocesses(&config, tmp_dir.path());
-
-    let res = start_shell(&config, tmp_dir.path());
-
-    clean_up(&delete_file, tmp_dir, None, &mut subprocesses)?;
-
-    ensure!(res.is_ok(), "problem within the shell process");
-
-    Ok(())
-}
-
 pub fn execute(cli: Cli, config: Config) -> Result<()> {
     let tmp_dir = generate_tmp_project(
         cli.clone(),

@@ -4,6 +4,7 @@ use std::{env, fs};
 
 mod config;
 mod dependency;
+mod generate;
 mod run;
 
 use crate::{config::*, dependency::*, run::*};
@@ -67,7 +68,7 @@ pub struct Cli {
 pub enum Subcommand {
     /// Generate a temporary project from a template using `cargo-generate`.
     #[cfg(feature = "generate")]
-    Generate(cargo_generate::Args),
+    Generate(generate::Args),
 }
 
 fn main() -> Result<()> {
@@ -88,7 +89,7 @@ fn main() -> Result<()> {
     if let Some(subcommand) = cli.subcommand {
         let Subcommand::Generate(args) = subcommand;
 
-        execute_template(args, config)?;
+        args.generate(config)?;
     } else {
         execute(cli, config)?;
     }
