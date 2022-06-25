@@ -256,6 +256,21 @@ If the argument doesn't match these options, the default is the latest edition.
 ### Generate
 
 Generate a temporary project from a template using [`cargo-generate`][cargo-generate]
+(current used version is v0.15)
+
+For example, to create a temporary project using
+[this template][cargo-generate-example-template]:
+
+```
+cargo temp generate --git https://github.com/ashleygwilliams/wasm-pack-template
+```
+
+Almost all the features of the [`cargo-generate`][cargo-generate] CLI are provided as it,
+expections are:
+
+* `--init` - This flag is used by cargo-temp to init the template as the temporary directory.
+* `--destination` - Since we already use `--init`, this feature cannot be used with cargo-temp.
+* `--allow-commands` - Needs further investigation to avoid conflicts with cargo-temp's subprocess.
 
 ## Settings
 
@@ -381,6 +396,7 @@ Windows:
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [criterion]: https://docs.rs/criterion/latest/criterion
 [cargo-generate]: https://github.com/cargo-generate/cargo-generate
+[cargo-generate-example-template]: https://github.com/ashleygwilliams/wasm-pack-template
 [xdg]: https://docs.rs/xdg/latest/xdg/
 [knownfolder]: https://docs.rs/dirs-2/latest/dirs_2/
 [ssh-issue]: https://github.com/rust-lang/cargo/issues/1851
