@@ -3,7 +3,7 @@
 use anyhow::{ensure, Result};
 use cargo_generate::{GenerateArgs, TemplatePath};
 use clap::Parser;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::{clean_up, generate_delete_file, start_shell, start_subprocesses, Config};
 
@@ -87,26 +87,22 @@ pub struct Args {
 
 impl Args {
     pub fn generate(self, config: Config) -> Result<()> {
-        let tmp_dir = tempfile::Builder::new()
-            .prefix("tmp-")
-            .tempdir_in(&config.temporary_project_dir)?;
+        let project_dir = self.cargo_generate(&config.temporary_project_dir)?;
 
-        self.cargo_generate()?;
+        let delete_file = generate_delete_file(&project_dir)?;
 
-        let delete_file = generate_delete_file(tmp_dir.path())?;
+        let mut subprocesses = start_subprocesses(&config, &project_dir);
 
-        let mut subprocesses = start_subprocesses(&config, tmp_dir.path());
+        let res = start_shell(&config, &project_dir);
 
-        let res = start_shell(&config, tmp_dir.path());
-
-        clean_up(&delete_file, tmp_dir, None, &mut subprocesses)?;
+        clean_up(&delete_file, &project_dir, None, &mut subprocesses)?;
 
         ensure!(res.is_ok(), "problem within the shell process");
 
         Ok(())
     }
 
-    fn cargo_generate(self) -> Result<()> {
+    fn cargo_generate(self, destination: &Path) -> Result<PathBuf> {
         cargo_generate::generate(GenerateArgs {
             template_path: self.template_path,
             list_favorites: self.list_favorites,
@@ -121,10 +117,9 @@ impl Args {
             bin: self.bin,
             ssh_identity: self.ssh_identity,
             define: self.define,
-            // Use `init` to init the template as the created temporary directory.
-            init: true,
-            // Ignore `--destination` since we create a temporary directory.
-            destination: None,
+            // Ignore the `--init` flag since we are using a temporary directory.
+            init: false,
+            destination: Some(destination.to_path_buf()),
             force_git_init: self.force_git_init,
             // todo: add `allow_commands`.
             allow_commands: false,

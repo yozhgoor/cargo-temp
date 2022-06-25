@@ -32,6 +32,12 @@ If you want to use the `generate` feature, Rust 1.61 is required.
 cargo install --all-features cargo-temp
 ```
 
+Or
+
+```
+cargo install --features generate cargo-temp
+```
+
 ## Usage
 
 Create a new temporary project:

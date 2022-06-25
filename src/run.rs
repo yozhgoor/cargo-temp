@@ -32,7 +32,7 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
 
     clean_up(
         &delete_file,
-        tmp_dir,
+        tmp_dir.path(),
         cli.worktree_branch.flatten().as_deref(),
         &mut subprocesses,
     )?;
@@ -256,20 +256,17 @@ pub fn start_subprocesses(config: &Config, tmp_dir: &Path) -> Vec<Child> {
 
 pub fn clean_up(
     delete_file: &Path,
-    tmp_dir: TempDir,
+    tmp_dir: &Path,
     worktree_branch: Option<&str>,
     subprocesses: &mut [Child],
 ) -> Result<()> {
     if !delete_file.exists() {
-        println!(
-            "Project directory preserved at: {}",
-            tmp_dir.into_path().display()
-        );
+        println!("Project directory preserved at: {}", tmp_dir.display());
     } else if worktree_branch.is_some() {
         let mut command = std::process::Command::new("git");
         command
             .args(["worktree", "remove"])
-            .arg(&tmp_dir.path())
+            .arg(tmp_dir)
             .arg("--force");
         ensure!(
             command.status().context("Could not start git")?.success(),
