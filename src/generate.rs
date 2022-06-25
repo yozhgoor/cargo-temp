@@ -1,8 +1,8 @@
 #![cfg(feature = "generate")]
 
 use anyhow::{ensure, Result};
-use clap::Parser;
 use cargo_generate::{GenerateArgs, TemplatePath};
+use clap::Parser;
 use std::path::PathBuf;
 
 use crate::{clean_up, generate_delete_file, start_shell, start_subprocesses, Config};
@@ -25,13 +25,12 @@ pub struct Args {
             "lib",
             "bin",
             "define",
-            "init",
-            "templates-values-file",
+            "template-values-file",
             "ssh-identity",
         ])
     )]
     pub list_favorites: bool,
-    
+
     /// Directory to create / project name; if the name isn't in kebab-case, it will be converted
     /// to kebab-case unless `--force` is given.
     #[clap(long, short, value_parser)]
@@ -48,7 +47,7 @@ pub struct Args {
 
     /// Pass template values through a file
     /// Values should be in the format `key=value`, one per line
-    #[clap(long)]
+    #[clap(long, value_parser)]
     pub template_values_file: Option<String>,
 
     /// If silent mode is set all variables will be
