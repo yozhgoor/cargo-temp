@@ -86,12 +86,9 @@ fn main() -> Result<()> {
     let _ = fs::create_dir(&config.temporary_project_dir);
 
     #[cfg(feature = "generate")]
-    if let Some(subcommand) = cli.subcommand {
-        let Subcommand::Generate(args) = subcommand;
-
-        args.generate(config)?;
-    } else {
-        execute(cli, config)?;
+    match cli.subcommand {
+        Some(Subcommand::Generate(args)) => args.generate(config)?,
+        None => execute(cli, config)?,
     }
 
     #[cfg(not(feature = "generate"))]

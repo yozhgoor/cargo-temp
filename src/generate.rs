@@ -3,9 +3,13 @@
 use anyhow::{ensure, Result};
 use cargo_generate::{GenerateArgs, TemplatePath};
 use clap::Parser;
-use std::path::{Path, PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Child,
+};
 
-use crate::{clean_up, generate_delete_file, start_shell, start_subprocesses, Config};
+use crate::{generate_delete_file, kill_subprocesses, start_shell, start_subprocesses, Config};
 
 #[derive(Clone, Debug, Parser)]
 pub struct Args {
@@ -95,7 +99,7 @@ impl Args {
 
         let res = start_shell(&config, &project_dir);
 
-        clean_up(&delete_file, &project_dir, None, &mut subprocesses)?;
+        clean_up(&delete_file, &project_dir, &mut subprocesses)?;
 
         ensure!(res.is_ok(), "problem within the shell process");
 
@@ -125,4 +129,16 @@ impl Args {
             allow_commands: false,
         })
     }
+}
+
+fn clean_up(delete_file: &Path, project_dir: &Path, subprocesses: &mut [Child]) -> Result<()> {
+    if !delete_file.exists() {
+        println!("Project directory preserved at: {}", project_dir.display());
+    } else {
+        fs::remove_dir_all(project_dir)?
+    }
+
+    kill_subprocesses(subprocesses);
+
+    Ok(())
 }
