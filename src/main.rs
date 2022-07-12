@@ -70,7 +70,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse_from(command.into_iter().chain(args));
 
     // Read configuration from disk or generate a default one.
-    let config = Config::get_or_create().expect("cannot get config");
+    let config = Config::get_or_create()?;
     let _ = fs::create_dir(&config.temporary_project_dir);
 
     execute(cli, config)?;
