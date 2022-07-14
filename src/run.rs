@@ -60,6 +60,15 @@ pub fn generate_tmp_project(
         builder.tempdir_in(temporary_project_dir)?
     };
 
+    let project_name = cli.project_name.unwrap_or_else(|| {
+        tmp_dir
+            .path()
+            .file_name()
+            .unwrap()
+            .to_string_lossy()
+            .to_lowercase()
+    });
+
     if let Some(maybe_branch) = cli.worktree_branch.as_ref() {
         let mut command = std::process::Command::new("git");
         command.args(["worktree", "add"]);
@@ -93,21 +102,9 @@ pub fn generate_tmp_project(
         );
     } else {
         let mut command = std::process::Command::new("cargo");
-        command.current_dir(&tmp_dir);
-
-        if let Some(project_name) = cli.project_name.as_deref() {
-            command.args(["init", "--name", project_name]);
-        } else {
-            command.args([
-                "init",
-                &tmp_dir
-                    .path()
-                    .file_name()
-                    .unwrap()
-                    .to_string_lossy()
-                    .to_lowercase(),
-            ]);
-        }
+        command
+            .current_dir(&tmp_dir)
+            .args(["init", "--name", project_name.as_str()]);
 
         if cli.lib {
             command.arg("--lib");
