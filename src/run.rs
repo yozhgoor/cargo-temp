@@ -57,6 +57,11 @@ pub fn generate_tmp_project(
             builder.prefix("tmp-");
         }
 
+        if !temporary_project_dir.exists() {
+            fs::create_dir_all(temporary_project_dir)
+                .context("cannot create temporary project's directory")?;
+        }
+
         builder.tempdir_in(temporary_project_dir)?
     };
 
