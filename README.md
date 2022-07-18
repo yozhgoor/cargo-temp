@@ -263,6 +263,9 @@ Set on the cache directory by default.
 temporary_project_dir = "/home/name/.cache/cargo-temp/"
 ```
 
+If the directory doesn't exist, it will be created with all of its parent components if
+they are missing.
+
 ### Cargo target directory
 
 Cargo's target directory override.
