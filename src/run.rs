@@ -11,11 +11,6 @@ use crate::{
 };
 
 pub fn execute(cli: Cli, config: Config) -> Result<()> {
-    if !config.temporary_project_dir.exists() {
-        fs::create_dir_all(&config.temporary_project_dir)
-            .context("cannot create temporary project's directory")?;
-    }
-
     let tmp_dir = generate_tmp_project(
         cli.clone(),
         &config.temporary_project_dir,
@@ -60,6 +55,11 @@ pub fn generate_tmp_project(
             builder.prefix("wk-");
         } else {
             builder.prefix("tmp-");
+        }
+
+        if !temporary_project_dir.exists() {
+            fs::create_dir_all(temporary_project_dir)
+                .context("cannot create temporary project's directory")?;
         }
 
         builder.tempdir_in(temporary_project_dir)?
