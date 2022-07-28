@@ -27,7 +27,6 @@ pub struct Args {
             "lib",
             "bin",
             "define",
-            "init",
             "template-values-file",
             "ssh-identity",
             "test",
