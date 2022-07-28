@@ -28,6 +28,11 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
 
     let mut subprocesses = start_subprocesses(&config, tmp_dir.path());
 
+    log::info!(
+        "Temporary project created at: {}",
+        &tmp_dir.path().display()
+    );
+
     let res = start_shell(&config, tmp_dir.path());
 
     clean_up(

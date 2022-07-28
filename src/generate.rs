@@ -5,7 +5,6 @@ use clap::Parser;
 use std::{
     fs,
     path::{Path, PathBuf},
-    process::Child,
 };
 
 use crate::{generate_delete_file, kill_subprocesses, start_shell, start_subprocesses, Config};
@@ -71,31 +70,12 @@ pub struct Args {
     /// Define a value for use during template expansion
     #[clap(long, short, number_of_values = 1, value_parser)]
     pub define: Vec<String>,
-    /// Generate the template directly at the given path.
-    #[clap(long, value_parser)]
-    pub destination: Option<PathBuf>,
     /// Will enforce a fresh git init on the generated project
     #[clap(long, action)]
     pub force_git_init: bool,
     /// Allow the template to overwrite existing files in the destination.
     #[clap(short, long, action)]
     pub overwrite: bool,
-    /*
-
-    Arguments from cargo-generate that will not be used by cargo-temp:
-
-    /// Generate the template directly into the current dir. No subfolder will be created and no vcs is initialized.
-    #[clap(long, action)]
-    pub init: bool,
-    /// Allows running system commands without being prompted.
-    /// Warning: Setting this flag will enable the template to run arbitrary system commands without user confirmation.
-    /// Use at your own risk and be sure to review the template code beforehand.
-    #[clap(short, long, action)]
-    pub allow_commands: bool,
-    /// All args after "--" on the command line.
-    #[clap(skip)]
-    pub other_args: Option<Vec<String>>,
-    */
 }
 
 impl Args {
@@ -105,6 +85,8 @@ impl Args {
         let delete_file = generate_delete_file(&project_dir)?;
 
         let mut subprocesses = start_subprocesses(&config, &project_dir);
+
+        log::info!("Temporary project created at: {}", &project_dir);
 
         let res = start_shell(&config, &project_dir);
 
@@ -130,10 +112,10 @@ impl Args {
             bin: self.bin,
             ssh_identity: self.ssh_identity,
             define: self.define,
-            destination: Some(destination.to_path_buf()),
             force_git_init: self.force_git_init,
             overwrite: self.overwrite,
-            // Not used by cargo-temp.
+            // Not available for the users.
+            destination: Some(destination.to_path_buf()),
             init: false,
             allow_commands: false,
             other_args: None,

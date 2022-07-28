@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use std::{env, fs};
+use std::{env, fs, io::Write};
 
 mod config;
 mod dependency;
@@ -72,7 +72,10 @@ pub enum Subcommand {
 }
 
 fn main() -> Result<()> {
-    env_logger::init();
+    env_logger::builder()
+        .filter(Some("cargo_temp"), log::LevelFilter::Info)
+        .format(|buf, record| writeln!(buf, "[{}] {}", record.level(), record.args()))
+        .init();
 
     // Parse the command line input.
     let mut args = env::args().peekable();
