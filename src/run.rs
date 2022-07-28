@@ -258,7 +258,7 @@ pub fn clean_up(
     subprocesses: &mut [Child],
 ) -> Result<()> {
     if !delete_file.exists() {
-        println!(
+        log::info!(
             "Project directory preserved at: {}",
             tmp_dir.into_path().display()
         );

@@ -65,7 +65,7 @@ impl Config {
             Err(_) => {
                 let config = Self::new()?;
                 fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
-                println!("Config file created at: {}", config_file_path.display());
+                log::info!("Config file created at: {}", config_file_path.display());
 
                 config
             }
