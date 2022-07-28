@@ -86,7 +86,7 @@ impl Args {
 
         let mut subprocesses = start_subprocesses(&config, &project_dir);
 
-        log::info!("Temporary project created at: {}", &project_dir);
+        log::info!("Temporary project created at: {}", &project_dir.display());
 
         let res = start_shell(&config, &project_dir);
 

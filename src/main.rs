@@ -74,7 +74,7 @@ pub enum Subcommand {
 fn main() -> Result<()> {
     env_logger::builder()
         .filter(Some("cargo_temp"), log::LevelFilter::Info)
-        .format(|buf, record| writeln!(buf, "[{}] {}", record.level(), record.args()))
+        .format(|buf, record| writeln!(buf, "[{} cargo-temp] {}", record.level(), record.args()))
         .init();
 
     // Parse the command line input.
