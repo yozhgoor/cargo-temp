@@ -141,9 +141,14 @@ impl Args {
     }
 }
 
+#[cfg(unix)]
+type Child = std::process::Child;
+#[cfg(windows)]
+type Child = create_process_w::Child;
+
 fn clean_up(delete_file: &Path, project_dir: &Path, subprocesses: &mut [Child]) -> Result<()> {
     if !delete_file.exists() {
-        println!("Project directory preserved at: {}", project_dir.display());
+        log::info!("Project directory preserved at: {}", project_dir.display());
     } else {
         fs::remove_dir_all(project_dir)?
     }

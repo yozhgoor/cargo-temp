@@ -1,3 +1,4 @@
+#[cfg(unix)]
 use crate::run;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
