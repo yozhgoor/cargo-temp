@@ -148,7 +148,5 @@ fn clean_up(delete_file: &Path, project_dir: &Path, subprocesses: &mut [Child]) 
         fs::remove_dir_all(project_dir)?
     }
 
-    kill_subprocesses(subprocesses)?;
-
-    Ok(())
+    kill_subprocesses(subprocesses)
 }
