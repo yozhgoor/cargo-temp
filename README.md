@@ -262,7 +262,7 @@ If the argument doesn't match these options, the default is the latest edition.
 ### Generate
 
 Generate a temporary project from a template using [`cargo-generate`][cargo-generate]
-(current used version is v0.15)
+(current used version is v0.16)
 
 For example, to create a temporary project using
 [this template][cargo-generate-example-template]:
