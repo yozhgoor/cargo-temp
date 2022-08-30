@@ -28,6 +28,11 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
 
     let mut subprocesses = start_subprocesses(&config, tmp_dir.path());
 
+    log::info!(
+        "Temporary project created at: {}",
+        &tmp_dir.path().display()
+    );
+
     let res = start_shell(&config, tmp_dir.path());
 
     clean_up(
@@ -263,7 +268,7 @@ pub fn clean_up(
     subprocesses: &mut [Child],
 ) -> Result<()> {
     if !delete_file.exists() {
-        println!(
+        log::info!(
             "Project directory preserved at: {}",
             tmp_dir.into_path().display()
         );
@@ -279,6 +284,12 @@ pub fn clean_up(
         );
     }
 
+    kill_subprocesses(subprocesses)?;
+
+    Ok(())
+}
+
+pub fn kill_subprocesses(subprocesses: &mut [Child]) -> Result<()> {
     #[cfg(unix)]
     {
         for subprocess in subprocesses.iter_mut() {

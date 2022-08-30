@@ -1,9 +1,10 @@
 use anyhow::Result;
 use clap::Parser;
-use std::{env, fs};
+use std::{env, fs, io::Write};
 
 mod config;
 mod dependency;
+mod generate;
 mod run;
 
 use crate::{config::*, dependency::*, run::*};
@@ -57,10 +58,24 @@ pub struct Cli {
     /// If the argument doesn't match any of the options, the default is the latest edition
     #[clap(long)]
     pub edition: Option<u32>,
+
+    #[cfg(feature = "generate")]
+    #[clap(subcommand)]
+    pub subcommand: Option<Subcommand>,
+}
+
+#[derive(Clone, Debug, Parser)]
+pub enum Subcommand {
+    /// Generate a temporary project from a template using `cargo-generate`.
+    #[cfg(feature = "generate")]
+    Generate(generate::Args),
 }
 
 fn main() -> Result<()> {
-    env_logger::init();
+    env_logger::builder()
+        .filter(Some("cargo_temp"), log::LevelFilter::Info)
+        .format(|buf, record| writeln!(buf, "[{} cargo-temp] {}", record.level(), record.args()))
+        .init();
 
     // Parse the command line input.
     let mut args = env::args().peekable();
@@ -73,6 +88,13 @@ fn main() -> Result<()> {
     let config = Config::get_or_create()?;
     let _ = fs::create_dir(&config.temporary_project_dir);
 
+    #[cfg(feature = "generate")]
+    match cli.subcommand {
+        Some(Subcommand::Generate(args)) => args.generate(config)?,
+        None => execute(cli, config)?,
+    }
+
+    #[cfg(not(feature = "generate"))]
     execute(cli, config)?;
 
     Ok(())
