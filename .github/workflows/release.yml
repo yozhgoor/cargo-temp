@@ -15,21 +15,21 @@ jobs:
       - name: Install toolchain
         uses: hecrj/setup-rust-action@v1
         with:
-          targets: x86_64-unknown-linux-musl
+          targets: x86_64-unknown-linux-gnu
 
       - name: Build release (Linux)
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --target=x86_64-unknown-linux-musl
+          args: --release --target=x86_64-unknown-linux-gnu
 
-      - run: strip target/x86_64-unknown-linux-musl/release/cargo-temp
+      - run: strip target/x86_64-unknown-linux-gnu/release/cargo-temp
 
       - uses: actions/upload-artifact@v2
         with:
           name: build-linux
           path: |
-            target/x86_64-unknown-linux-musl/release/cargo-temp
+            target/x86_64-unknown-linux-gnu/release/cargo-temp
 
   build-linux-all-features:
     runs-on: ubuntu-latest
@@ -40,21 +40,21 @@ jobs:
       - name: Install toolchain
         uses: hecrj/setup-rust-action@v1
         with:
-          targets: x86_64-unknown-linux-musl
+          targets: x86_64-unknown-linux-gnu
 
       - name: Build release (Linux)
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release --all-features --target=x86_64-unknown-linux-musl
+          args: --release --all-features --target=x86_64-unknown-linux-gnu
 
-      - run: strip target/x86_64-unknown-linux-musl/release/cargo-temp
+      - run: strip target/x86_64-unknown-linux-gnu/release/cargo-temp
 
       - uses: actions/upload-artifact@v2
         with:
           name: build-linux
           path: |
-            target/x86_64-unknown-linux-musl/release/cargo-temp-all-features
+            target/x86_64-unknown-linux-gnu/release/cargo-temp-all-features
 
   build-osx:
     runs-on: macos-latest
