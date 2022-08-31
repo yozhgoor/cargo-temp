@@ -54,7 +54,7 @@ jobs:
         with:
           name: build-linux-all-features
           path: |
-            target/x86_64-unknown-linux-gnu/release/cargo-temp-all-features
+            target/x86_64-unknown-linux-gnu/release/cargo-temp
 
   build-osx:
     runs-on: macos-latest
@@ -90,7 +90,7 @@ jobs:
         with:
           name: build-osx-all-features
           path: |
-            target/x86_64-apple-darwin/release/cargo-temp-all-features
+            target/x86_64-apple-darwin/release/cargo-temp
 
   build-windows:
     runs-on: windows-latest
@@ -126,7 +126,7 @@ jobs:
         with:
           name: build-windows-all-features
           path: |
-            target/x86_64-pc-windows-msvc/release/cargo-temp-all-features.exe
+            target/x86_64-pc-windows-msvc/release/cargo-temp.exe
 
 
   release:
@@ -154,7 +154,7 @@ jobs:
         with:
           name: build-linux-all-features
           path: build-linux-all-features
-      - run: mv build-linux/cargo-temp-all-features build-linux/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
+      - run: mv build-linux-all-features/cargo-temp build-linux/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
 
 
       - uses: actions/download-artifact@v2
@@ -167,7 +167,7 @@ jobs:
         with:
           name: build-osx-all-features
           path: build-osx-all-features
-      - run: mv build-osx/cargo-temp-all-features build-osx/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
+      - run: mv build-osx-all-features/cargo-temp build-osx/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
 
       - uses: actions/download-artifact@v2
         with:
@@ -179,7 +179,7 @@ jobs:
         with:
           name: build-windows-all-features
           path: build-windows-all-features
-      - run: mv build-windows/cargo-temp.exe build-windows/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
+      - run: mv build-windows-all-features/cargo-temp.exe build-windows/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
 
       - name: Release
         uses: softprops/action-gh-release@v1
