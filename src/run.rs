@@ -1,5 +1,5 @@
 use anyhow::{bail, ensure, Context, Result};
-use std::io::Write;
+use std::io::{stdin, Write};
 use std::path::{Path, PathBuf};
 use std::{env, fs};
 use tempfile::TempDir;
@@ -282,6 +282,30 @@ pub fn clean_up(
             command.status().context("Could not start git")?.success(),
             "cannot remove working tree"
         );
+    } else {
+        let mut res = false;
+        print!("Are you sure you want to delete this project? (Y|N)");
+
+        loop {
+            let mut input = String::new();
+
+            stdin().read_line(&mut input)?;
+
+            if input == "Yes" || input == "yes" || input == "Y" || input == "y" {
+                res = true;
+                break;
+            } else if input == "No" || input == "no" || input == "N" || input == "n" {
+                break;
+            }
+        }
+
+        if !res {
+            fs::remove_file(delete_file)?;
+            log::info!(
+                "Project directory preserved at: {}",
+                tmp_dir.into_path().display()
+            );
+        }
     }
 
     kill_subprocesses(subprocesses)?;
