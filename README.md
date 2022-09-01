@@ -343,6 +343,16 @@ The possible values are
 
 The `--vcs` value will be passed as is to cargo.
 
+### Enable a prompt that ask a confirmation before deleting the project
+
+cargo-temp will automatically delete the temporary project if the flag file `TO_DELETE` exists
+in the project when exiting the shell. If you prefer to enable a prompt that ask you if you want to
+delete the project, you can add this to your `config.toml`:
+
+```toml
+prompt = true
+```
+
 ### Subprocesses
 
 You can spawn subprocess along your temporary shell like this:
