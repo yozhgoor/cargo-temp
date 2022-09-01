@@ -40,6 +40,7 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
         tmp_dir,
         cli.worktree_branch.flatten().as_deref(),
         &mut subprocesses,
+        config.prompt,
     )?;
 
     ensure!(res.is_ok(), "problem within the shell process");
@@ -266,40 +267,59 @@ pub fn clean_up(
     tmp_dir: TempDir,
     worktree_branch: Option<&str>,
     subprocesses: &mut [Child],
+    prompt: bool,
 ) -> Result<()> {
     if !delete_file.exists() {
         log::info!(
             "Project directory preserved at: {}",
             tmp_dir.into_path().display()
         );
-    } else if worktree_branch.is_some() {
-        let mut command = std::process::Command::new("git");
-        command
-            .args(["worktree", "remove"])
-            .arg(&tmp_dir.path())
-            .arg("--force");
-        ensure!(
-            command.status().context("Could not start git")?.success(),
-            "cannot remove working tree"
-        );
     } else {
-        let mut res = false;
-        print!("Are you sure you want to delete this project? (Y|N)");
+        let delete = if prompt {
+            let delete;
+            println!("Are you sure you want to delete this project? (Y|N)");
 
-        loop {
-            let mut input = String::new();
+            loop {
+                let mut input = String::new();
 
-            stdin().read_line(&mut input)?;
-
-            if input == "Yes" || input == "yes" || input == "Y" || input == "y" {
-                res = true;
-                break;
-            } else if input == "No" || input == "no" || input == "N" || input == "n" {
-                break;
+                match stdin().read_line(&mut input) {
+                    Ok(_n) => match input.trim() {
+                        "Yes" | "yes" | "Y" | "y" => {
+                            delete = true;
+                            break;
+                        }
+                        "No" | "no" | "N" | "n" => {
+                            delete = false;
+                            break;
+                        }
+                        _ => (),
+                    },
+                    Err(err) => {
+                        log::error!("failed to read input: {}", err);
+                    }
+                }
             }
-        }
 
-        if !res {
+            delete
+        } else {
+            true
+        };
+
+        if delete {
+            if worktree_branch.is_some() {
+                let mut command = std::process::Command::new("git");
+                command
+                    .args(["worktree", "remove"])
+                    .arg(&tmp_dir.path())
+                    .arg("--force");
+                ensure!(
+                    command.status().context("Could not start git")?.success(),
+                    "cannot remove working tree"
+                );
+            }
+
+            println!("Project deleted");
+        } else {
             fs::remove_file(delete_file)?;
             log::info!(
                 "Project directory preserved at: {}",

@@ -7,16 +7,25 @@ use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cargo_target_dir: Option<String>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub prompt: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub editor: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub editor_args: Option<Vec<String>>,
     pub temporary_project_dir: PathBuf,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub git_repo_depth: Option<Depth>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub vcs: Option<String>,
-    #[serde(rename = "subprocess")]
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, rename = "subprocess", skip_serializing_if = "Vec::is_empty")]
     pub subprocesses: Vec<SubProcess>,
+}
+
+fn is_false(b: impl std::borrow::Borrow<bool>) -> bool {
+    !b.borrow()
 }
 
 impl Config {
@@ -35,6 +44,7 @@ impl Config {
 
         Ok(Self {
             cargo_target_dir: None,
+            prompt: false,
             editor: None,
             editor_args: None,
             git_repo_depth: None,
