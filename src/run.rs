@@ -277,14 +277,14 @@ pub fn clean_up(
     } else {
         let delete = if prompt {
             let delete;
-            println!("Are you sure you want to delete this project? (Y|N)");
+            println!("Are you sure you want to delete this project? (Y/n)");
 
             loop {
                 let mut input = String::new();
 
                 match stdin().read_line(&mut input) {
                     Ok(_n) => match input.trim() {
-                        "Yes" | "yes" | "Y" | "y" => {
+                        "" | "Yes" | "yes" | "Y" | "y" => {
                             delete = true;
                             break;
                         }
@@ -317,8 +317,6 @@ pub fn clean_up(
                     "cannot remove working tree"
                 );
             }
-
-            println!("Project deleted");
         } else {
             fs::remove_file(delete_file)?;
             log::info!(
