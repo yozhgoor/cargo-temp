@@ -55,19 +55,27 @@ pub fn generate_tmp_project(
 ) -> Result<TempDir> {
     let tmp_dir = {
         let mut builder = tempfile::Builder::new();
+        let mut suffix = String::new();
 
-        if cli.worktree_branch.is_some() {
-            builder.prefix("wk-");
+        let prefix = if cli.worktree_branch.is_some() {
+            "wk-"
         } else {
-            builder.prefix("tmp-");
-        }
+            "tmp-"
+        };
+
+        if let Some(name) = cli.project_name.as_deref() {
+            suffix = format!("-{}", name);
+        };
 
         if !temporary_project_dir.exists() {
             fs::create_dir_all(temporary_project_dir)
                 .context("cannot create temporary project's directory")?;
         }
 
-        builder.tempdir_in(temporary_project_dir)?
+        builder
+            .prefix(&prefix)
+            .suffix(&suffix)
+            .tempdir_in(temporary_project_dir)?
     };
 
     let project_name = cli.project_name.unwrap_or_else(|| {
