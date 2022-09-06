@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
+    pub welcome_message: bool,
     pub cargo_target_dir: Option<String>,
     pub editor: Option<String>,
     pub editor_args: Option<Vec<String>>,
@@ -34,6 +35,7 @@ impl Config {
             .join(env!("CARGO_PKG_NAME"));
 
         Ok(Self {
+            welcome_message: true,
             cargo_target_dir: None,
             editor: None,
             editor_args: None,
