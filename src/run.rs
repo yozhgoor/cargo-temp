@@ -32,8 +32,8 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
 
     if config.welcome_message {
         println!(
-            "\nTo preserve the project when exiting the shell, don't forget to\
- delete the `TO_DELETE` file.\nTo exit the project, you can type \"exit\" or use `Ctrl+D`"
+            "\nTo preserve the project when exiting the shell, don't forget to delete the \
+            `TO_DELETE` file.\nTo exit the project, you can type \"exit\" or use `Ctrl+D`"
         );
     }
 

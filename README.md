@@ -296,7 +296,6 @@ This message is enabled by default and can be disabled using the `welcome_messag
 welcome_message = false
 ```
 
-
 ### Temporary project directory
 
 The path where the temporary projects are created.
