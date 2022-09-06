@@ -259,17 +259,6 @@ The available options are:
 
 If the argument doesn't match these options, the default is the latest edition.
 
-### Project name
-
-If you want to provide a specific project name, you can use the `--name` option:
-
-```
-cargo-temp --name my-awesome-project
-```
-
-The project will be renamed to match the provided project name if you decide to preserve it when
-exiting the shell.
-
 ### Generate
 
 Generate a temporary project from a template using [`cargo-generate`][cargo-generate]
