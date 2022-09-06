@@ -278,11 +278,9 @@ pub fn clean_up(
 
             match stdin().read_line(&mut input) {
                 Ok(_n) => match input.trim() {
-                    "" | "Yes" | "yes" | "Y" | "y" => {
-                        delete = true;
-                        break;
-                    }
+                    "" | "Yes" | "yes" | "Y" | "y" => break,
                     "No" | "no" | "N" | "n" => {
+                        let _ = fs::remove_file(&delete_file);
                         delete = false;
                         break;
                     }
