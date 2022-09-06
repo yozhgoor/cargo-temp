@@ -86,7 +86,7 @@ Examples:
     ```
 
 If you have some problems to add a dependency over SSH, please refer to this:
-[Support SSH Git URLs](ssh-issue). If it doesn't help, please fill an issue.
+[Support SSH Git URLs](ssh-issue). If it doesn't help, please file an issue.
 
 * Without package name
     ```
@@ -144,7 +144,7 @@ cargo-temp serde=1.0+derive+alloc
 
 ### The TO_DELETE file
 
-If you change your mind and decide to keep the project you can just delete the
+If you change your mind and decide to keep the project, you can just delete the
 `TO_DELETE` file and the directory will not be deleted when the shell or the
 editor exits.
 
@@ -212,7 +212,7 @@ tmp-id/
 └── TO_DELETE
 ```
 
-This will also adds these lines to the `Cargo.toml` of the project:
+This will also add these lines to the `Cargo.toml` of the project:
 
 ```toml
 [dev-dependencies]
