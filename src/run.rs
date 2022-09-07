@@ -280,7 +280,6 @@ pub fn clean_up(
                 Ok(_n) => match input.trim() {
                     "" | "Yes" | "yes" | "Y" | "y" => break,
                     "No" | "no" | "N" | "n" => {
-                        let _ = fs::remove_file(&delete_file);
                         delete = false;
                         break;
                     }
@@ -306,6 +305,8 @@ pub fn clean_up(
             );
         }
     } else {
+        let _ = fs::remove_file(&delete_file);
+
         log::info!(
             "Project directory preserved at: {}",
             tmp_dir.into_path().display()
