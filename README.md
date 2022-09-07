@@ -259,6 +259,17 @@ The available options are:
 
 If the argument doesn't match these options, the default is the latest edition.
 
+### Project name
+
+If you want to provide a specific project name, you can use the `--name` option:
+
+```
+cargo-temp --name project
+```
+
+This name will be used as the suffix of the temporary project directory, like `tmp-wXyZ-project`.
+If you decide to preserve the project, the directory will be renamed to match the project's name.
+
 ### Generate
 
 Generate a temporary project from a template using [`cargo-generate`][cargo-generate]
