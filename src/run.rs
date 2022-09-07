@@ -39,6 +39,7 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
         &delete_file,
         tmp_dir,
         cli.worktree_branch.flatten().as_deref(),
+        cli.project_name.as_deref(),
         &mut subprocesses,
     )?;
 
@@ -55,19 +56,27 @@ pub fn generate_tmp_project(
 ) -> Result<TempDir> {
     let tmp_dir = {
         let mut builder = tempfile::Builder::new();
+        let mut suffix = String::new();
 
-        if cli.worktree_branch.is_some() {
-            builder.prefix("wk-");
+        let prefix = if cli.worktree_branch.is_some() {
+            "wk-"
         } else {
-            builder.prefix("tmp-");
-        }
+            "tmp-"
+        };
+
+        if let Some(name) = cli.project_name.as_deref() {
+            suffix = format!("-{}", name);
+        };
 
         if !temporary_project_dir.exists() {
             fs::create_dir_all(temporary_project_dir)
                 .context("cannot create temporary project's directory")?;
         }
 
-        builder.tempdir_in(temporary_project_dir)?
+        builder
+            .prefix(&prefix)
+            .suffix(&suffix)
+            .tempdir_in(temporary_project_dir)?
     };
 
     let project_name = cli.project_name.unwrap_or_else(|| {
@@ -265,13 +274,21 @@ pub fn clean_up(
     delete_file: &Path,
     tmp_dir: TempDir,
     worktree_branch: Option<&str>,
+    project_name: Option<&str>,
     subprocesses: &mut [Child],
 ) -> Result<()> {
     if !delete_file.exists() {
-        log::info!(
-            "Project directory preserved at: {}",
-            tmp_dir.into_path().display()
-        );
+        let mut tmp_dir = tmp_dir.into_path();
+
+        if let Some(name) = project_name {
+            let new_path = tmp_dir.with_file_name(&name);
+
+            fs::rename(&tmp_dir, &new_path)?;
+
+            tmp_dir = new_path;
+        }
+
+        log::info!("Project directory preserved at: {}", tmp_dir.display());
     } else if worktree_branch.is_some() {
         let mut command = std::process::Command::new("git");
         command
