@@ -279,9 +279,9 @@ pub fn clean_up(
     subprocesses: &mut [Child],
     prompt: bool,
 ) -> Result<()> {
-    let mut delete = delete_file.exists();
-
-    if prompt && delete {
+    let delete = if !delete_file.exists() {
+        false
+    } else if prompt {
         println!("Are you sure you want to delete this project? (Y/n)");
         loop {
             let mut input = String::new();
@@ -289,12 +289,10 @@ pub fn clean_up(
             match stdin().read_line(&mut input) {
                 Ok(_n) => match input.trim() {
                     "" | "Yes" | "yes" | "Y" | "y" => {
-                        delete = true;
-                        break;
+                        break true;
                     }
                     "No" | "no" | "N" | "n" => {
-                        delete = false;
-                        break;
+                        break false;
                     }
                     _ => println!("hmm, `{}` doesn't look like `yes` or `no`", input.trim()),
                 },
@@ -303,7 +301,9 @@ pub fn clean_up(
                 }
             }
         }
-    }
+    } else {
+        true
+    };
 
     if delete {
         if worktree_branch.is_some() {
