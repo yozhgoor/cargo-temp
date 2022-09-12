@@ -283,9 +283,10 @@ pub fn clean_up(
         false
     } else if prompt {
         println!("Are you sure you want to delete this project? (Y/n)");
-        loop {
-            let mut input = String::new();
 
+        let mut input = String::new();
+
+        loop {
             match stdin().read_line(&mut input) {
                 Ok(_n) => match input.trim() {
                     "" | "Yes" | "yes" | "Y" | "y" => {
@@ -300,6 +301,8 @@ pub fn clean_up(
                     log::error!("failed to read input: {}", err);
                 }
             }
+
+            input.clear()
         }
     } else {
         true
