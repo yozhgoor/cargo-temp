@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default = "is_true")]
     pub welcome_message: bool,
     #[serde(default)]
     pub cargo_target_dir: Option<String>,
@@ -23,6 +24,10 @@ pub struct Config {
     pub vcs: Option<String>,
     #[serde(default, rename = "subprocess", skip_serializing_if = "Vec::is_empty")]
     pub subprocesses: Vec<SubProcess>,
+}
+
+fn is_true() -> bool {
+    true
 }
 
 impl Config {
