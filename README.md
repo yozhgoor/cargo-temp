@@ -5,18 +5,10 @@
 [![dependencies status][deps-badge]][deps-url]
 ![licenses][licenses-badge]
 
-[actions-badge]: https://github.com/yozhgoor/cargo-temp/workflows/main/badge.svg
-[actions-url]: https://github.com/yozhgoor/cargo-temp/actions
-[crates-version-badge]: https://img.shields.io/crates/v/cargo-temp
-[crates-url]: https://crates.io/crates/cargo-temp
-[deps-badge]: https://deps.rs/crate/cargo-temp/0.2.10/status.svg
-[deps-url]: https://deps.rs/crate/cargo-temp
-[licenses-badge]: https://img.shields.io/crates/l/cargo-temp
-
 A CLI tool that allows you to create a new rust project in a temporary directory
 with already installed dependencies.
 
-![Cargo-temp demo](t-rec.gif)
+![Cargo-temp demo][demo]
 
 ## Install
 
@@ -253,9 +245,9 @@ cargo-temp --edition 2015
 
 The available options are:
 
-* 15 or 2015
-* 18 or 2018
-* 21 or 2021
+* `15` or `2015`
+* `18` or `2018`
+* `21` or `2021`
 
 If the argument doesn't match these options, the default is the latest edition.
 
@@ -270,7 +262,7 @@ cargo-temp --name project
 This name will be used as the suffix of the temporary project directory, like `tmp-wXyZ-project`.
 If you decide to preserve the project, the directory will be renamed to match the project's name.
 
-### Generate
+### Template
 
 Generate a temporary project from a template using [`cargo-generate`][cargo-generate]
 (current used version is v0.16)
@@ -287,7 +279,7 @@ expections are:
 
 * `--init` - This flag is used by cargo-temp to init the template as the temporary directory.
 * `--destination` - Since we already use `--init`, this feature cannot be used with cargo-temp.
-* `--allow-commands` - Needs further investigation to avoid conflicts with cargo-temp's subprocess.
+* `--allow-commands` - Needs further investigation to avoid conflicts with cargo-temp's subprocesses.
 
 ## Settings
 
@@ -354,7 +346,7 @@ The possible values are
 
 The `--vcs` value will be passed as is to cargo.
 
-### Enable a prompt that ask a confirmation before deleting the project
+### Confirmation prompt before deleting the project
 
 cargo-temp will automatically delete the temporary project if the flag file `TO_DELETE` exists
 in the project when exiting the shell. If you prefer to enable a prompt that asks you if you want
@@ -422,7 +414,42 @@ Windows:
     command = "firefox.exe"
     foreground = false
     ```
+## Configuration file example
 
+```toml
+# Print a welcome message when creating a new temporary project. Enabled by default.
+welcome-message = yes
+
+# Path where the temporary projects are created. Cache directory by default.
+temporary_project_dir = "/home/me/repos/temp"
+
+# Cargo's target directory override. Optional.
+cargo_target_dir = "/home/me/repos/target"
+
+# Open the temporary project with VS Code. Optional.
+editor = "/usr/bin/code"
+editor_args = ["--wait", "--new-window"]
+
+# Specify the VCS you want to use within the project. Default is `git`.
+vcs = "pijul"
+
+# Use a confirmation prompt before deleting a project
+prompt = "true"
+
+# Watch over changes in the project using `cargo watch`
+[[subprocess]]
+command = "cargo watch"
+foreground = true
+```
+
+[actions-badge]: https://github.com/yozhgoor/cargo-temp/workflows/main/badge.svg
+[actions-url]: https://github.com/yozhgoor/cargo-temp/actions
+[crates-version-badge]: https://img.shields.io/crates/v/cargo-temp
+[crates-url]: https://crates.io/crates/cargo-temp
+[deps-badge]: https://deps.rs/crate/cargo-temp/0.2.10/status.svg
+[deps-url]: https://deps.rs/crate/cargo-temp
+[licenses-badge]: https://img.shields.io/crates/l/cargo-temp
+[demo]: t-rec.gif
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [criterion]: https://docs.rs/criterion/latest/criterion
 [cargo-generate]: https://github.com/cargo-generate/cargo-generate
