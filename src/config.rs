@@ -7,15 +7,20 @@ use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
+    #[serde(default)]
     pub cargo_target_dir: Option<String>,
+    #[serde(default)]
+    pub prompt: bool,
+    #[serde(default)]
     pub editor: Option<String>,
+    #[serde(default)]
     pub editor_args: Option<Vec<String>>,
     pub temporary_project_dir: PathBuf,
-    pub git_repo_depth: Option<Depth>,
-    pub vcs: Option<String>,
-    #[serde(rename = "subprocess")]
     #[serde(default)]
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub git_repo_depth: Option<Depth>,
+    #[serde(default)]
+    pub vcs: Option<String>,
+    #[serde(default, rename = "subprocess", skip_serializing_if = "Vec::is_empty")]
     pub subprocesses: Vec<SubProcess>,
 }
 
@@ -35,6 +40,7 @@ impl Config {
 
         Ok(Self {
             cargo_target_dir: None,
+            prompt: false,
             editor: None,
             editor_args: None,
             git_repo_depth: None,
