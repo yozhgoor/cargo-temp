@@ -78,7 +78,7 @@ Examples:
     ```
 
 If you have some problems to add a dependency over SSH, please refer to this:
-[Support SSH Git URLs](ssh-issue). If it doesn't help, please file an issue.
+[Support SSH Git URLs][ssh-issue]. If it doesn't help, please file an issue.
 
 * Without package name
     ```
@@ -142,7 +142,7 @@ editor exits.
 
 ### Git Working Tree
 
-You can create a git worktree from the current repository using:
+You can create a [git worktree][worktree] from the current repository using:
 
 ```
 cargo-temp --worktree
@@ -262,13 +262,12 @@ cargo-temp --name project
 This name will be used as the suffix of the temporary project directory, like `tmp-wXyZ-project`.
 If you decide to preserve the project, the directory will be renamed to match the project's name.
 
-### Template
+### Generate
 
 Generate a temporary project from a template using [`cargo-generate`][cargo-generate]
 (current used version is v0.16)
 
-For example, to create a temporary project using
-[this template][cargo-generate-example-template]:
+For example, to create a temporary project using [this template][cargo-generate-example-template]:
 
 ```
 cargo temp generate --git https://github.com/ashleygwilliams/wasm-pack-template
@@ -296,7 +295,7 @@ project and how to preserve it when exiting.
 This message is enabled by default and can be disabled using the `welcome_message` setting:
 
 ```toml
-welcome_message = false
+welcome_message = false # You can also remove this line from the config file
 ```
 
 ### Temporary project directory
@@ -468,4 +467,5 @@ foreground = true
 [xdg]: https://docs.rs/xdg/latest/xdg/
 [knownfolder]: https://docs.rs/dirs-2/latest/dirs_2/
 [ssh-issue]: https://github.com/rust-lang/cargo/issues/1851
+[worktree]: https://git-scm.com/docs/git-worktree
 [CreateProcessW]: https://docs.rs/CreateProcessW/latest/CreateProcessW/struct.Command.html#method.inherit_handles
