@@ -428,7 +428,7 @@ Windows:
 
 ```toml
 # Print a welcome message when creating a new temporary project. Enabled by default.
-welcome-message = yes
+welcome-message = true
 
 # Path where the temporary projects are created. Cache directory by default.
 temporary_project_dir = "/home/me/repos/temp"
@@ -444,7 +444,7 @@ editor_args = ["--wait", "--new-window"]
 vcs = "pijul"
 
 # Use a confirmation prompt before deleting a project
-prompt = "true"
+prompt = true
 
 # Watch over changes in the project using `cargo watch`
 [[subprocess]]
