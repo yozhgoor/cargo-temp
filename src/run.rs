@@ -28,10 +28,14 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
 
     let mut subprocesses = start_subprocesses(&config, tmp_dir.path());
 
-    log::info!(
-        "Temporary project created at: {}",
-        &tmp_dir.path().display()
-    );
+    log::info!("Temporary project created at: {}", tmp_dir.path().display());
+
+    if config.welcome_message {
+        println!(
+            "\nTo preserve the project when exiting the shell, don't forget to delete the \
+            `TO_DELETE` file.\nTo exit the project, you can type \"exit\" or use `Ctrl+D`"
+        );
+    }
 
     let res = start_shell(&config, tmp_dir.path());
 

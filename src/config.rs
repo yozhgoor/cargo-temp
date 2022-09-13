@@ -8,6 +8,8 @@ use std::path::{Path, PathBuf};
 #[derive(Serialize, Deserialize)]
 pub struct Config {
     #[serde(default)]
+    pub welcome_message: bool,
+    #[serde(default)]
     pub cargo_target_dir: Option<String>,
     #[serde(default)]
     pub prompt: bool,
@@ -39,6 +41,7 @@ impl Config {
             .join(env!("CARGO_PKG_NAME"));
 
         Ok(Self {
+            welcome_message: true,
             cargo_target_dir: None,
             prompt: false,
             editor: None,
