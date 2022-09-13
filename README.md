@@ -296,6 +296,17 @@ When you run `cargo-temp` for the first time it will be created automatically.
 We use the [XDG system][xdg] for both Linux and OSX
 and the [Known Folder system][knownfolder] on Windows.
 
+### Welcome message
+
+Each time you create a temporary project, a welcome message explain how to exit the temporary
+project and how to preserve it when exiting.
+
+This message is enabled by default and can be disabled using the `welcome_message` setting:
+
+```toml
+welcome_message = false
+```
+
 ### Temporary project directory
 
 The path where the temporary projects are created.
