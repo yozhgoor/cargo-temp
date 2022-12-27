@@ -21,7 +21,7 @@ pub struct Cli {
     ///
     /// The default version used is `*` but this can be replaced using `=`.
     /// E.g. `cargo-temp anyhow=1.0.13`
-    #[clap(parse(try_from_str = parse_dependency))]
+    #[clap(value_parser = parse_dependency)]
     pub dependencies: Vec<Dependency>,
 
     /// Create a library instead of a binary.

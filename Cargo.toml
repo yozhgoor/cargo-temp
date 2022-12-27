@@ -17,8 +17,8 @@ generate = ["cargo-generate"]
 
 [dependencies]
 anyhow = "1.0"
-cargo-generate = { version = "0.16", optional = true }
-clap = { version = "3.1", features = ["derive"] }
+cargo-generate = { version = "0.17", optional = true }
+clap = { version = "4.0", features = ["derive"] }
 env_logger = "0.9"
 libc = "0.2"
 log = "0.4"
