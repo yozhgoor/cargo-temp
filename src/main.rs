@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use std::{env, fs, io::Write};
 
 mod config;
@@ -62,14 +62,14 @@ pub struct Cli {
 
     #[cfg(feature = "generate")]
     #[command(subcommand)]
-    pub subcommands: Option<SubCommands>,
+    pub subcommand: Option<Subcommand>,
 }
 
-#[derive(Clone, Debug, Subcommand)]
-pub enum SubCommands {
+#[derive(Clone, Debug, clap::Subcommand)]
+pub enum Subcommand {
     /// Generate a temporary project from a template using `cargo-generate`.
     #[cfg(feature = "generate")]
-    Generate(generate::SubArgs),
+    Generate(generate::Args),
 }
 
 fn main() -> Result<()> {
@@ -90,8 +90,8 @@ fn main() -> Result<()> {
     let _ = fs::create_dir(&config.temporary_project_dir);
 
     #[cfg(feature = "generate")]
-    match cli.subcommands {
-        Some(SubCommands::Generate(args)) => args.generate(config)?,
+    match cli.subcommand {
+        Some(Subcommand::Generate(args)) => args.generate(config)?,
         None => execute(cli, config)?,
     }
 

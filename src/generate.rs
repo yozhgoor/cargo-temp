@@ -1,7 +1,6 @@
 #![cfg(feature = "generate")]
 
 use anyhow::{ensure, Result};
-use clap::Args;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -9,8 +8,8 @@ use std::{
 
 use crate::{generate_delete_file, kill_subprocesses, start_shell, start_subprocesses, Config};
 
-#[derive(Clone, Debug, Args)]
-pub struct SubArgs {
+#[derive(Clone, Debug, clap::Args)]
+pub struct Args {
     #[command(flatten)]
     pub template_path: cargo_generate::TemplatePath,
     /// List defined favorite templates from the config
@@ -78,7 +77,7 @@ pub struct SubArgs {
     pub overwrite: bool,
 }
 
-impl SubArgs {
+impl Args {
     pub fn generate(self, config: Config) -> Result<()> {
         let project_dir = self.cargo_generate(&config.temporary_project_dir)?;
 
