@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use std::{env, fs, io::Write};
 
 mod config;
@@ -16,36 +16,37 @@ use crate::{config::*, dependency::*, run::*};
 /// tokio`). When the shell is exited, the temporary directory is deleted unless
 /// you removed the file `TO_DELETE`.
 #[derive(Parser, Debug, Clone)]
+#[command(author, version, about, long_about)]
 pub struct Cli {
     /// Dependencies to add to `Cargo.toml`.
     ///
     /// The default version used is `*` but this can be replaced using `=`.
     /// E.g. `cargo-temp anyhow=1.0.13`
-    #[clap(value_parser = parse_dependency)]
+    #[arg(value_parser = parse_dependency)]
     pub dependencies: Vec<Dependency>,
 
     /// Create a library instead of a binary.
-    #[clap(long)]
+    #[arg(long, short = 'l')]
     pub lib: bool,
 
     /// Name of the temporary crate.
-    #[clap(long = "name")]
+    #[arg(long = "name", short = 'n')]
     pub project_name: Option<String>,
 
     /// Create a temporary Git working tree based on the repository in the
     /// current directory.
-    #[clap(long = "worktree")]
+    #[arg(long = "worktree", short = 'w')]
     pub worktree_branch: Option<Option<String>>,
 
     /// Create a temporary clone of a Git repository.
-    #[clap(long)]
+    #[arg(long, short = 'g')]
     pub git: Option<String>,
 
     /// Add a `benches` to the temporary project.
     ///
     /// You can choose the name of the benchmark file name as argument.
     /// The default is `benchmark.rs`
-    #[clap(long)]
+    #[arg(long, short = 'b')]
     pub bench: Option<Option<String>>,
 
     /// Select the Rust's edition of the temporary project.
@@ -56,16 +57,16 @@ pub struct Cli {
     /// * 21 | 2021 => edition 2021,
     ///
     /// If the argument doesn't match any of the options, the default is the latest edition
-    #[clap(long)]
+    #[arg(long, short = 'e')]
     pub edition: Option<u32>,
 
     #[cfg(feature = "generate")]
-    #[clap(subcommand)]
-    pub subcommand: Option<Subcommand>,
+    #[command(subcommand)]
+    pub subcommands: Option<SubCommands>,
 }
 
-#[derive(Clone, Debug, Parser)]
-pub enum Subcommand {
+#[derive(Clone, Debug, Subcommand)]
+pub enum SubCommands {
     /// Generate a temporary project from a template using `cargo-generate`.
     #[cfg(feature = "generate")]
     Generate(generate::Args),
@@ -90,7 +91,7 @@ fn main() -> Result<()> {
 
     #[cfg(feature = "generate")]
     match cli.subcommand {
-        Some(Subcommand::Generate(args)) => args.generate(config)?,
+        Some(Subcommands::Generate(args)) => args.generate(config)?,
         None => execute(cli, config)?,
     }
 
