@@ -69,7 +69,7 @@ pub struct Cli {
 pub enum SubCommands {
     /// Generate a temporary project from a template using `cargo-generate`.
     #[cfg(feature = "generate")]
-    Generate(generate::GenerateArgs),
+    Generate(generate::SubArgs),
 }
 
 fn main() -> Result<()> {

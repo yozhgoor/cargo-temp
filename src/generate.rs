@@ -10,8 +10,8 @@ use std::{
 use crate::{generate_delete_file, kill_subprocesses, start_shell, start_subprocesses, Config};
 
 #[derive(Clone, Debug, Args)]
-pub struct GenerateArgs {
-    #[clap(flatten)]
+pub struct SubArgs {
+    #[command(flatten)]
     pub template_path: cargo_generate::TemplatePath,
     /// List defined favorite templates from the config
     #[arg(
@@ -78,7 +78,7 @@ pub struct GenerateArgs {
     pub overwrite: bool,
 }
 
-impl GenerateArgs {
+impl SubArgs {
     pub fn generate(self, config: Config) -> Result<()> {
         let project_dir = self.cargo_generate(&config.temporary_project_dir)?;
 
