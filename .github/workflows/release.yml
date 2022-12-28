@@ -128,10 +128,10 @@ jobs:
     needs: [
       build-linux,
       build-linux-all-features,
-      build-osx,
-      build-osx-all-features,
       build-windows,
-      build-windows-all-features
+      build-windows-all-features,
+      build-osx,
+      build-osx-all-features
     ]
     runs-on: ubuntu-latest
     steps:
@@ -151,6 +151,17 @@ jobs:
           path: build-linux-all-features
       - run: mv build-linux-all-features/cargo-temp build-linux/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
 
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-windows
+          path: build-windows
+      - run: mv build-windows/cargo-temp.exe build-windows/cargo-temp-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: build-windows-all-features
+          path: build-windows-all-features
+      - run: mv build-windows-all-features/cargo-temp.exe build-windows/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
 
       - uses: actions/download-artifact@v3
         with:
@@ -163,18 +174,6 @@ jobs:
           name: build-osx-all-features
           path: build-osx-all-features
       - run: mv build-osx-all-features/cargo-temp build-osx/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: build-windows
-          path: build-windows
-      - run: mv build-windows/cargo-temp.exe build-windows/cargo-temp-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: build-windows-all-features
-          path: build-windows-all-features
-      - run: mv build-windows-all-features/cargo-temp.exe build-windows/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
 
       - name: Release
         uses: softprops/action-gh-release@v1
