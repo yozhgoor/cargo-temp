@@ -108,7 +108,7 @@ pub fn generate_tmp_project(
         );
     } else if let Some(url) = &cli.git {
         let mut command = std::process::Command::new("git");
-        command.arg("clone").arg(url).arg(&tmp_dir.as_ref());
+        command.arg("clone").arg(url).arg(tmp_dir.as_ref());
 
         match git_repo_depth {
             Some(Depth::Active(false)) => {}
@@ -246,7 +246,7 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<std::process::Exit
         }
     }
 
-    let res = shell_process.current_dir(&tmp_dir).spawn();
+    let res = shell_process.current_dir(tmp_dir).spawn();
 
     #[cfg(windows)]
     if config.editor.is_some() {
@@ -317,7 +317,7 @@ pub fn clean_up(
             let mut command = std::process::Command::new("git");
             command
                 .args(["worktree", "remove"])
-                .arg(&tmp_dir.path())
+                .arg(tmp_dir.path())
                 .arg("--force");
             ensure!(
                 command.status().context("Could not start git")?.success(),
@@ -325,12 +325,12 @@ pub fn clean_up(
             );
         }
     } else {
-        let _ = fs::remove_file(&delete_file);
+        let _ = fs::remove_file(delete_file);
 
         let mut tmp_dir = tmp_dir.into_path();
 
         if let Some(name) = project_name {
-            let new_path = tmp_dir.with_file_name(&name);
+            let new_path = tmp_dir.with_file_name(name);
 
             fs::rename(&tmp_dir, &new_path)?;
 
