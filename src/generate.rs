@@ -1,7 +1,6 @@
 #![cfg(feature = "generate")]
 
 use anyhow::{ensure, Result};
-use clap::Parser;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -9,12 +8,12 @@ use std::{
 
 use crate::{generate_delete_file, kill_subprocesses, start_shell, start_subprocesses, Config};
 
-#[derive(Clone, Debug, Parser)]
+#[derive(Clone, Debug, clap::Args)]
 pub struct Args {
-    #[clap(flatten)]
+    #[command(flatten)]
     pub template_path: cargo_generate::TemplatePath,
     /// List defined favorite templates from the config
-    #[clap(
+    #[arg(
         long,
         action,
         conflicts_with_all(&[
@@ -26,55 +25,55 @@ pub struct Args {
             "lib",
             "bin",
             "define",
-            "template-values-file",
-            "ssh-identity",
+            "template_values_file",
+            "ssh_identity",
             "test",
         ])
     )]
     pub list_favorites: bool,
     /// Directory to create / project name; if the name isn't in kebab-case, it will be converted
     /// to kebab-case unless `--force` is given.
-    #[clap(long, short, value_parser)]
+    #[arg(long, short, value_parser)]
     pub name: Option<String>,
     /// Don't convert the project name to kebab-case before creating the directory.
     /// Note that cargo generate won't overwrite an existing directory, even if `--force` is given.
-    #[clap(long, short, action)]
+    #[arg(long, short, action)]
     pub force: bool,
     /// Enables more verbose output.
-    #[clap(long, short, action)]
+    #[arg(long, short, action)]
     pub verbose: bool,
     /// Pass template values through a file
     /// Values should be in the format `key=value`, one per line
-    #[clap(long, value_parser)]
+    #[arg(long, value_parser)]
     pub template_values_file: Option<String>,
     /// If silent mode is set all variables will be
     /// extracted from the template_values_file.
     /// If a value is missing the project generation will fail
-    #[clap(long, short, requires("name"), action)]
+    #[arg(long, short, requires("name"), action)]
     pub silent: bool,
     /// Use specific configuration file. Defaults to $CARGO_HOME/cargo-generate or $HOME/.cargo/cargo-generate
-    #[clap(short, long, value_parser)]
+    #[arg(short, long, value_parser)]
     pub config: Option<PathBuf>,
     /// Specify the VCS used to initialize the generated template.
-    #[clap(long, value_parser)]
+    #[arg(long, value_parser)]
     pub vcs: Option<cargo_generate::Vcs>,
     /// Populates template variable `crate_type` with value `"lib"`
-    #[clap(long, conflicts_with = "bin", action)]
+    #[arg(long, conflicts_with = "bin", action)]
     pub lib: bool,
     /// Populates a template variable `crate_type` with value `"bin"`
-    #[clap(long, conflicts_with = "lib", action)]
+    #[arg(long, conflicts_with = "lib", action)]
     pub bin: bool,
     /// Use a different ssh identity
-    #[clap(short = 'i', long = "identity", value_parser)]
+    #[arg(short = 'i', long = "identity", value_parser)]
     pub ssh_identity: Option<PathBuf>,
     /// Define a value for use during template expansion
-    #[clap(long, short, number_of_values = 1, value_parser)]
+    #[arg(long, short, number_of_values = 1, value_parser)]
     pub define: Vec<String>,
     /// Will enforce a fresh git init on the generated project
-    #[clap(long, action)]
+    #[arg(long, action)]
     pub force_git_init: bool,
     /// Allow the template to overwrite existing files in the destination.
-    #[clap(short, long, action)]
+    #[arg(short, long, action)]
     pub overwrite: bool,
 }
 
