@@ -456,7 +456,7 @@ foreground = true
 [actions-url]: https://github.com/yozhgoor/cargo-temp/actions
 [crates-version-badge]: https://img.shields.io/crates/v/cargo-temp
 [crates-url]: https://crates.io/crates/cargo-temp
-[deps-badge]: https://deps.rs/crate/cargo-temp/0.2.10/status.svg
+[deps-badge]: https://deps.rs/repo/github/yozhgoor/cargo-temp/status.svg
 [deps-url]: https://deps.rs/crate/cargo-temp
 [licenses-badge]: https://img.shields.io/crates/l/cargo-temp
 [demo]: t-rec.gif
