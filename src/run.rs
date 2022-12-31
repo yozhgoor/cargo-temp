@@ -355,7 +355,7 @@ pub fn preserve_dir(
     if let Some(preserve_dir) = preserve_dir {
         let folder_to_move = final_tmp_dir
             .file_name()
-            .context("cannot find the projects directory name")?;
+            .context("cannot find the project's directory name")?;
         let mut preserve_dir = PathBuf::from(preserve_dir);
 
         if !preserve_dir.exists() {
