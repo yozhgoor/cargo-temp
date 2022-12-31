@@ -12,6 +12,8 @@ pub struct Config {
     #[serde(default)]
     pub cargo_target_dir: Option<String>,
     #[serde(default)]
+    pub preserve_dir: Option<String>,
+    #[serde(default)]
     pub prompt: bool,
     #[serde(default)]
     pub editor: Option<String>,
@@ -43,6 +45,7 @@ impl Config {
         Ok(Self {
             welcome_message: true,
             cargo_target_dir: None,
+            preserve_dir: None,
             prompt: false,
             editor: None,
             editor_args: None,

@@ -443,6 +443,10 @@ editor_args = ["--wait", "--new-window"]
 # Specify the VCS you want to use within the project. Default is `git`.
 vcs = "pijul"
 
+# Specify the dir to move the project if you want to preserve it
+# in another path. Optional.
+preserve_dir = "/home/me/projects/"
+
 # Use a confirmation prompt before deleting a project
 prompt = true
 
