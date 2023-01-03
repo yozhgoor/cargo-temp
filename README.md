@@ -444,7 +444,7 @@ editor_args = ["--wait", "--new-window"]
 vcs = "pijul"
 
 # Specify the path to the directory where you want to preserve a saved project. Optional (default is `temporary_project_dir`).
-preserve_dir = "/home/me/projects/"
+preserved_project_dir = "/home/me/projects/"
 
 # Use a confirmation prompt before deleting a project
 prompt = true

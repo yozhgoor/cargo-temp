@@ -44,7 +44,7 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
         tmp_dir,
         cli.worktree_branch.flatten().as_deref(),
         cli.project_name.as_deref(),
-        config.preserve_dir.as_deref(),
+        config.preserved_project_dir.as_deref(),
         &mut subprocesses,
         config.prompt,
     )?;
@@ -281,7 +281,7 @@ pub fn clean_up(
     tmp_dir: TempDir,
     worktree_branch: Option<&str>,
     project_name: Option<&str>,
-    preserve_dir_name: Option<&str>,
+    preserved_project_dir: Option<&str>,
     subprocesses: &mut [Child],
     prompt: bool,
 ) -> Result<()> {
@@ -328,7 +328,7 @@ pub fn clean_up(
         }
     } else {
         let _ = fs::remove_file(delete_file);
-        let tmp_dir = preserve_dir(tmp_dir, project_name, preserve_dir_name)?;
+        let tmp_dir = preserve_dir(tmp_dir, project_name, preserved_project_dir)?;
 
         log::info!("Project directory preserved at: {}", tmp_dir.display());
     }
@@ -337,13 +337,14 @@ pub fn clean_up(
 
     Ok(())
 }
-/// preserve dir by renaming to appropriate name if project_name is set
-/// and moves the project dir to preserve_dir as defined by the user
-/// it returns the dir where the project is preserved
+
+// preserve dir by renaming to appropriate name if project_name is set
+// and moves the project dir to preserve_dir as defined by the user
+// it returns the dir where the project is preserved
 pub fn preserve_dir(
     tmp_dir: TempDir,
     project_name: Option<&str>,
-    preserve_dir: Option<&str>,
+    preserved_project_dir: Option<&str>,
 ) -> Result<PathBuf> {
     let curr_tmp_dir = tmp_dir.into_path();
     let mut final_tmp_dir = curr_tmp_dir.clone();
@@ -352,20 +353,20 @@ pub fn preserve_dir(
         final_tmp_dir = final_tmp_dir.with_file_name(name);
     }
 
-    if let Some(preserve_dir) = preserve_dir {
+    if let Some(preserved_project_dir) = preserved_project_dir {
         let folder_to_move = final_tmp_dir
             .file_name()
             .context("cannot find the project's directory name")?;
-        let mut preserve_dir = PathBuf::from(preserve_dir);
+        let mut preserved_project_dir = PathBuf::from(preserved_project_dir);
 
-        if !preserve_dir.exists() {
-            fs::create_dir_all(&preserve_dir)
+        if !preserved_project_dir.exists() {
+            fs::create_dir_all(&preserved_project_dir)
                 .context("cannot create preserve project's directory")?;
         }
 
-        preserve_dir.push(folder_to_move);
+        preserved_project_dir.push(folder_to_move);
 
-        final_tmp_dir = preserve_dir;
+        final_tmp_dir = preserved_project_dir;
     }
 
     if final_tmp_dir != curr_tmp_dir {
