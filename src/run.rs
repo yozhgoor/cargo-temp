@@ -281,7 +281,7 @@ pub fn clean_up(
     tmp_dir: TempDir,
     worktree_branch: Option<&str>,
     project_name: Option<&str>,
-    preserved_project_dir: Option<&str>,
+    preserved_project_dir: Option<&Path>,
     subprocesses: &mut [Child],
     prompt: bool,
 ) -> Result<()> {
@@ -344,36 +344,33 @@ pub fn clean_up(
 pub fn preserve_dir(
     tmp_dir: TempDir,
     project_name: Option<&str>,
-    preserved_project_dir: Option<&str>,
+    preserved_project_dir: Option<&Path>,
 ) -> Result<PathBuf> {
-    let curr_tmp_dir = tmp_dir.into_path();
-    let mut final_tmp_dir = curr_tmp_dir.clone();
+    let tmp_dir = tmp_dir.into_path();
+    let mut final_dir = tmp_dir.clone();
 
     if let Some(name) = project_name {
-        final_tmp_dir = final_tmp_dir.with_file_name(name);
+        final_dir = tmp_dir.with_file_name(name);
     }
 
     if let Some(preserved_project_dir) = preserved_project_dir {
-        let folder_to_move = final_tmp_dir
-            .file_name()
-            .context("cannot find the project's directory name")?;
-        let mut preserved_project_dir = PathBuf::from(preserved_project_dir);
-
         if !preserved_project_dir.exists() {
-            fs::create_dir_all(&preserved_project_dir)
+            fs::create_dir_all(preserved_project_dir)
                 .context("cannot create preserve project's directory")?;
         }
 
-        preserved_project_dir.push(folder_to_move);
-
-        final_tmp_dir = preserved_project_dir;
+        final_dir = preserved_project_dir.join(
+            final_dir
+                .file_name()
+                .context("cannot create preserve project's directory")?,
+        );
     }
 
-    if final_tmp_dir != curr_tmp_dir {
-        fs::rename(&curr_tmp_dir, &final_tmp_dir)?;
+    if final_dir != tmp_dir {
+        fs::rename(&tmp_dir, &final_dir)?;
     };
 
-    Ok(final_tmp_dir)
+    Ok(final_dir)
 }
 
 pub fn kill_subprocesses(subprocesses: &mut [Child]) -> Result<()> {

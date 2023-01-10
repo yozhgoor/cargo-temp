@@ -10,9 +10,9 @@ pub struct Config {
     #[serde(default)]
     pub welcome_message: bool,
     #[serde(default)]
-    pub cargo_target_dir: Option<String>,
+    pub cargo_target_dir: Option<PathBuf>,
     #[serde(default)]
-    pub preserved_project_dir: Option<String>,
+    pub preserved_project_dir: Option<PathBuf>,
     #[serde(default)]
     pub prompt: bool,
     #[serde(default)]
