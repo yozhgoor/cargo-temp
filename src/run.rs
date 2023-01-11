@@ -347,23 +347,24 @@ pub fn preserve_dir(
     preserved_project_dir: Option<&Path>,
 ) -> Result<PathBuf> {
     let tmp_dir = tmp_dir.into_path();
-    let mut final_dir = tmp_dir.clone();
 
-    if let Some(name) = project_name {
-        final_dir = tmp_dir.with_file_name(name);
-    }
-
-    if let Some(preserved_project_dir) = preserved_project_dir {
+    let mut final_dir = if let Some(preserved_project_dir) = preserved_project_dir {
         if !preserved_project_dir.exists() {
             fs::create_dir_all(preserved_project_dir)
                 .context("cannot create preserve project's directory")?;
         }
 
-        final_dir = preserved_project_dir.join(
-            final_dir
+        preserved_project_dir.join(
+            tmp_dir
                 .file_name()
                 .context("cannot create preserve project's directory")?,
-        );
+        )
+    } else {
+        tmp_dir.clone()
+    };
+
+    if let Some(name) = project_name {
+        final_dir = final_dir.with_file_name(name);
     }
 
     if final_dir != tmp_dir {
