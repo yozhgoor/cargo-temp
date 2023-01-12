@@ -338,9 +338,6 @@ pub fn clean_up(
     Ok(())
 }
 
-// preserve dir by renaming to appropriate name if project_name is set
-// and moves the project dir to preserved_project_dir as defined by the user
-// it returns the dir where the project is preserved
 pub fn preserve_dir(
     tmp_dir: TempDir,
     project_name: Option<&str>,
