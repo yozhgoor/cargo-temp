@@ -10,7 +10,9 @@ pub struct Config {
     #[serde(default)]
     pub welcome_message: bool,
     #[serde(default)]
-    pub cargo_target_dir: Option<String>,
+    pub cargo_target_dir: Option<PathBuf>,
+    #[serde(default)]
+    pub preserved_project_dir: Option<PathBuf>,
     #[serde(default)]
     pub prompt: bool,
     #[serde(default)]
@@ -43,6 +45,7 @@ impl Config {
         Ok(Self {
             welcome_message: true,
             cargo_target_dir: None,
+            preserved_project_dir: None,
             prompt: false,
             editor: None,
             editor_args: None,

@@ -44,6 +44,7 @@ pub fn execute(cli: Cli, config: Config) -> Result<()> {
         tmp_dir,
         cli.worktree_branch.flatten().as_deref(),
         cli.project_name.as_deref(),
+        config.preserved_project_dir.as_deref(),
         &mut subprocesses,
         config.prompt,
     )?;
@@ -280,6 +281,7 @@ pub fn clean_up(
     tmp_dir: TempDir,
     worktree_branch: Option<&str>,
     project_name: Option<&str>,
+    preserved_project_dir: Option<&Path>,
     subprocesses: &mut [Child],
     prompt: bool,
 ) -> Result<()> {
@@ -326,16 +328,7 @@ pub fn clean_up(
         }
     } else {
         let _ = fs::remove_file(delete_file);
-
-        let mut tmp_dir = tmp_dir.into_path();
-
-        if let Some(name) = project_name {
-            let new_path = tmp_dir.with_file_name(name);
-
-            fs::rename(&tmp_dir, &new_path)?;
-
-            tmp_dir = new_path;
-        }
+        let tmp_dir = preserve_dir(tmp_dir, project_name, preserved_project_dir)?;
 
         log::info!("Project directory preserved at: {}", tmp_dir.display());
     }
@@ -343,6 +336,39 @@ pub fn clean_up(
     kill_subprocesses(subprocesses)?;
 
     Ok(())
+}
+
+pub fn preserve_dir(
+    tmp_dir: TempDir,
+    project_name: Option<&str>,
+    preserved_project_dir: Option<&Path>,
+) -> Result<PathBuf> {
+    let tmp_dir = tmp_dir.into_path();
+
+    let mut final_dir = if let Some(preserved_project_dir) = preserved_project_dir {
+        if !preserved_project_dir.exists() {
+            fs::create_dir_all(preserved_project_dir)
+                .context("cannot create preserve project's directory")?;
+        }
+
+        preserved_project_dir.join(
+            tmp_dir
+                .file_name()
+                .context("cannot create preserve project's directory")?,
+        )
+    } else {
+        tmp_dir.clone()
+    };
+
+    if let Some(name) = project_name {
+        final_dir = final_dir.with_file_name(name);
+    }
+
+    if final_dir != tmp_dir {
+        fs::rename(&tmp_dir, &final_dir)?;
+    };
+
+    Ok(final_dir)
 }
 
 pub fn kill_subprocesses(subprocesses: &mut [Child]) -> Result<()> {
