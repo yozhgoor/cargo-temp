@@ -81,23 +81,20 @@ pub fn parse_dependency(s: &str) -> Result<Dependency> {
 pub fn format_dependency(dependency: &Dependency) -> String {
     match dependency {
         Dependency::CratesIo {
-            name: n,
-            version: v,
-            features: f,
+            name,
+            version,
+            features,
         } => {
-            if let Some(version) = v {
-                if !f.is_empty() {
-                    format!(
-                        "{} = {{ version = \"{}\", features = {:?} }}",
-                        n, version, f
-                    )
+            if let Some(version) = version {
+                if !features.is_empty() {
+                    format!("{name} = {{ version = \"{version}\", features = {features:?} }}",)
                 } else {
-                    format!("{} = \"{}\"", n, version)
+                    format!("{name} = \"{version}\"")
                 }
-            } else if !f.is_empty() {
-                format!("{} = {{ version = \"*\", features = {:?} }}", n, f)
+            } else if !features.is_empty() {
+                format!("{name} = {{ version = \"*\", features = {features:?} }}")
             } else {
-                format!("{} = \"*\"", n)
+                format!("{name} = \"*\"")
             }
         }
         Dependency::Repository {
@@ -107,16 +104,16 @@ pub fn format_dependency(dependency: &Dependency) -> String {
             rev,
             features,
         } => {
-            let mut string = format!("{} = {{ git = {:?}", name, url);
+            let mut string = format!("{name} = {{ git = {url:?}");
 
             if let Some(branch) = branch {
-                string.push_str(format!(", branch = {:?}", branch).as_str())
+                string.push_str(format!(", branch = {branch:?}").as_str())
             }
             if let Some(rev) = rev {
-                string.push_str(format!(", rev = {:?}", rev).as_str())
+                string.push_str(format!(", rev = {rev:?}").as_str())
             }
             if !features.is_empty() {
-                string.push_str(format!(", features = {:?}", features).as_str())
+                string.push_str(format!(", features = {features:?}").as_str())
             }
 
             string.push_str(" }");
