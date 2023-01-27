@@ -130,6 +130,30 @@ pub fn format_dependency(dependency: &Dependency) -> String {
 mod parse_and_format_dependency_tests {
     use super::*;
 
+    macro_rules! check_dependency {
+        ($dep:expr, $in:expr, $out:expr) => {
+            assert_eq!(
+                parse_dependency($in).unwrap(),
+                $dep,
+                "cannot parse dependency"
+            );
+            assert_eq!(format_dependency(&$dep), $out, "cannot format dependency");
+        };
+        ($dep:expr, $in:expr, $in_without_name:expr, $out:expr) => {
+            assert_eq!(
+                parse_dependency($in).unwrap(),
+                $dep,
+                "cannot parse dependency"
+            );
+            assert_eq!(
+                parse_dependency($in_without_name).unwrap(),
+                $dep,
+                "cannot parse dependency without package name"
+            );
+            assert_eq!(format_dependency(&$dep), $out, "cannot format dependency");
+        };
+    }
+
     #[test]
     fn dependency() {
         let dependency = Dependency::CratesIo {
@@ -138,16 +162,7 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("anyhow").unwrap(),
-            dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "anyhow = \"*\"",
-            "cannot format dependency"
-        );
+        check_dependency!(dependency, "anyhow", "anyhow = \"*\"");
     }
 
     #[test]
@@ -158,16 +173,7 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("anyhow=0.1").unwrap(),
-            dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "anyhow = \"0.1\"",
-            "cannot format dependency"
-        );
+        check_dependency!(dependency, "anyhow=0.1", "anyhow = \"0.1\"");
     }
 
     #[test]
@@ -178,16 +184,7 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("anyhow==0.1").unwrap(),
-            dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "anyhow = \"=0.1\"",
-            "cannot format dependency"
-        );
+        check_dependency!(dependency, "anyhow==0.1", "anyhow = \"=0.1\"");
     }
 
     #[test]
@@ -198,16 +195,7 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("anyhow=<1.0.2").unwrap(),
-            dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "anyhow = \"<1.0.2\"",
-            "cannot format dependency"
-        );
+        check_dependency!(dependency, "anyhow=<1.0.2", "anyhow = \"<1.0.2\"");
     }
 
     #[test]
@@ -218,15 +206,10 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("tokio+io_std").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { version = \"*\", features = [\"io_std\"] }",
-            "cannot format dependency"
+            "tokio+io_std",
+            "tokio = { version = \"*\", features = [\"io_std\"] }"
         );
     }
 
@@ -238,15 +221,10 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string(), "io_utils".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("tokio+io_std+io_utils").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { version = \"*\", features = [\"io_std\", \"io_utils\"] }",
-            "cannot format dependency"
+            "tokio+io_std+io_utils",
+            "tokio = { version = \"*\", features = [\"io_std\", \"io_utils\"] }"
         );
     }
 
@@ -258,15 +236,10 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("tokio=1.0+io_std").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { version = \"1.0\", features = [\"io_std\"] }",
-            "cannot format dependency"
+            "tokio=1.0+io_std",
+            "tokio = { version = \"1.0\", features = [\"io_std\"] }"
         );
     }
 
@@ -278,15 +251,10 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string(), "io_utils".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("tokio=1.0+io_std+io_utils").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { version = \"1.0\", features = [\"io_std\", \"io_utils\"] }",
-            "cannot format dependency"
+            "tokio=1.0+io_std+io_utils",
+            "tokio = { version = \"1.0\", features = [\"io_std\", \"io_utils\"] }"
         );
     }
 
@@ -300,20 +268,11 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("tokio=https://github.com/tokio-rs/tokio.git").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio.git").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\" }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio.git",
+            "https://github.com/tokio-rs/tokio.git",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\" }"
         );
     }
 
@@ -327,20 +286,11 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("tokio=https://github.com/tokio-rs/tokio").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio\" }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio",
+            "https://github.com/tokio-rs/tokio",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio\" }"
         );
     }
 
@@ -354,20 +304,11 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\" }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde.git",
+            "ssh://git@github.com/serde-rs/serde.git",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\" }"
         );
     }
 
@@ -381,20 +322,11 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde\" }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde",
+            "ssh://git@github.com/serde-rs/serde",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde\" }"
         );
     }
 
@@ -408,20 +340,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("tokio=https://github.com/tokio-rs/tokio.git+io_std").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio.git+io_std").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\"] }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio.git+io_std",
+            "https://github.com/tokio-rs/tokio.git+io_std",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\"] }"
         );
     }
 
@@ -435,20 +358,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["derive".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git+derive").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git+derive").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\"] }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde.git+derive",
+            "ssh://git@github.com/serde-rs/serde.git+derive",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\"] }"
         );
     }
 
@@ -462,21 +376,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string(), "io_utils".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("tokio=https://github.com/tokio-rs/tokio.git+io_std+io_utils")
-                .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio.git+io_std+io_utils").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\", \"io_utils\"] }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio.git+io_std+io_utils",
+            "https://github.com/tokio-rs/tokio.git+io_std+io_utils",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\", \"io_utils\"] }"
         );
     }
 
@@ -490,20 +394,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["derive".to_string(), "alloc".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git+derive+alloc").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git+derive+alloc").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\", \"alloc\"] }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde.git+derive+alloc",
+            "ssh://git@github.com/serde-rs/serde.git+derive+alloc",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\", \"alloc\"] }"
         );
     }
 
@@ -517,20 +412,11 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("tokio=https://github.com/tokio-rs/tokio.git#branch=compat").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio.git#branch=compat").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\" }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio.git#branch=compat",
+            "https://github.com/tokio-rs/tokio.git#branch=compat",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\" }"
         );
     }
 
@@ -544,20 +430,11 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git#branch=watt").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git#branch=watt").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\" }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt",
+            "ssh://git@github.com/serde-rs/serde.git#branch=watt",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\" }"
         );
     }
 
@@ -571,21 +448,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("tokio=https://github.com/tokio-rs/tokio.git#branch=compat+io_std")
-                .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio.git#branch=compat+io_std").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\"] }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio.git#branch=compat+io_std",
+            "https://github.com/tokio-rs/tokio.git#branch=compat+io_std",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\"] }"
         );
     }
 
@@ -599,21 +466,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["derive".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git#branch=watt+derive")
-                .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git#branch=watt+derive").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\"] }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt+derive",
+            "ssh://git@github.com/serde-rs/serde.git#branch=watt+derive",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\"] }"
         );
     }
 
@@ -627,24 +484,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string(), "io_utils".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency(
-                "tokio=https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils"
-            )
-            .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils")
-                .unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\", \"io_utils\"] }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils",
+            "https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\", \"io_utils\"] }"
         );
     }
 
@@ -658,24 +502,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["derive".to_string(), "alloc".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency(
-                "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc"
-            )
-            .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc")
-                .unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\", \"alloc\"] }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc",
+            "ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\", \"alloc\"] }"
         );
     }
 
@@ -689,20 +520,11 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777").unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio.git#rev=75c0777").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\" }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777",
+            "https://github.com/tokio-rs/tokio.git#rev=75c0777",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\" }"
         );
     }
 
@@ -716,21 +538,11 @@ mod parse_and_format_dependency_tests {
             features: Vec::new(),
         };
 
-        assert_eq!(
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a")
-                .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\" }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a",
+            "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\" }"
         );
     }
 
@@ -744,21 +556,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std")
-                .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std").unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\"] }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std",
+            "https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\"] }"
         );
     }
 
@@ -772,22 +574,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["derive".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency("serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive")
-                .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive")
-                .unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\"] }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive",
+            "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\"] }"
         );
     }
 
@@ -801,24 +592,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["io_std".to_string(), "io_utils".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency(
-                "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils"
-            )
-            .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils")
-                .unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\", \"io_utils\"] }",
-            "cannot format dependency"
+            "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils",
+            "https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils",
+            "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\", \"io_utils\"] }"
         );
     }
 
@@ -832,24 +610,11 @@ mod parse_and_format_dependency_tests {
             features: vec!["derive".to_string(), "alloc".to_string()],
         };
 
-        assert_eq!(
-            parse_dependency(
-                "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc"
-            )
-            .unwrap(),
+        check_dependency!(
             dependency,
-            "cannot parse dependency"
-        );
-        assert_eq!(
-            parse_dependency("ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc")
-                .unwrap(),
-            dependency,
-            "cannot parse dependency without package name"
-        );
-        assert_eq!(
-            format_dependency(&dependency),
-            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\", \"alloc\"] }",
-            "cannot format dependency"
+            "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc",
+            "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc",
+            "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\", \"alloc\"] }"
         );
     }
 
