@@ -71,7 +71,7 @@ pub fn generate_tmp_project(
         };
 
         if let Some(name) = cli.project_name.as_deref() {
-            suffix = format!("-{}", name);
+            suffix = format!("-{name}");
         };
 
         if !temporary_project_dir.exists() {
@@ -213,9 +213,8 @@ criterion = \"*\"
 debug = true
 
 [[bench]]
-name = \"{}\"
+name = \"{name}\"
 harness = false",
-        name
     )
 }
 
