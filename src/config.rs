@@ -72,8 +72,8 @@ impl Config {
             config_dir.join("config.toml")
         };
 
-        let config: Self = match fs::read(&config_file_path) {
-            Ok(file) => toml::de::from_slice(&file)?,
+        let config: Self = match fs::read_to_string(&config_file_path) {
+            Ok(file) => toml::de::from_str(&file)?,
             Err(_) => {
                 let config = Self::new()?;
                 fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
