@@ -34,4 +34,4 @@ windows-sys = { version = "0.36", features = ["Win32_System_Console", "Win32_Fou
 dirs = "4"
 
 [target.'cfg(unix)'.dependencies]
-xdg = "2.2"
+xdg = "2.4"
