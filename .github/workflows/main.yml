@@ -18,7 +18,12 @@ jobs:
         with:
           targets: x86_64-unknown-linux-gnu
 
+      - name: cargo build
+        id: build
+        run: cargo build --all-features
+
       - name: cargo test
+        if: steps.build.outcome == 'success'
         run: cargo test --all-features
 
   test-windows:
@@ -32,7 +37,12 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
+      - name: cargo build
+        id: build
+        run: cargo build --all-features
+
       - name: cargo test
+        if: steps.build.outcome == 'success'
         run: cargo test --all-features
 
   test-macos:
@@ -46,5 +56,10 @@ jobs:
         with:
           targets: x86_64-apple-darwin
 
+      - name: cargo build
+        id: build
+        run: cargo build --all-features
+
       - name: cargo test
+        if: steps.build.outcome == 'success'
         run: cargo test --all-features
