@@ -8,7 +8,7 @@ env:
   CARGO_INCREMENTAL: 1
 
 jobs:
-  test-and-lint:
+  test-linux:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
@@ -41,6 +41,8 @@ jobs:
         run: cargo clippy --workspace --all-features --tests -- -D warnings
 
   test-windows:
+    needs: [test-linux]
+    if: needs.test-linux.result == 'success'
     runs-on: windows-latest
     steps:
       - name: Checkout source
@@ -60,6 +62,8 @@ jobs:
         run: cargo test --all-features
 
   test-osx:
+    needs: [test-linux]
+    if: needs.test-linux.result == 'success'
     runs-on: macos-latest
     steps:
       - name: Checkout source
