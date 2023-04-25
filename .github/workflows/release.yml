@@ -14,8 +14,6 @@ jobs:
 
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-gnu
 
       - name: Build release (Linux)
         run: cargo build --release --target=x86_64-unknown-linux-gnu
@@ -35,8 +33,6 @@ jobs:
 
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-gnu
 
       - name: Build release (Linux)
         run: cargo build --release --all-features --target=x86_64-unknown-linux-gnu
@@ -56,8 +52,6 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-pc-windows-msvc
 
       - name: Build release (Windows)
         run: cargo build --release --target=x86_64-pc-windows-msvc
@@ -75,8 +69,6 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-pc-windows-msvc
 
       - name: Build release (Windows)
         run: cargo build --release --all-features --target=x86_64-pc-windows-msvc
@@ -94,8 +86,6 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin
 
       - name: Build release (OSX)
         run: cargo build --release --target=x86_64-apple-darwin
@@ -113,8 +103,6 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin
 
       - name: Build release (OSX)
         run: cargo build --release --all-features --target=x86_64-apple-darwin

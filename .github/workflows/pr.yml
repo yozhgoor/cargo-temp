@@ -16,28 +16,20 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-gnu
 
       - name: cargo build
         id: build
         run: cargo build --all-features
 
       - name: cargo test
-        if: steps.build.outcome == 'success'
         id: test
         run: cargo test --all-features
 
       - name: rustfmt
-        if: steps.build.outcome == 'success' && steps.test.outcome == 'success'
         id: fmt
         run: cargo fmt --all -- --check
 
       - name: clippy
-        if: >
-          steps.build.outcome == 'success' &&
-          steps.test.outcome == 'success' &&
-          steps.fmt.outcome == 'success'
         run: cargo clippy --workspace --all-features --tests -- -D warnings
 
   test-windows:
@@ -50,15 +42,12 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-pc-windows-msvc
 
       - name: cargo build
         id: build
         run: cargo build --all-features
 
       - name: cargo test
-        if: steps.build.outcome == 'success'
         run: cargo test --all-features
 
   test-osx:
@@ -71,13 +60,10 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin
 
       - name: cargo build
         id: build
         run: cargo build --all-features
 
       - name: cargo test
-        if: steps.build.outcome == 'success'
         run: cargo test --all-features
