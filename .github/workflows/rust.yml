@@ -21,7 +21,12 @@ jobs:
           - macos-latest
         include:
           - os: ubuntu-latest
+            name: linux
             lint: 1
+          - os: windows-latest
+            name: windows
+          - os: macos-latest
+            name: macos
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -31,7 +36,7 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: cargo build
+      - name: cargo build (${{ matrix.name }})
         run: cargo build --all-features
 
       - name: cargo test
