@@ -21,17 +21,16 @@ jobs:
           - macos-latest
         include:
           - os: ubuntu-latest
-            name: linux
             lint: 1
-          - os: windows-latest
-            name: windows
-          - os: macos-latest
-            name: macos
 
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
