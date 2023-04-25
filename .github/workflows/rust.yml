@@ -1,0 +1,48 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: 0 0 1 * *
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_INCREMENTAL: 1
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        rust:
+          - stable
+        include:
+          - os: ubuntu-latest
+            rust: stable
+            lint: 1
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@${{ matrix.rust }}
+
+      - name: cargo build
+        run: cargo build --all-features
+
+      - name: cargo test
+        run: cargo test --all-features
+
+      - name: rustfmt
+        if: github.event_name == 'pull_request' && matrix.lint
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        if: github.event_name == 'pull_request' && matrix.lint
+        run: cargo clippy --workspace --all-features --tests -- -D warnings
