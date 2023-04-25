@@ -106,6 +106,11 @@ mod tests {
     use super::*;
 
     #[test]
+    fn failure() {
+        assert!(1 == 2)
+    }
+
+    #[test]
     fn test_cli() {
         use clap::CommandFactory;
         Cli::command().debug_assert()
