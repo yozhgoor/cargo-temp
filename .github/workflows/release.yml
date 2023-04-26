@@ -6,8 +6,22 @@ on:
       - 'v*'
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        include:
+          - os: ubuntu-latest
+            name: linux
+          - os: windows-latest
+            name: windows
+          - os: macos-latest
+            name: macos
+
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
@@ -15,112 +29,44 @@ jobs:
       - name: Install toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build release (Linux)
-        run: cargo build --release --target=x86_64-unknown-linux-gnu
+      - name: Build release (${{ matrix.name }})
+        run: cargo build --release
 
-      - run: strip target/x86_64-unknown-linux-gnu/release/cargo-temp
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: build-linux
-          path: target/x86_64-unknown-linux-gnu/release/cargo-temp
-
-  build-linux-all-features:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
-
-      - name: Install toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build release (Linux)
-        run: cargo build --release --all-features --target=x86_64-unknown-linux-gnu
-
-      - run: strip target/x86_64-unknown-linux-gnu/release/cargo-temp
+      - if: ${{ matrix.os }} == 'ubuntu-latest'
+        run: strip target/release/cargo-temp
 
       - uses: actions/upload-artifact@v3
+        if: ${{ matrix.os }} != 'windows-latest'
         with:
-          name: build-linux-all-features
-          path: target/x86_64-unknown-linux-gnu/release/cargo-temp
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build release (Windows)
-        run: cargo build --release --target=x86_64-pc-windows-msvc
+          name: build-${{ matrix.name }}
+          path: target/release/cargo-temp
 
       - uses: actions/upload-artifact@v3
+        if: ${{ matrix.os }} == 'windows-latest'
         with:
-          name: build-windows
-          path: target/x86_64-pc-windows-msvc/release/cargo-temp.exe
+          name: build-${{ matrix.name }}
+          path: target/release/cargo-temp.exe
 
-  build-windows-all-features:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
+      - name: Build release all-features (${{ matrix.name }})
+        run: cargo build --release --all-features
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build release (Windows)
-        run: cargo build --release --all-features --target=x86_64-pc-windows-msvc
+      - if: ${{ matrix.os }} == 'ubuntu-latest'
+        run: strip target/release/cargo-temp
 
       - uses: actions/upload-artifact@v3
+        if: ${{ matrix.os }} != 'windows-latest'
         with:
-          name: build-windows-all-features
-          path: target/x86_64-pc-windows-msvc/release/cargo-temp.exe
-
-  build-osx:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build release (OSX)
-        run: cargo build --release --target=x86_64-apple-darwin
+          name: build-${{ matrix.name }}-all-features
+          path: target/release/cargo-temp
 
       - uses: actions/upload-artifact@v3
+        if: ${{ matrix.os }} == 'windows-latest'
         with:
-          name: build-osx
-          path: target/x86_64-apple-darwin/release/cargo-temp
-
-  build-osx-all-features:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Build release (OSX)
-        run: cargo build --release --all-features --target=x86_64-apple-darwin
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: build-osx-all-features
-          path: target/x86_64-apple-darwin/release/cargo-temp
+          name: build-${{ matrix.name }}-all-features
+          path: target/release/cargo-temp.exe
 
   release:
-    needs: [
-      build-linux,
-      build-linux-all-features,
-      build-windows,
-      build-windows-all-features,
-      build-osx,
-      build-osx-all-features
-    ]
+    needs: [ build ]
     runs-on: ubuntu-latest
     steps:
       - name: Get the version
@@ -153,15 +99,15 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          name: build-osx
-          path: build-osx
-      - run: mv build-osx/cargo-temp build-osx/cargo-temp-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
+          name: build-macos
+          path: build-macos
+      - run: mv build-macos/cargo-temp build-macos/cargo-temp-${{ steps.get_version.outputs.VERSION }}-macos-x86_64
 
       - uses: actions/download-artifact@v3
         with:
-          name: build-osx-all-features
-          path: build-osx-all-features
-      - run: mv build-osx-all-features/cargo-temp build-osx/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-osx-x86_64
+          name: build-macos-all-features
+          path: build-macos-all-features
+      - run: mv build-macos-all-features/cargo-temp build-macos/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-macos-x86_64
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -170,5 +116,5 @@ jobs:
         with:
           files: |
             build-linux/*
-            build-osx/*
+            build-macos/*
             build-windows/*
