@@ -21,7 +21,12 @@ jobs:
           - macos-latest
         include:
           - os: ubuntu-latest
+            name: Linux
             lint: 1
+          - os: windows-latest
+            name: Windows
+          - os: macos-latest
+            name: MacOS
 
     runs-on: ${{ matrix.os }}
     steps:
