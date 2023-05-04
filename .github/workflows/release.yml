@@ -108,6 +108,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            build-linux-latest/*
+            build-ubuntu-latest/*
             build-macos-latest/*
             build-windows-latest/*
