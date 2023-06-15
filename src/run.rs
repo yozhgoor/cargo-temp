@@ -7,6 +7,7 @@ use tempfile::TempDir;
 use crate::{
     config::{Config, Depth},
     dependency::{format_dependency, Dependency},
+    subprocess::{kill_subprocesses, start_subprocesses, Child},
     Cli,
 };
 
@@ -262,19 +263,6 @@ pub fn start_shell(config: &Config, tmp_dir: &Path) -> Result<std::process::Exit
     }
 }
 
-#[cfg(unix)]
-type Child = std::process::Child;
-#[cfg(windows)]
-type Child = create_process_w::Child;
-
-pub fn start_subprocesses(config: &Config, tmp_dir: &Path) -> Vec<Child> {
-    config
-        .subprocesses
-        .iter()
-        .filter_map(|x| x.spawn(tmp_dir))
-        .collect::<Vec<Child>>()
-}
-
 pub fn clean_up(
     delete_file: &Path,
     tmp_dir: TempDir,
@@ -368,46 +356,6 @@ pub fn preserve_dir(
     };
 
     Ok(final_dir)
-}
-
-pub fn kill_subprocesses(subprocesses: &mut [Child]) -> Result<()> {
-    #[cfg(unix)]
-    {
-        for subprocess in subprocesses.iter_mut() {
-            {
-                let now = std::time::Instant::now();
-
-                unsafe {
-                    libc::kill(
-                        subprocess
-                            .id()
-                            .try_into()
-                            .context("cannot get process id")?,
-                        libc::SIGTERM,
-                    );
-                }
-
-                while now.elapsed().as_secs() < 2 {
-                    std::thread::sleep(std::time::Duration::from_millis(200));
-                    if let Ok(Some(_)) = subprocess.try_wait() {
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    for subprocess in subprocesses.iter_mut() {
-        match subprocess.try_wait() {
-            Ok(Some(_)) => {}
-            _ => {
-                let _ = subprocess.kill();
-                let _ = subprocess.wait();
-            }
-        }
-    }
-
-    Ok(())
 }
 
 pub fn get_shell() -> String {

@@ -1,12 +1,17 @@
 #![cfg(feature = "generate")]
 
+use crate::subprocess::Child;
 use anyhow::{ensure, Result};
 use std::{
     fs,
     path::{Path, PathBuf},
 };
 
-use crate::{generate_delete_file, kill_subprocesses, start_shell, start_subprocesses, Config};
+use crate::{
+    run::{generate_delete_file, start_shell},
+    subprocess::{kill_subprocesses, start_subprocesses},
+    Config,
+};
 
 #[derive(Clone, Debug, clap::Args)]
 pub struct Args {
@@ -121,11 +126,6 @@ impl Args {
         })
     }
 }
-
-#[cfg(unix)]
-type Child = std::process::Child;
-#[cfg(windows)]
-type Child = create_process_w::Child;
 
 fn clean_up(delete_file: &Path, project_dir: &Path, subprocesses: &mut [Child]) -> Result<()> {
     if !delete_file.exists() {
