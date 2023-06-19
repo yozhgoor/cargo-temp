@@ -95,8 +95,12 @@ impl Project {
 
             #[cfg(windows)]
             if config.editor.is_some() {
+                extern "system" {
+                    fn FreeConsole() -> i32;
+                }
+
                 unsafe {
-                    windows_sys::Win32::System::Console::FreeConsole();
+                    FreeConsole();
                 }
             }
 
