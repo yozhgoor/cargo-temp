@@ -150,12 +150,12 @@ pub use windows::Command;
 mod windows {
     use anyhow::{bail, Result};
     use std::{
-        ffi::{OsStr, OsString},
+        ffi::{c_void, OsStr, OsString},
         iter::once,
         mem::size_of,
         os::windows::ffi::OsStrExt,
         path::{Path, PathBuf},
-        ptr::null_mut,
+        ptr::{null, null_mut},
     };
 
     extern "system" {
@@ -197,7 +197,7 @@ mod windows {
             )
         }
 
-        pub fn status(&mut self) -> Result<ExitStatus> {
+        pub fn status(&mut self) -> Result<u32> {
             self.spawn()?.wait()
         }
     }
@@ -284,7 +284,7 @@ mod windows {
             }
         }
 
-        pub fn wait(&self) -> Result<ExitStatus> {
+        pub fn wait(&self) -> Result<u32> {
             extern "system" {
                 fn WaitForSingleObject(hHandle: *mut u8, dwMilliseconds: u32) -> u32;
             }
@@ -301,7 +301,7 @@ mod windows {
                     {
                         CloseHandle(self.process_information.hProcess);
                         CloseHandle(self.process_information.hThread);
-                        Ok(ExitStatus(exit_code))
+                        Ok(exit_code)
                     } else {
                         bail!("cannot get exit status (code {:#x})", GetLastError())
                     }
@@ -365,7 +365,7 @@ mod windows {
 
     impl Default for STARTUPINFOW {
         fn default() -> Self {
-            let startup_info = STARTUPINFOW {
+            Self {
                 cb: size_of::<STARTUPINFOW>() as u32,
                 lpReserved: null_mut(),
                 lpDesktop: null_mut(),
@@ -384,9 +384,7 @@ mod windows {
                 hStdInput: 0,
                 hStdOutput: 0,
                 hStdError: 0,
-            };
-
-            Self(startup_info)
+            }
         }
     }
 
@@ -395,19 +393,17 @@ mod windows {
         hProcess: *mut c_void,
         hThread: *mut c_void,
         dwProcessId: u32,
-        dwThreadID: u32,
+        dwThreadId: u32,
     }
 
     impl Default for PROCESS_INFORMATION {
         fn default() -> Self {
-            let process_information = PROCESS_INFORMATION {
+            Self {
                 hProcess: null_mut(),
                 hThread: null_mut(),
                 dwProcessId: 0,
                 dwThreadId: 0,
-            };
-
-            Self(process_information)
+            }
         }
     }
 }
