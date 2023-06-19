@@ -1,5 +1,4 @@
 use crate::{
-    benchmarking::generate_benchmarking,
     cli::Cli,
     config::{Config, Depth},
     dependency::add_dependencies_to_project,
@@ -8,8 +7,8 @@ use crate::{
 use anyhow::{bail, ensure, Context, Result};
 use std::{
     env,
-    fs::{create_dir_all, remove_file, rename, write},
-    io::stdin,
+    fs::{create_dir_all, remove_file, rename, write, OpenOptions},
+    io::{stdin, Write},
     path::{Path, PathBuf},
     process::Command,
 };
@@ -47,15 +46,17 @@ impl Project {
             config.vcs.as_deref(),
         )?;
 
-        let delete_file = project.path().join("TO_DELETE");
+        let project_path = project.path();
+
+        let delete_file = project_path.join("TO_DELETE");
         write(
             &delete_file,
             "Delete this file if you want to preserve this project",
         )?;
 
-        let mut subprocesses = start_subprocesses(&config, project.path());
+        let mut subprocesses = start_subprocesses(&config, project_path);
 
-        log::info!("Temporary project created at: {}", project.path().display());
+        log::info!("Temporary project created at: {}", project_path.display());
 
         if config.welcome_message {
             println!(
@@ -79,7 +80,7 @@ impl Project {
                     let mut ide_process = std::process::Command::new(editor);
                     ide_process
                         .args(config.editor_args.iter().flatten())
-                        .arg(project.path());
+                        .arg(project_path);
                     ide_process
                 }
             };
@@ -90,7 +91,7 @@ impl Project {
                 }
             }
 
-            let res = shell_process.current_dir(project.path()).spawn();
+            let res = shell_process.current_dir(project_path).spawn();
 
             #[cfg(windows)]
             if config.editor.is_some() {
@@ -151,9 +152,10 @@ impl Project {
                 .tempdir_in(temporary_project_dir)?
         };
 
+        let tmp_dir_path = tmp_dir.path();
+
         let project_name = cli.project_name.unwrap_or_else(|| {
-            tmp_dir
-                .path()
+            tmp_dir_path
                 .file_name()
                 .unwrap()
                 .to_string_lossy()
@@ -165,8 +167,8 @@ impl Project {
             command.args(["worktree", "add"]);
 
             match maybe_branch {
-                Some(branch) => command.arg(tmp_dir.path()).arg(branch),
-                None => command.arg("-d").arg(tmp_dir.path()),
+                Some(branch) => command.arg(tmp_dir_path).arg(branch),
+                None => command.arg("-d").arg(tmp_dir_path),
             };
 
             ensure!(
@@ -226,10 +228,32 @@ impl Project {
             );
         }
 
-        add_dependencies_to_project(tmp_dir.path(), cli.dependencies.as_ref())?;
+        add_dependencies_to_project(tmp_dir_path, cli.dependencies.as_ref())?;
 
         if let Some(maybe_bench_name) = cli.bench {
-            generate_benchmarking(tmp_dir.path(), maybe_bench_name.as_deref())?
+            let bench_name = maybe_bench_name.unwrap_or("benchmark".to_string());
+
+            let mut toml = OpenOptions::new()
+                .append(true)
+                .open(tmp_dir_path.join("Cargo.toml"))?;
+
+            writeln!(
+                toml,
+                "[dev-dependencies]\ncriterion = \"*\"\n\n[profile.release]\ndebug = true\n\n
+                [[bench]]\nname = \"{bench_name}\"\nharness = false",
+            )?;
+
+            let bench_folder = tmp_dir_path.join("benches");
+            create_dir_all(&bench_folder)?;
+            let mut bench_file = bench_folder.join(bench_name);
+            bench_file.set_extension("rs");
+
+            write(
+                bench_file,
+                "use criterion::{black_box, criterion_group, criterion_main, Criterion};\n\n\
+        fn criterion_benchmark(_c: &mut Criterion) {\n\tprintln!(\"Hello, world!\");\n}\n\n\
+        criterion_group!(\n\tbenches,\n\tcriterion_benchmark\n);\ncriterion_main!(benches);",
+            )?;
         }
 
         Ok(Self::Temporary(tmp_dir))

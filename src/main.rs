@@ -2,7 +2,6 @@ use anyhow::Result;
 use clap::Parser;
 use std::{env, fs::create_dir, io::Write};
 
-mod benchmarking;
 mod cli;
 mod config;
 mod dependency;
