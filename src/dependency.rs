@@ -1,6 +1,7 @@
 use anyhow::{bail, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::{fs::OpenOptions, io::Write, path::Path};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Dependency {
@@ -16,6 +17,18 @@ pub enum Dependency {
         url: String,
         features: Vec<String>,
     },
+}
+
+pub fn add_dependencies_to_project(tmp_dir: &Path, dependencies: &[Dependency]) -> Result<()> {
+    let mut toml = OpenOptions::new()
+        .append(true)
+        .open(tmp_dir.join("Cargo.toml"))?;
+
+    for dependency in dependencies.iter() {
+        writeln!(toml, "{}", format_dependency(dependency))?
+    }
+
+    Ok(())
 }
 
 pub fn parse_dependency(s: &str) -> Result<Dependency> {
