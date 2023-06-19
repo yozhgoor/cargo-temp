@@ -159,9 +159,9 @@ mod windows {
     };
 
     extern "system" {
-        fn GetExitCodeProcess(hProcess: *mut u8, lpExitCode: *mut u32) -> i32;
+        fn GetExitCodeProcess(hProcess: *mut c_void, lpExitCode: *mut u32) -> i32;
         fn GetLastError() -> u32;
-        fn CloseHandle(hObject: *mut u8) -> u32;
+        fn CloseHandle(hObject: *mut c_void) -> u32;
     }
 
     pub struct Command {
@@ -270,7 +270,7 @@ mod windows {
 
         pub fn kill(&self) -> Result<()> {
             extern "system" {
-                fn TerminateProcess(hProcess: *mut u8, uExitCode: u32) -> i32;
+                fn TerminateProcess(hProcess: *mut c_void, uExitCode: u32) -> i32;
             }
 
             let res = unsafe { TerminateProcess(self.process_information.hProcess, 0) };
@@ -286,7 +286,7 @@ mod windows {
 
         pub fn wait(&self) -> Result<u32> {
             extern "system" {
-                fn WaitForSingleObject(hHandle: *mut u8, dwMilliseconds: u32) -> u32;
+                fn WaitForSingleObject(hHandle: *mut c_void, dwMilliseconds: u32) -> u32;
             }
 
             let mut exit_code = 0;
