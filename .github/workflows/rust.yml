@@ -29,7 +29,7 @@ jobs:
         with:
           cache-on-failure: true
 
-      - name: Update rustup
+      - name: rustup update
         run: rustup update
 
       - name: cargo build
