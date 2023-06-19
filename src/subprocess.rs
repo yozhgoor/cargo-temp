@@ -1,11 +1,7 @@
-#[cfg(unix)]
 use crate::config::Config;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::{
-    env::var,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 #[derive(Serialize, Deserialize)]
 pub struct SubProcess {
@@ -28,7 +24,7 @@ impl SubProcess {
             #[cfg(unix)]
             {
                 let mut process =
-                    Command::new(var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string()));
+                    Command::new(std::env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string()));
                 process
                     .current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir))
                     .args(["-c", &self.command])
