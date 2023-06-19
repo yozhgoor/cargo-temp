@@ -1,9 +1,7 @@
-#[cfg(unix)]
-use crate::run;
+use crate::subprocess::SubProcess;
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::{fs, path::PathBuf};
 
 #[derive(Serialize, Deserialize)]
 pub struct Config {
@@ -84,93 +82,6 @@ impl Config {
         };
 
         Ok(config)
-    }
-}
-
-#[cfg(unix)]
-type Child = std::process::Child;
-#[cfg(windows)]
-type Child = create_process_w::Child;
-
-#[derive(Serialize, Deserialize)]
-pub struct SubProcess {
-    pub command: String,
-    pub foreground: bool,
-    #[serde(default)]
-    pub keep_on_exit: bool,
-    pub working_dir: Option<PathBuf>,
-    #[cfg(unix)]
-    pub stdout: Option<bool>,
-    #[cfg(unix)]
-    pub stderr: Option<bool>,
-    #[cfg(windows)]
-    pub inherit_handles: Option<bool>,
-}
-
-impl SubProcess {
-    pub fn spawn(&self, tmp_dir: &Path) -> Option<Child> {
-        let mut process = {
-            #[cfg(unix)]
-            {
-                let mut process = std::process::Command::new(run::get_shell());
-                process
-                    .current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir))
-                    .args(["-c", &self.command])
-                    .stdin(std::process::Stdio::null());
-
-                if !self.foreground {
-                    if !self.stdout.unwrap_or(false) {
-                        process.stdout(std::process::Stdio::null());
-                    }
-
-                    if !self.stderr.unwrap_or(false) {
-                        process.stderr(std::process::Stdio::null());
-                    }
-                } else {
-                    if !self.stdout.unwrap_or(true) {
-                        process.stdout(std::process::Stdio::null());
-                    }
-
-                    if !self.stderr.unwrap_or(true) {
-                        process.stderr(std::process::Stdio::null());
-                    }
-                }
-
-                process
-            }
-            #[cfg(windows)]
-            {
-                let mut process = create_process_w::Command::new(&self.command);
-                process.current_dir(self.working_dir.as_deref().unwrap_or(tmp_dir));
-
-                if let Some(b) = self.inherit_handles {
-                    process.inherit_handles(b);
-                }
-
-                process
-            }
-        };
-
-        if !self.foreground {
-            match process.spawn().ok() {
-                Some(child) => Some(child).filter(|_| !self.keep_on_exit),
-                None => {
-                    log::error!("an error occurred within the subprocess");
-                    None
-                }
-            }
-        } else {
-            match process.status() {
-                Ok(_) => None,
-                Err(err) => {
-                    log::error!(
-                        "an error occurred within the foreground subprocess: {}",
-                        err
-                    );
-                    None
-                }
-            }
-        }
     }
 }
 
