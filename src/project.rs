@@ -1,7 +1,7 @@
 use crate::{
     cli::Cli,
     config::{Config, Depth},
-    dependency::add_dependencies_to_project,
+    dependency::format_dependency,
     subprocess::{kill_subprocesses, start_subprocesses, Child},
 };
 use anyhow::{bail, ensure, Context, Result};
@@ -228,7 +228,15 @@ impl Project {
             );
         }
 
-        add_dependencies_to_project(tmp_dir_path, cli.dependencies.as_ref())?;
+        if !cli.dependencies.is_empty() {
+            let mut toml = OpenOptions::new()
+                .append(true)
+                .open(tmp_dir_path.join("Cargo.toml"))?;
+
+            for dependency in cli.dependencies.iter() {
+                writeln!(toml, "{}", format_dependency(dependency))?
+            }
+        }
 
         if let Some(maybe_bench_name) = cli.bench {
             let bench_name = maybe_bench_name.unwrap_or("benchmark".to_string());
@@ -257,14 +265,6 @@ impl Project {
         }
 
         Ok(Self::Temporary(tmp_dir))
-    }
-
-    fn path(&self) -> &Path {
-        match self {
-            #[cfg(feature = "generate")]
-            Self::Template(path) => path,
-            Self::Temporary(tempdir) => tempdir.path(),
-        }
     }
 
     fn clean_up(
@@ -368,5 +368,13 @@ impl Project {
         };
 
         Ok(final_dir)
+    }
+
+    fn path(&self) -> &Path {
+        match self {
+            #[cfg(feature = "generate")]
+            Self::Template(path) => path,
+            Self::Temporary(tempdir) => tempdir.path(),
+        }
     }
 }
