@@ -266,35 +266,27 @@ mod windows {
         pub fn wait(&self) -> Result<u32> {
             let mut exit_code = 0;
 
-            unsafe {
-                let wait = WaitForSingleObject(self.process_information.hProcess, INFINITE)
-                    == WAIT_OBJECT_0;
+            if wait {
+                let res = unsafe {
+                    GetExitCodeProcess(self.process_information.hProcess, &mut exit_code as PDWORD)
+                };
 
-                if wait {
-                    let res = unsafe {
-                        GetExitCodeProcess(
-                            self.process_information.hProcess,
-                            &mut exit_code as PDWORD,
-                        )
-                    };
-
-                    if res != 0 {
-                        unsafe {
-                            CloseHandle(self.process_information.hProcess);
-                            CloseHandle(self.process_information.hThread);
-                        }
-
-                        Ok(exit_code)
-                    } else {
-                        bail!("cannot get exit status (code {:#x})", unsafe {
-                            GetLastError()
-                        })
+                if res != 0 {
+                    unsafe {
+                        CloseHandle(self.process_information.hProcess);
+                        CloseHandle(self.process_information.hThread);
                     }
+
+                    Ok(exit_code)
                 } else {
-                    bail!("cannot wait process (code {:#x})", unsafe {
+                    bail!("cannot get exit status (code {:#x})", unsafe {
                         GetLastError()
                     })
                 }
+            } else {
+                bail!("cannot wait process (code {:#x})", unsafe {
+                    GetLastError()
+                })
             }
         }
 
