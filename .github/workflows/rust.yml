@@ -39,9 +39,9 @@ jobs:
         run: cargo test --all-features
 
       - name: rustfmt
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && matrix.lint
         run: cargo fmt --all -- --check
 
       - name: clippy
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && matrix.lint
         run: cargo clippy --workspace --all-features --tests -- -D warnings
