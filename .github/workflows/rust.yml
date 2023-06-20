@@ -16,7 +16,9 @@ jobs:
           - ubuntu-latest
           - windows-latest
           - macos-latest
-        lint: 1
+        include:
+          - os: ubuntu-latest
+            lint: 1
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -37,9 +39,9 @@ jobs:
         run: cargo test --all-features
 
       - name: rustfmt
-        if: github.event_name == 'pull_request' && matrix.lint
+        if: github.event_name == 'pull_request'
         run: cargo fmt --all -- --check
 
       - name: clippy
-        if: github.event_name == 'pull_request' && matrix.lint
+        if: github.event_name == 'pull_request'
         run: cargo clippy --workspace --all-features --tests -- -D warnings
