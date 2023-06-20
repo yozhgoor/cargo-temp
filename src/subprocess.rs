@@ -266,6 +266,10 @@ mod windows {
         pub fn wait(&self) -> Result<u32> {
             let mut exit_code = 0;
 
+            let wait = unsafe {
+                WaitForSingleObject(self.process_information.hProcess, INFINITE) == WAIT_OBJECT_0
+            };
+
             if wait {
                 let res = unsafe {
                     GetExitCodeProcess(self.process_information.hProcess, &mut exit_code as PDWORD)
