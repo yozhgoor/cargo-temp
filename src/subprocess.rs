@@ -148,23 +148,18 @@ pub use windows::Command;
 
 #[cfg(windows)]
 mod windows {
+    use crate::binding::{
+        CloseHandle, CreateProcessW, GetExitCodeProcess, GetLastError, TerminateProcess,
+        WaitForSingleObject, BOOL, DWORD, INFINITE, PCWSTR, PDWORD, PROCESS_INFORMATION, PWSTR,
+        STARTUPINFOW, STATUS_PENDING, UINT, WAIT_OBJECT_0,
+    };
     use anyhow::{bail, Result};
     use std::{
         ffi::{OsStr, OsString},
-        mem::size_of,
+        iter::once,
         os::windows::ffi::OsStrExt,
         path::{Path, PathBuf},
-        ptr::null_mut,
-    };
-    use windows_sys::{
-        core::PWSTR,
-        Win32::{
-            Foundation::{CloseHandle, GetLastError, STATUS_PENDING, WAIT_OBJECT_0},
-            System::Threading::{
-                CreateProcessW, GetExitCodeProcess, TerminateProcess, WaitForSingleObject,
-                INFINITE, PROCESS_INFORMATION, STARTUPINFOW,
-            },
-        },
+        ptr::{null, null_mut},
     };
 
     pub struct Command {
@@ -200,7 +195,7 @@ mod windows {
             )
         }
 
-        pub fn status(&mut self) -> Result<ExitStatus> {
+        pub fn status(&mut self) -> Result<u32> {
             self.spawn()?.wait()
         }
     }
@@ -215,42 +210,39 @@ mod windows {
             inherit_handles: bool,
             current_directory: Option<&Path>,
         ) -> Result<Self> {
-            let startup_info = StartupInfoW::default();
-            let mut process_info = ProcessInformation::default();
+            let startup_info = STARTUPINFOW::default();
+            let mut process_info = PROCESS_INFORMATION::default();
 
-            let process_creation_flags = 0;
+            let process_creation_flags = 0 as DWORD;
 
             let current_directory_ptr = current_directory
                 .map(|path| {
-                    let wide_path: Vec<u16> = path
-                        .as_os_str()
-                        .encode_wide()
-                        .chain(std::iter::once(0))
-                        .collect();
+                    let wide_path: Vec<u16> =
+                        path.as_os_str().encode_wide().chain(once(0)).collect();
                     wide_path.as_ptr()
                 })
-                .unwrap_or(std::ptr::null_mut());
+                .unwrap_or(null_mut());
 
             let command = command.encode_wide().collect::<Vec<_>>();
 
             let res = unsafe {
                 CreateProcessW(
-                    std::ptr::null(),
+                    null(),
                     command.as_ptr() as PWSTR,
-                    std::ptr::null_mut(),
-                    std::ptr::null_mut(),
-                    inherit_handles as i32,
-                    process_creation_flags,
-                    std::ptr::null_mut(),
-                    current_directory_ptr,
-                    &startup_info.0,
-                    &mut process_info.0,
+                    null_mut(),
+                    null_mut(),
+                    inherit_handles as BOOL,
+                    process_creation_flags as DWORD,
+                    null_mut(),
+                    current_directory_ptr as PCWSTR,
+                    &startup_info,
+                    &mut process_info,
                 )
             };
 
             if res != 0 {
                 Ok(Self {
-                    process_information: process_info.0,
+                    process_information: process_info,
                 })
             } else {
                 bail!("Cannot create process (code {:#x})", unsafe {
@@ -260,7 +252,7 @@ mod windows {
         }
 
         pub fn kill(&self) -> Result<()> {
-            let res = unsafe { TerminateProcess(self.process_information.hProcess, 0) };
+            let res = unsafe { TerminateProcess(self.process_information.hProcess, 0 as UINT) };
 
             if res != 0 {
                 Ok(())
@@ -271,95 +263,60 @@ mod windows {
             }
         }
 
-        pub fn wait(&self) -> Result<ExitStatus> {
+        pub fn wait(&self) -> Result<u32> {
             let mut exit_code = 0;
 
-            unsafe {
-                if WaitForSingleObject(self.process_information.hProcess, INFINITE) == WAIT_OBJECT_0
-                {
-                    if GetExitCodeProcess(
-                        self.process_information.hProcess,
-                        &mut exit_code as *mut u32,
-                    ) != 0
-                    {
+            let wait = unsafe {
+                WaitForSingleObject(self.process_information.hProcess, INFINITE) == WAIT_OBJECT_0
+            };
+
+            if wait {
+                let res = unsafe {
+                    GetExitCodeProcess(self.process_information.hProcess, &mut exit_code as PDWORD)
+                };
+
+                if res != 0 {
+                    unsafe {
                         CloseHandle(self.process_information.hProcess);
                         CloseHandle(self.process_information.hThread);
-                        Ok(ExitStatus(exit_code))
-                    } else {
-                        bail!("cannot get exit status (code {:#x})", GetLastError())
                     }
+
+                    Ok(exit_code)
                 } else {
-                    bail!("cannot wait process (code {:#x})", GetLastError())
+                    bail!("cannot get exit status (code {:#x})", unsafe {
+                        GetLastError()
+                    })
                 }
+            } else {
+                bail!("cannot wait process (code {:#x})", unsafe {
+                    GetLastError()
+                })
             }
         }
 
-        pub fn try_wait(&self) -> Result<Option<ExitStatus>> {
+        pub fn try_wait(&self) -> Result<Option<u32>> {
             let mut exit_code: u32 = 0;
 
-            unsafe {
-                if GetExitCodeProcess(
-                    self.process_information.hProcess,
-                    &mut exit_code as *mut u32,
-                ) != 0
-                {
-                    if exit_code as i32 == STATUS_PENDING {
-                        Ok(None)
-                    } else {
+            let res = unsafe {
+                GetExitCodeProcess(self.process_information.hProcess, &mut exit_code as PDWORD)
+            };
+
+            if res != 0 {
+                if exit_code == STATUS_PENDING {
+                    Ok(None)
+                } else {
+                    unsafe {
                         CloseHandle(self.process_information.hProcess);
                         CloseHandle(self.process_information.hThread);
-                        Ok(Some(ExitStatus(exit_code)))
                     }
-                } else {
-                    bail!("cannot get exit status (code {:#x})", GetLastError())
+
+                    Ok(Some(exit_code))
                 }
+            } else {
+                bail!("cannot get exit status (code {:#x})", unsafe {
+                    GetLastError()
+                })
             }
-        }
-    }
-
-    pub struct ExitStatus(u32);
-
-    struct StartupInfoW(STARTUPINFOW);
-
-    impl Default for StartupInfoW {
-        fn default() -> Self {
-            let startup_info = STARTUPINFOW {
-                cb: size_of::<STARTUPINFOW>() as u32,
-                lpReserved: null_mut(),
-                lpDesktop: null_mut(),
-                lpTitle: null_mut(),
-                dwX: 0,
-                dwY: 0,
-                dwXSize: 0,
-                dwYSize: 0,
-                dwXCountChars: 0,
-                dwYCountChars: 0,
-                dwFillAttribute: 0,
-                dwFlags: 0,
-                wShowWindow: 0,
-                cbReserved2: 0,
-                lpReserved2: null_mut(),
-                hStdInput: 0,
-                hStdOutput: 0,
-                hStdError: 0,
-            };
-
-            Self(startup_info)
-        }
-    }
-
-    struct ProcessInformation(PROCESS_INFORMATION);
-
-    impl Default for ProcessInformation {
-        fn default() -> Self {
-            let process_information = PROCESS_INFORMATION {
-                hProcess: 0,
-                hThread: 0,
-                dwProcessId: 0,
-                dwThreadId: 0,
-            };
-
-            Self(process_information)
         }
     }
 }
