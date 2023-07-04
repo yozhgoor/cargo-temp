@@ -3,38 +3,39 @@
 use std::{ffi::c_void, mem::size_of, ptr::null_mut};
 
 // https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject#parameters
-const INFINITE: u32 = 0xFFFFFFFF;
+pub(crate) const INFINITE: u32 = 0xFFFFFFFF;
 // https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject#return-value
-const WAIT_OBJECT_0: u32 = 0x00000000;
+pub(crate) const WAIT_OBJECT_0: u32 = 0x00000000;
 // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess#remarks
-const STATUS_PENDING: u32 = 0x00000103;
+pub(crate) const STATUS_PENDING: u32 = 0x00000103;
 
 // https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#BOOL
-type BOOL = i32;
+pub(crate) type BOOL = i32;
 // https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#DWORD
-type DWORD = u32;
+pub(crate) type DWORD = u32;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PCWSTR
+pub(crate) type PCWSTR = *const u16;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PDWORD
+pub(crate) type PDWORD = *mut u32;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PVOID
+type PVOID = *mut c_void;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PWSTR
+pub(crate) type PWSTR = *mut u16;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#UINT
+pub(crate) type UINT = u32;
+
 // https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#HANDLE
 type HANDLE = *mut c_void;
 // https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PBYTE
 type PBYTE = *mut u8;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PCWSTR
-type PCWSTR = *const u16;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PDWORD
-type PDWORD = *mut u32;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PVOID
-type PVOID = *mut c_void;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PWSTR
-type PWSTR = *mut u16;
-// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#UINT
-type UINT = u32;
 // https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#WORD
 type WORD = u16;
 
 extern "system" {
     // https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
-    fn CloseHandle(hObject: HANDLE) -> BOOL;
+    pub(crate) fn CloseHandle(hObject: HANDLE) -> BOOL;
     // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
-    fn CreateProcessW(
+    pub(crate) fn CreateProcessW(
         lpApplicationName: PCWSTR,
         lpCommandLine: PWSTR,
         lpProcessAttributes: *mut SECURITY_ATTRIBUTES,
@@ -47,28 +48,20 @@ extern "system" {
         lpProcessInformation: *mut PROCESS_INFORMATION,
     ) -> BOOL;
     // https://learn.microsoft.com/en-us/windows/console/freeconsole
-    fn FreeConsole() -> BOOL;
+    pub(crate) fn FreeConsole() -> BOOL;
     // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess
-    fn GetExitCodeProcess(hProcess: HANDLE, lpExitCode: PDWORD) -> BOOL;
+    pub(crate) fn GetExitCodeProcess(hProcess: HANDLE, lpExitCode: PDWORD) -> BOOL;
     // https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
-    fn GetLastError() -> DWORD;
+    pub(crate) fn GetLastError() -> DWORD;
     // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess
-    fn TerminateProcess(hProcess: HANDLE, uExitCode: UINT) -> BOOL;
+    pub(crate) fn TerminateProcess(hProcess: HANDLE, uExitCode: UINT) -> BOOL;
     // https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
-    fn WaitForSingleObject(hHandle: HANDLE, dwMilliseconds: DWORD) -> DWORD;
-}
-
-// https://learn.microsoft.com/en-us/windows/win32/api/wtypesbase/ns-wtypesbase-security_attributes
-#[repr(C)]
-struct SECURITY_ATTRIBUTES {
-    nLength: DWORD,
-    lpSecurityDescriptor: PVOID,
-    bInheritHandle: BOOL,
+    pub(crate) fn WaitForSingleObject(hHandle: HANDLE, dwMilliseconds: DWORD) -> DWORD;
 }
 
 // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfow
 #[repr(C)]
-struct STARTUPINFOW {
+pub(crate) struct STARTUPINFOW {
     cb: DWORD,
     lpReserved: PWSTR,
     lpDesktop: PWSTR,
@@ -116,7 +109,7 @@ impl Default for STARTUPINFOW {
 
 // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information
 #[repr(C)]
-struct PROCESS_INFORMATION {
+pub(crate) struct PROCESS_INFORMATION {
     pub hProcess: HANDLE,
     pub hThread: HANDLE,
     dwProcessId: DWORD,
@@ -132,4 +125,12 @@ impl Default for PROCESS_INFORMATION {
             dwThreadId: 0,
         }
     }
+}
+
+// https://learn.microsoft.com/en-us/windows/win32/api/wtypesbase/ns-wtypesbase-security_attributes
+#[repr(C)]
+struct SECURITY_ATTRIBUTES {
+    nLength: DWORD,
+    lpSecurityDescriptor: PVOID,
+    bInheritHandle: BOOL,
 }
