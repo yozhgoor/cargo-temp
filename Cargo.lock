@@ -207,7 +207,6 @@ dependencies = [
  "serde",
  "tempfile",
  "toml",
- "windows-sys 0.48.0",
  "xdg",
 ]
 

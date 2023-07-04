@@ -96,7 +96,7 @@ impl Project {
             #[cfg(windows)]
             if config.editor.is_some() {
                 unsafe {
-                    windows_sys::Win32::System::Console::FreeConsole();
+                    crate::binding::FreeConsole();
                 }
             }
 
