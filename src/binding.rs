@@ -2,25 +2,39 @@
 
 use std::{ffi::c_void, mem::size_of, ptr::null_mut};
 
-pub const INFINITE: u32 = 0xFFFFFFFF;
-pub const WAIT_OBJECT_0: u32 = 0x00000000;
-pub const STATUS_PENDING: u32 = 0x00000103;
+// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject#parameters
+const INFINITE: u32 = 0xFFFFFFFF;
+// https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject#return-value
+const WAIT_OBJECT_0: u32 = 0x00000000;
+// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess#remarks
+const STATUS_PENDING: u32 = 0x00000103;
 
-pub type PCWSTR = *const u16;
-pub type BOOL = i32;
-pub type DWORD = u32;
-pub type PDWORD = *mut u32;
-pub type PWSTR = *mut u16;
-pub type UINT = u32;
-
-type PVOID = *mut c_void;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#BOOL
+type BOOL = i32;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#DWORD
+type DWORD = u32;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#HANDLE
 type HANDLE = *mut c_void;
-type WORD = u16;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PBYTE
 type PBYTE = *mut u8;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PCWSTR
+type PCWSTR = *const u16;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PDWORD
+type PDWORD = *mut u32;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PVOID
+type PVOID = *mut c_void;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#PWSTR
+type PWSTR = *mut u16;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#UINT
+type UINT = u32;
+// https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#WORD
+type WORD = u16;
 
 extern "system" {
-    pub fn CloseHandle(hObject: HANDLE) -> BOOL;
-    pub fn CreateProcessW(
+    // https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
+    fn CloseHandle(hObject: HANDLE) -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
+    fn CreateProcessW(
         lpApplicationName: PCWSTR,
         lpCommandLine: PWSTR,
         lpProcessAttributes: *mut SECURITY_ATTRIBUTES,
@@ -31,23 +45,30 @@ extern "system" {
         lpCurrentDirectory: PCWSTR,
         lpStartupInfo: *const STARTUPINFOW,
         lpProcessInformation: *mut PROCESS_INFORMATION,
-    ) -> u32;
-    pub fn FreeConsole() -> i32;
-    pub fn GetExitCodeProcess(hProcess: HANDLE, lpExitCode: PDWORD) -> BOOL;
-    pub fn GetLastError() -> DWORD;
-    pub fn TerminateProcess(hProcess: HANDLE, uExitCode: UINT) -> BOOL;
-    pub fn WaitForSingleObject(hHandle: HANDLE, dwMilliseconds: DWORD) -> DWORD;
+    ) -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/console/freeconsole
+    fn FreeConsole() -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess
+    fn GetExitCodeProcess(hProcess: HANDLE, lpExitCode: PDWORD) -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+    fn GetLastError() -> DWORD;
+    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess
+    fn TerminateProcess(hProcess: HANDLE, uExitCode: UINT) -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
+    fn WaitForSingleObject(hHandle: HANDLE, dwMilliseconds: DWORD) -> DWORD;
 }
 
+// https://learn.microsoft.com/en-us/windows/win32/api/wtypesbase/ns-wtypesbase-security_attributes
 #[repr(C)]
-pub struct SECURITY_ATTRIBUTES {
+struct SECURITY_ATTRIBUTES {
     nLength: DWORD,
     lpSecurityDescriptor: PVOID,
     bInheritHandle: BOOL,
 }
 
+// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfow
 #[repr(C)]
-pub struct STARTUPINFOW {
+struct STARTUPINFOW {
     cb: DWORD,
     lpReserved: PWSTR,
     lpDesktop: PWSTR,
@@ -93,8 +114,9 @@ impl Default for STARTUPINFOW {
     }
 }
 
+// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information
 #[repr(C)]
-pub struct PROCESS_INFORMATION {
+struct PROCESS_INFORMATION {
     pub hProcess: HANDLE,
     pub hThread: HANDLE,
     dwProcessId: DWORD,
