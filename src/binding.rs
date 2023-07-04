@@ -31,32 +31,32 @@ type PBYTE = *mut u8;
 // https://learn.microsoft.com/en-us/windows/win32/winprog/windows-data-types#WORD
 type WORD = u16;
 
-extern "system" {
-    // https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
-    pub(crate) fn CloseHandle(hObject: HANDLE) -> BOOL;
-    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
-    pub(crate) fn CreateProcessW(
-        lpApplicationName: PCWSTR,
-        lpCommandLine: PWSTR,
-        lpProcessAttributes: *mut SECURITY_ATTRIBUTES,
-        lpThreadAttributes: *mut SECURITY_ATTRIBUTES,
-        bInheritHandles: BOOL,
-        dwCreationFlags: DWORD,
-        lpEnvironment: PVOID,
-        lpCurrentDirectory: PCWSTR,
-        lpStartupInfo: *const STARTUPINFOW,
-        lpProcessInformation: *mut PROCESS_INFORMATION,
-    ) -> BOOL;
-    // https://learn.microsoft.com/en-us/windows/console/freeconsole
-    pub(crate) fn FreeConsole() -> BOOL;
-    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess
-    pub(crate) fn GetExitCodeProcess(hProcess: HANDLE, lpExitCode: PDWORD) -> BOOL;
-    // https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
-    pub(crate) fn GetLastError() -> DWORD;
-    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess
-    pub(crate) fn TerminateProcess(hProcess: HANDLE, uExitCode: UINT) -> BOOL;
-    // https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
-    pub(crate) fn WaitForSingleObject(hHandle: HANDLE, dwMilliseconds: DWORD) -> DWORD;
+// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information
+#[repr(C)]
+pub(crate) struct PROCESS_INFORMATION {
+    pub hProcess: HANDLE,
+    pub hThread: HANDLE,
+    dwProcessId: DWORD,
+    dwThreadId: DWORD,
+}
+
+impl Default for PROCESS_INFORMATION {
+    fn default() -> Self {
+        Self {
+            hProcess: null_mut(),
+            hThread: null_mut(),
+            dwProcessId: 0,
+            dwThreadId: 0,
+        }
+    }
+}
+
+// https://learn.microsoft.com/en-us/windows/win32/api/wtypesbase/ns-wtypesbase-security_attributes
+#[repr(C)]
+pub(crate) struct SECURITY_ATTRIBUTES {
+    nLength: DWORD,
+    lpSecurityDescriptor: PVOID,
+    bInheritHandle: BOOL,
 }
 
 // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-startupinfow
@@ -107,30 +107,30 @@ impl Default for STARTUPINFOW {
     }
 }
 
-// https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_information
-#[repr(C)]
-pub(crate) struct PROCESS_INFORMATION {
-    pub hProcess: HANDLE,
-    pub hThread: HANDLE,
-    dwProcessId: DWORD,
-    dwThreadId: DWORD,
-}
-
-impl Default for PROCESS_INFORMATION {
-    fn default() -> Self {
-        Self {
-            hProcess: null_mut(),
-            hThread: null_mut(),
-            dwProcessId: 0,
-            dwThreadId: 0,
-        }
-    }
-}
-
-// https://learn.microsoft.com/en-us/windows/win32/api/wtypesbase/ns-wtypesbase-security_attributes
-#[repr(C)]
-struct SECURITY_ATTRIBUTES {
-    nLength: DWORD,
-    lpSecurityDescriptor: PVOID,
-    bInheritHandle: BOOL,
+extern "system" {
+    // https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
+    pub(crate) fn CloseHandle(hObject: HANDLE) -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
+    pub(crate) fn CreateProcessW(
+        lpApplicationName: PCWSTR,
+        lpCommandLine: PWSTR,
+        lpProcessAttributes: *mut SECURITY_ATTRIBUTES,
+        lpThreadAttributes: *mut SECURITY_ATTRIBUTES,
+        bInheritHandles: BOOL,
+        dwCreationFlags: DWORD,
+        lpEnvironment: PVOID,
+        lpCurrentDirectory: PCWSTR,
+        lpStartupInfo: *const STARTUPINFOW,
+        lpProcessInformation: *mut PROCESS_INFORMATION,
+    ) -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/console/freeconsole
+    pub(crate) fn FreeConsole() -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getexitcodeprocess
+    pub(crate) fn GetExitCodeProcess(hProcess: HANDLE, lpExitCode: PDWORD) -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/win32/api/errhandlingapi/nf-errhandlingapi-getlasterror
+    pub(crate) fn GetLastError() -> DWORD;
+    // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess
+    pub(crate) fn TerminateProcess(hProcess: HANDLE, uExitCode: UINT) -> BOOL;
+    // https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-waitforsingleobject
+    pub(crate) fn WaitForSingleObject(hHandle: HANDLE, dwMilliseconds: DWORD) -> DWORD;
 }
