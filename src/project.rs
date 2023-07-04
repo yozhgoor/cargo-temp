@@ -95,12 +95,8 @@ impl Project {
 
             #[cfg(windows)]
             if config.editor.is_some() {
-                extern "system" {
-                    fn FreeConsole() -> i32;
-                }
-
                 unsafe {
-                    FreeConsole();
+                    crate::binding::FreeConsole();
                 }
             }
 

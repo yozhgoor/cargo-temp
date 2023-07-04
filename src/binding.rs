@@ -32,6 +32,7 @@ extern "system" {
         lpStartupInfo: *const STARTUPINFOW,
         lpProcessInformation: *mut PROCESS_INFORMATION,
     ) -> u32;
+    pub fn FreeConsole() -> i32;
     pub fn GetExitCodeProcess(hProcess: HANDLE, lpExitCode: PDWORD) -> BOOL;
     pub fn GetLastError() -> DWORD;
     pub fn TerminateProcess(hProcess: HANDLE, uExitCode: UINT) -> BOOL;
