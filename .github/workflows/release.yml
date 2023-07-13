@@ -25,17 +25,17 @@ jobs:
       - name: Build release
         run: cargo build --release
 
-      - if: ${{ matrix.os }} == 'ubuntu-latest'
+      - if: matrix.os == 'ubuntu-latest'
         run: strip target/release/cargo-temp
 
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.os }} != 'windows-latest'
+        if: matrix.os != 'windows-latest'
         with:
           name: build-${{ matrix.os }}
           path: target/release/cargo-temp
 
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.os }} == 'windows-latest'
+        if: matrix.os == 'windows-latest'
         with:
           name: build-${{ matrix.os }}
           path: target/release/cargo-temp.exe
@@ -43,17 +43,17 @@ jobs:
       - name: Build release all-features (${{ matrix.os }})
         run: cargo build --release --all-features
 
-      - if: ${{ matrix.os }} == 'ubuntu-latest'
+      - if: matrix.os == 'ubuntu-latest'
         run: strip target/release/cargo-temp
 
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.os }} != 'windows-latest'
+        if: matrix.os != 'windows-latest'
         with:
           name: build-${{ matrix.os }}-all-features
           path: target/release/cargo-temp
 
       - uses: actions/upload-artifact@v3
-        if: ${{ matrix.os }} == 'windows-latest'
+        if: matrix.os == 'windows-latest'
         with:
           name: build-${{ matrix.os }}-all-features
           path: target/release/cargo-temp.exe
