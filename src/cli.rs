@@ -134,6 +134,9 @@ pub mod generate {
         /// Allow the template to overwrite existing files in the destination.
         #[arg(short, long, action)]
         pub overwrite: bool,
+        /// Skip downloading git submodules (if there are any)
+        #[arg(short, long, action)]
+        pub skip_submodules: bool,
     }
 
     impl Args {
@@ -154,6 +157,7 @@ pub mod generate {
                 define: self.define,
                 force_git_init: self.force_git_init,
                 overwrite: self.overwrite,
+                skip_submodules: self.skip_submodules,
                 // Not available for the users.
                 destination: Some(destination.to_path_buf()),
                 init: false,
