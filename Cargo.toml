@@ -16,7 +16,7 @@ include = ["src/**/*.rs", "README.md", "LICENSE.Apache-2.0", "LICENSE.MIT"]
 generate = ["cargo-generate"]
 
 [dependencies]
-anyhow = "1.0"
+anyhow = "1"
 cargo-generate = { version = "0.21", optional = true }
 clap = { version = "4.5", features = ["derive"] }
 env_logger = "0.11"
