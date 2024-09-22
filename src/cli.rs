@@ -74,7 +74,6 @@ pub mod generate {
         /// List defined favorite templates from the config
         #[arg(
         long,
-        action,
         conflicts_with_all(&[
             "git", "path", "subfolder", "branch",
             "name",
@@ -92,50 +91,53 @@ pub mod generate {
         pub list_favorites: bool,
         /// Directory to create / project name; if the name isn't in kebab-case, it will be converted
         /// to kebab-case unless `--force` is given.
-        #[arg(long, short, value_parser)]
+        #[arg(long, short)]
         pub name: Option<String>,
         /// Don't convert the project name to kebab-case before creating the directory.
         /// Note that cargo generate won't overwrite an existing directory, even if `--force` is given.
-        #[arg(long, short, action)]
+        #[arg(long, short)]
         pub force: bool,
         /// Enables more verbose output.
-        #[arg(long, short, action)]
+        #[arg(long, short)]
         pub verbose: bool,
         /// Pass template values through a file
         /// Values should be in the format `key=value`, one per line
-        #[arg(long, value_parser)]
+        #[arg(long)]
         pub template_values_file: Option<String>,
         /// If silent mode is set all variables will be
         /// extracted from the template_values_file.
         /// If a value is missing the project generation will fail
-        #[arg(long, short, requires("name"), action)]
+        #[arg(long, short, requires("name"))]
         pub silent: bool,
         /// Use specific configuration file. Defaults to $CARGO_HOME/cargo-generate or $HOME/.cargo/cargo-generate
-        #[arg(short, long, value_parser)]
+        #[arg(short, long)]
         pub config: Option<PathBuf>,
         /// Specify the VCS used to initialize the generated template.
-        #[arg(long, value_parser)]
+        #[arg(long)]
         pub vcs: Option<cargo_generate::Vcs>,
         /// Populates template variable `crate_type` with value `"lib"`
-        #[arg(long, conflicts_with = "bin", action)]
+        #[arg(long, conflicts_with = "bin")]
         pub lib: bool,
         /// Populates a template variable `crate_type` with value `"bin"`
-        #[arg(long, conflicts_with = "lib", action)]
+        #[arg(long, conflicts_with = "lib")]
         pub bin: bool,
         /// Use a different ssh identity
-        #[arg(short = 'i', long = "identity", value_parser)]
+        #[arg(short = 'i', long = "identity")]
         pub ssh_identity: Option<PathBuf>,
         /// Define a value for use during template expansion
-        #[arg(long, short, number_of_values = 1, value_parser)]
+        #[arg(long, short, number_of_values = 1)]
         pub define: Vec<String>,
+        /// Use a different gitconfig file, if omitted the usual $HOME/.gitconfig will be used.
+        #[arg(long = "gitconfig")]
+        pub gitconfig: Option<PathBuf>,
         /// Will enforce a fresh git init on the generated project
-        #[arg(long, action)]
+        #[arg(long)]
         pub force_git_init: bool,
         /// Allow the template to overwrite existing files in the destination.
-        #[arg(short, long, action)]
+        #[arg(short, long)]
         pub overwrite: bool,
         /// Skip downloading git submodules (if there are any)
-        #[arg(short, long, action)]
+        #[arg(short, long)]
         pub skip_submodules: bool,
     }
 
@@ -154,6 +156,7 @@ pub mod generate {
                 lib: self.lib,
                 bin: self.bin,
                 ssh_identity: self.ssh_identity,
+                gitconfig: self.gitconfig,
                 define: self.define,
                 force_git_init: self.force_git_init,
                 overwrite: self.overwrite,
