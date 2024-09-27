@@ -40,24 +40,6 @@ jobs:
           name: build-${{ matrix.os }}
           path: target/release/cargo-temp.exe
 
-      - name: Build release all-features (${{ matrix.os }})
-        run: cargo build --release --all-features
-
-      - if: matrix.os == 'ubuntu-latest'
-        run: strip target/release/cargo-temp
-
-      - uses: actions/upload-artifact@v3
-        if: matrix.os != 'windows-latest'
-        with:
-          name: build-${{ matrix.os }}-all-features
-          path: target/release/cargo-temp
-
-      - uses: actions/upload-artifact@v3
-        if: matrix.os == 'windows-latest'
-        with:
-          name: build-${{ matrix.os }}-all-features
-          path: target/release/cargo-temp.exe
-
   release:
     needs: [ build ]
     runs-on: ubuntu-latest
@@ -74,33 +56,15 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          name: build-ubuntu-latest-all-features
-          path: build-ubuntu-latest-all-features
-      - run: mv build-ubuntu-latest-all-features/cargo-temp build-ubuntu-latest/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
-
-      - uses: actions/download-artifact@v3
-        with:
           name: build-windows-latest
           path: build-windows-latest
       - run: mv build-windows-latest/cargo-temp.exe build-windows-latest/cargo-temp-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
 
       - uses: actions/download-artifact@v3
         with:
-          name: build-windows-latest-all-features
-          path: build-windows-latest-all-features
-      - run: mv build-windows-latest-all-features/cargo-temp.exe build-windows-latest/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
-
-      - uses: actions/download-artifact@v3
-        with:
           name: build-macos-latest
           path: build-macos-latest
       - run: mv build-macos-latest/cargo-temp build-macos-latest/cargo-temp-${{ steps.get_version.outputs.VERSION }}-macos-x86_64
-
-      - uses: actions/download-artifact@v3
-        with:
-          name: build-macos-latest-all-features
-          path: build-macos-latest-all-features
-      - run: mv build-macos-latest-all-features/cargo-temp build-macos-latest/cargo-temp-all-features-${{ steps.get_version.outputs.VERSION }}-macos-x86_64
 
       - name: Release
         uses: softprops/action-gh-release@v1
