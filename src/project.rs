@@ -13,32 +13,12 @@ use std::{
     process::Command,
 };
 
-#[cfg(feature = "generate")]
-use crate::cli::generate::Subcommand::Generate;
-#[cfg(feature = "generate")]
-use std::fs::remove_dir_all;
-
 pub enum Project {
     Temporary(tempfile::TempDir),
-    #[cfg(feature = "generate")]
-    Template(PathBuf),
 }
 
 impl Project {
     pub fn execute(cli: Cli, config: Config) -> Result<()> {
-        #[cfg(feature = "generate")]
-        let project = if let Some(Generate(args)) = cli.subcommand {
-            Self::Template(args.generate(&config.temporary_project_dir)?)
-        } else {
-            Self::temporary(
-                cli.clone(),
-                &config.temporary_project_dir,
-                config.git_repo_depth.as_ref(),
-                config.vcs.as_deref(),
-            )?
-        };
-
-        #[cfg(not(feature = "generate"))]
         let project = Self::temporary(
             cli.clone(),
             &config.temporary_project_dir,
@@ -312,8 +292,6 @@ impl Project {
             log::info!("Project directory_preserved_at: {}", tmp_dir.display());
         } else {
             match self {
-                #[cfg(feature = "generate")]
-                Self::Template(path) => remove_dir_all(path)?,
                 Self::Temporary(tempdir) => {
                     if worktree_branch.is_some() {
                         let mut command = std::process::Command::new("git");
@@ -339,8 +317,6 @@ impl Project {
         preserved_project_dir: Option<&Path>,
     ) -> Result<PathBuf> {
         let tmp_dir = match self {
-            #[cfg(feature = "generate")]
-            Self::Template(path) => path,
             Self::Temporary(tempdir) => tempdir.into_path(),
         };
 
@@ -372,8 +348,6 @@ impl Project {
 
     fn path(&self) -> &Path {
         match self {
-            #[cfg(feature = "generate")]
-            Self::Template(path) => path,
             Self::Temporary(tempdir) => tempdir.path(),
         }
     }
