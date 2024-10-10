@@ -32,11 +32,14 @@ jobs:
       - name: rustup update
         run: rustup update
 
+      - name: cargo check
+        run: cargo check
+
       - name: cargo build
-        run: cargo build --all-features
+        run: cargo build
 
       - name: cargo test
-        run: cargo test --all-features
+        run: cargo test
 
       - name: rustfmt
         if: github.event_name == 'pull_request' && matrix.lint
@@ -44,4 +47,4 @@ jobs:
 
       - name: clippy
         if: github.event_name == 'pull_request' && matrix.lint
-        run: cargo clippy --workspace --all-features --tests -- -D warnings
+        run: cargo clippy --tests -- -D warnings

@@ -26,19 +26,19 @@ jobs:
         run: rustup update
 
       - name: cargo check
-        run: cargo check --all-features
+        run: cargo check
 
       - name: cargo build
-        run: cargo build --all-features
+        run: cargo build
 
       - name: cargo test
-        run: cargo test --all-features
+        run: cargo test
 
       - name: cargo fmt
         run: cargo fmt --all --check
 
       - name: cargo clippy
-        run: cargo clippy --tests --all-features -- -D warnings
+        run: cargo clippy --tests -- -D warnings
 
       - name: install cargo-outdated
         run: cargo install cargo-outdated

@@ -13,32 +13,10 @@ use std::{
     process::Command,
 };
 
-#[cfg(feature = "generate")]
-use crate::cli::generate::Subcommand::Generate;
-#[cfg(feature = "generate")]
-use std::fs::remove_dir_all;
-
-pub enum Project {
-    Temporary(tempfile::TempDir),
-    #[cfg(feature = "generate")]
-    Template(PathBuf),
-}
+pub struct Project(tempfile::TempDir);
 
 impl Project {
     pub fn execute(cli: Cli, config: Config) -> Result<()> {
-        #[cfg(feature = "generate")]
-        let project = if let Some(Generate(args)) = cli.subcommand {
-            Self::Template(args.generate(&config.temporary_project_dir)?)
-        } else {
-            Self::temporary(
-                cli.clone(),
-                &config.temporary_project_dir,
-                config.git_repo_depth.as_ref(),
-                config.vcs.as_deref(),
-            )?
-        };
-
-        #[cfg(not(feature = "generate"))]
         let project = Self::temporary(
             cli.clone(),
             &config.temporary_project_dir,
@@ -46,7 +24,7 @@ impl Project {
             config.vcs.as_deref(),
         )?;
 
-        let project_path = project.path();
+        let project_path = project.0.path();
 
         let delete_file = project_path.join("TO_DELETE");
         write(
@@ -264,7 +242,7 @@ impl Project {
             )?;
         }
 
-        Ok(Self::Temporary(tmp_dir))
+        Ok(Project(tmp_dir))
     }
 
     fn clean_up(
@@ -310,24 +288,17 @@ impl Project {
             let tmp_dir = self.preserve_dir(project_name, preserved_project_dir)?;
 
             log::info!("Project directory_preserved_at: {}", tmp_dir.display());
-        } else {
-            match self {
-                #[cfg(feature = "generate")]
-                Self::Template(path) => remove_dir_all(path)?,
-                Self::Temporary(tempdir) => {
-                    if worktree_branch.is_some() {
-                        let mut command = std::process::Command::new("git");
-                        command
-                            .args(["worktree", "remove"])
-                            .arg(tempdir.path())
-                            .arg("--force");
-                        ensure!(
-                            command.status().context("Could not start git")?.success(),
-                            "cannot remove working tree"
-                        );
-                    }
-                }
-            }
+        } else if worktree_branch.is_some() {
+            let mut command = std::process::Command::new("git");
+            command
+                .args(["worktree", "remove"])
+                .arg(self.0.path())
+                .arg("--force");
+
+            ensure!(
+                command.status().context("Could not start git")?.success(),
+                "cannot remove working tree"
+            );
         }
 
         kill_subprocesses(subprocesses)
@@ -338,11 +309,7 @@ impl Project {
         project_name: Option<&str>,
         preserved_project_dir: Option<&Path>,
     ) -> Result<PathBuf> {
-        let tmp_dir = match self {
-            #[cfg(feature = "generate")]
-            Self::Template(path) => path,
-            Self::Temporary(tempdir) => tempdir.into_path(),
-        };
+        let tmp_dir = self.0.into_path();
 
         let mut final_dir = if let Some(preserved_project_dir) = preserved_project_dir {
             if !preserved_project_dir.exists() {
@@ -368,13 +335,5 @@ impl Project {
         };
 
         Ok(final_dir)
-    }
-
-    fn path(&self) -> &Path {
-        match self {
-            #[cfg(feature = "generate")]
-            Self::Template(path) => path,
-            Self::Temporary(tempdir) => tempdir.path(),
-        }
     }
 }
