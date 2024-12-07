@@ -21,7 +21,7 @@ pub enum Dependency {
 pub fn parse_dependency(s: &str) -> Result<Dependency> {
     static RE: LazyLock<Regex> = LazyLock::new(|| {
         Regex::new(r"^((?P<name>[^+=/]+)=)?(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]*?(?P<url_end>/[^#+/]+)?)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(?P<features>(\+[^+]+)*)$")
-            .unwrap()
+            .expect("dependency's regex must be compiled")
     });
 
     match RE.captures(s) {
