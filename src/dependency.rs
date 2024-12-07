@@ -1,6 +1,6 @@
 use anyhow::{bail, Result};
-use once_cell::sync::Lazy;
 use regex::Regex;
+use std::sync::LazyLock;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Dependency {
@@ -19,11 +19,9 @@ pub enum Dependency {
 }
 
 pub fn parse_dependency(s: &str) -> Result<Dependency> {
-    // This will change when `std::lazy` is released.
-    // See https://github.com/rust-lang/rust/issues/74465.
-    static RE: Lazy<Regex> = Lazy::new(|| {
+    static RE: LazyLock<Regex> = LazyLock::new(|| {
         Regex::new(r"^((?P<name>[^+=/]+)=)?(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]*?(?P<url_end>/[^#+/]+)?)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(?P<features>(\+[^+]+)*)$")
-            .unwrap()
+            .expect("dependency's regex must be compiled")
     });
 
     match RE.captures(s) {
