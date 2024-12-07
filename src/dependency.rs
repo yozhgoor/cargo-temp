@@ -19,12 +19,12 @@ pub enum Dependency {
 }
 
 pub fn parse_dependency(s: &str) -> Result<Dependency> {
-    let re: LazyCell<Regex> = LazyCell::new(|| {
+    static RE: LazyCell<Regex> = LazyCell::new(|| {
         Regex::new(r"^((?P<name>[^+=/]+)=)?(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]*?(?P<url_end>/[^#+/]+)?)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(?P<features>(\+[^+]+)*)$")
             .unwrap()
     });
 
-    match re.captures(s) {
+    match RE.captures(s) {
         Some(caps) => {
             let features = caps
                 .name("features")
