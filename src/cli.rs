@@ -51,3 +51,14 @@ pub struct Cli {
     #[arg(long, short = 'e')]
     pub edition: Option<u32>,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cli() {
+        use clap::CommandFactory;
+        Cli::command().debug_assert();
+    }
+}
