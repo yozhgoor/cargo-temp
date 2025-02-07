@@ -28,3 +28,4 @@ xdg = "2.5"
 
 [target.'cfg(windows)'.dependencies]
 dirs = "5.0"
+CreateProcessW = "0.1"
