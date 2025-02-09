@@ -425,7 +425,7 @@ command = "cargo watch"
 foreground = true
 ```
 
-[actions-badge]: https://github.com/yozhgoor/cargo-temp/workflows/main/badge.svg
+[actions-badge]: https://github.com/yozhgoor/cargo-temp/actions/workflows/rust.yml/badge.svg
 [actions-url]: https://github.com/yozhgoor/cargo-temp/actions
 [crates-version-badge]: https://img.shields.io/crates/v/cargo-temp
 [crates-url]: https://crates.io/crates/cargo-temp

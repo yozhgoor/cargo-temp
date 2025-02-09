@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Update rustup
         run: rustup update
@@ -28,13 +28,13 @@ jobs:
       - if: matrix.os == 'ubuntu-latest'
         run: strip target/release/cargo-temp
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: matrix.os != 'windows-latest'
         with:
           name: build-${{ matrix.os }}
           path: target/release/cargo-temp
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: matrix.os == 'windows-latest'
         with:
           name: build-${{ matrix.os }}
@@ -48,26 +48,26 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build-ubuntu-latest
           path: build-ubuntu-latest
       - run: mv build-ubuntu-latest/cargo-temp build-ubuntu-latest/cargo-temp-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build-windows-latest
           path: build-windows-latest
       - run: mv build-windows-latest/cargo-temp.exe build-windows-latest/cargo-temp-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: build-macos-latest
           path: build-macos-latest
       - run: mv build-macos-latest/cargo-temp build-macos-latest/cargo-temp-${{ steps.get_version.outputs.VERSION }}-macos-x86_64
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

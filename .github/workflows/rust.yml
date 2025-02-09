@@ -3,8 +3,6 @@ name: Rust
 on:
   push:
     branches: [ main ]
-  schedule:
-    - cron: 0 0 1 * *
   pull_request:
     branches: [ main ]
 
@@ -23,7 +21,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: Swatinem/rust-cache@v2
         with:
