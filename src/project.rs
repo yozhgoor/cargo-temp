@@ -2,13 +2,13 @@ use crate::{
     cli::Cli,
     config::{Config, Depth},
     dependency::format_dependency,
-    subprocess::{kill_subprocesses, start_subprocesses, Child},
+    subprocess::{Child, kill_subprocesses, start_subprocesses},
 };
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use std::{
     env,
-    fs::{create_dir_all, remove_file, rename, write, OpenOptions},
-    io::{stdin, Write},
+    fs::{OpenOptions, create_dir_all, remove_file, rename, write},
+    io::{Write, stdin},
     path::{Path, PathBuf},
     process::Command,
 };
@@ -65,7 +65,8 @@ impl Project {
 
             if env::var("CARGO_TARGET_DIR").is_err() {
                 if let Some(path) = &config.cargo_target_dir {
-                    env::set_var("CARGO_TARGET_DIR", path);
+                    // TODO: Audit that the environment access only happens in single-threaded code.
+                    unsafe { env::set_var("CARGO_TARGET_DIR", path) };
                 }
             }
 

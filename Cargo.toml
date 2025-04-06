@@ -1,7 +1,7 @@
 [package]
 name = "cargo-temp"
 version = "0.3.2"
-edition = "2021"
+edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "A CLI tool that allow you to create a temporary new rust project using cargo with already installed dependencies"
 repository = "https://github.com/yozhgoor/cargo-temp"

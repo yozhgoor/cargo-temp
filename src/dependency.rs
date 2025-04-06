@@ -1,4 +1,4 @@
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use regex::Regex;
 use std::sync::LazyLock;
 
@@ -126,7 +126,7 @@ mod dependency_tests {
     use super::*;
 
     macro_rules! test_dependency {
-        ($name:ident, $dep:expr, $in:expr, $out:expr) => {
+        ($name:ident, $dep:expr_2021, $in:expr_2021, $out:expr_2021) => {
             #[test]
             fn $name() {
                 let dependency = $dep;
@@ -143,7 +143,7 @@ mod dependency_tests {
                 );
             }
         };
-        ($name:ident, $dep:expr, $in:expr, $in_without_name:expr, $out:expr) => {
+        ($name:ident, $dep:expr_2021, $in:expr_2021, $in_without_name:expr_2021, $out:expr_2021) => {
             #[test]
             fn $name() {
                 let dependency = $dep;
