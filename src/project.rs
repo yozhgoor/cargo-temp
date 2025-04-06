@@ -65,7 +65,12 @@ impl Project {
 
             if env::var("CARGO_TARGET_DIR").is_err() {
                 if let Some(path) = &config.cargo_target_dir {
-                    // TODO: Audit that the environment access only happens in single-threaded code.
+                    // # Safety
+                    //
+                    // This function is safe to call in a single-threaded program and also always
+                    // safe to call on Windows, in single-threaded and multi-threaded programs.
+                    //
+                    // See https://doc.rust-lang.org/std/env/fn.set_var.html
                     unsafe { env::set_var("CARGO_TARGET_DIR", path) };
                 }
             }
