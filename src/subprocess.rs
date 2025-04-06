@@ -6,10 +6,10 @@ use std::path::{Path, PathBuf};
 #[cfg(unix)]
 use std::{env, process::Stdio, time};
 
-#[cfg(unix)]
-pub use std::process::{Child, Command};
 #[cfg(windows)]
 pub use CreateProcessW::{Child, Command};
+#[cfg(unix)]
+pub use std::process::{Child, Command};
 
 #[derive(Serialize, Deserialize)]
 pub struct SubProcess {

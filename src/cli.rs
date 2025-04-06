@@ -1,4 +1,4 @@
-use crate::dependency::{parse_dependency, Dependency};
+use crate::dependency::{Dependency, parse_dependency};
 
 /// This tool allow you to create a new Rust temporary project in a temporary
 /// directory.
