@@ -30,10 +30,10 @@ impl Config {
     fn new() -> Result<Self> {
         #[cfg(unix)]
         let temporary_project_dir = {
-            let cache_dir = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"))
-                .context("could not find HOME directory")?;
+            let base = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"));
 
-            cache_dir.get_cache_home()
+            base.get_cache_home()
+                .context("could not find HOME directory")?
         };
         #[cfg(windows)]
         let temporary_project_dir = dirs::cache_dir()
@@ -57,7 +57,7 @@ impl Config {
     pub fn get_or_create() -> Result<Self> {
         #[cfg(unix)]
         let config_file_path = {
-            let config_dir = xdg::BaseDirectories::with_prefix("cargo-temp")?;
+            let config_dir = xdg::BaseDirectories::with_prefix("cargo-temp");
             config_dir.place_config_file("config.toml")?
         };
         #[cfg(windows)]

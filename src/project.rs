@@ -63,16 +63,16 @@ impl Project {
                 }
             };
 
-            if env::var("CARGO_TARGET_DIR").is_err() {
-                if let Some(path) = &config.cargo_target_dir {
-                    // # Safety
-                    //
-                    // This function is safe to call in a single-threaded program and also always
-                    // safe to call on Windows, in single-threaded and multi-threaded programs.
-                    //
-                    // See https://doc.rust-lang.org/std/env/fn.set_var.html
-                    unsafe { env::set_var("CARGO_TARGET_DIR", path) };
-                }
+            if env::var("CARGO_TARGET_DIR").is_err()
+                && let Some(path) = &config.cargo_target_dir
+            {
+                // # Safety
+                //
+                // This function is safe to call in a single-threaded program and also always
+                // safe to call on Windows, in single-threaded and multi-threaded programs.
+                //
+                // See https://doc.rust-lang.org/std/env/fn.set_var.html
+                unsafe { env::set_var("CARGO_TARGET_DIR", path) };
             }
 
             let res = shell_process.current_dir(project_path).spawn();
@@ -315,7 +315,7 @@ impl Project {
         project_name: Option<&str>,
         preserved_project_dir: Option<&Path>,
     ) -> Result<PathBuf> {
-        let tmp_dir = self.0.into_path();
+        let tmp_dir = self.0.keep();
 
         let mut final_dir = if let Some(preserved_project_dir) = preserved_project_dir {
             if !preserved_project_dir.exists() {
