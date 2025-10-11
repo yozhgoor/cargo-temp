@@ -81,7 +81,7 @@ checksum = "2261d10cca569e4643e526d8dc2e62e433cc8aba21ab764233731f8d369bf394"
 
 [[package]]
 name = "cargo-temp"
-version = "0.3.4"
+version = "0.3.5"
 dependencies = [
  "CreateProcessW",
  "anyhow",
