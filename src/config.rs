@@ -17,7 +17,8 @@ pub struct Config {
     pub editor: Option<String>,
     #[serde(default)]
     pub editor_args: Option<Vec<String>>,
-    pub temporary_project_dir: PathBuf,
+    #[serde(default)]
+    pub temporary_project_dir: Option<PathBuf>,
     #[serde(default)]
     pub git_repo_depth: Option<Depth>,
     #[serde(default)]
@@ -28,18 +29,6 @@ pub struct Config {
 
 impl Config {
     fn new() -> Result<Self> {
-        #[cfg(unix)]
-        let temporary_project_dir = {
-            let base = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"));
-
-            base.get_cache_home()
-                .context("could not find HOME directory")?
-        };
-        #[cfg(windows)]
-        let temporary_project_dir = dirs::cache_dir()
-            .context("could not get cache directory")?
-            .join(env!("CARGO_PKG_NAME"));
-
         Ok(Self {
             welcome_message: true,
             cargo_target_dir: None,
@@ -48,10 +37,25 @@ impl Config {
             editor: None,
             editor_args: None,
             git_repo_depth: None,
-            temporary_project_dir,
+            temporary_project_dir: Some(Self::default_temporary_project_dir()?),
             vcs: None,
             subprocesses: Default::default(),
         })
+    }
+
+    #[cfg(unix)]
+    pub(crate) fn default_temporary_project_dir() -> Result<PathBuf> {
+        let base = xdg::BaseDirectories::with_prefix(env!("CARGO_PKG_NAME"));
+
+        base.get_cache_home()
+            .context("could not find HOME directory")
+    }
+
+    #[cfg(windows)]
+    pub(crate) fn default_temporary_project_dir() -> Result<PathBuf> {
+        dirs::cache_dir()
+            .context("could not get cache directory")?
+            .join(env!("CARGO_PKG_NAME"))
     }
 
     pub fn get_or_create() -> Result<Self> {
@@ -90,4 +94,14 @@ impl Config {
 pub enum Depth {
     Active(bool),
     Level(u8),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn read_empty_config() {
+        let _: Config = toml::from_str("").unwrap();
+    }
 }

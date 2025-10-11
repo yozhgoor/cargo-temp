@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::Parser;
-use std::{env, fs::create_dir, io::Write};
+use std::{env, io::Write};
 
 #[cfg(windows)]
 mod binding;
@@ -28,7 +28,6 @@ fn main() -> Result<()> {
 
     // Read configuration from disk or generate a default one.
     let config = Config::get_or_create()?;
-    let _ = create_dir(&config.temporary_project_dir);
 
     Project::execute(cli, config)
 }
