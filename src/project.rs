@@ -17,9 +17,14 @@ pub struct Project(tempfile::TempDir);
 
 impl Project {
     pub fn execute(cli: Cli, config: Config) -> Result<()> {
+        let temporary_project_dir = match config.temporary_project_dir.clone() {
+            Some(path) => path,
+            None => Config::default_temporary_project_dir()?,
+        };
+
         let project = Self::temporary(
             cli.clone(),
-            &config.temporary_project_dir,
+            &temporary_project_dir,
             config.git_repo_depth.as_ref(),
             config.vcs.as_deref(),
         )?;
