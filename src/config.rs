@@ -53,9 +53,9 @@ impl Config {
 
     #[cfg(windows)]
     pub(crate) fn default_temporary_project_dir() -> Result<PathBuf> {
-        dirs::cache_dir()
+        Ok(dirs::cache_dir()
             .context("could not get cache directory")?
-            .join(env!("CARGO_PKG_NAME"))
+            .join(env!("CARGO_PKG_NAME")))
     }
 
     pub fn get_or_create() -> Result<Self> {
