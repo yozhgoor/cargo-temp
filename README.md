@@ -5,79 +5,79 @@
 [![dependencies status][deps-badge]][deps-url]
 ![licenses][licenses-badge]
 
-A CLI tool that allows you to create a new rust project in a temporary directory with already
-installed dependencies.
+Quickly create disposable Rust project with pre-installed dependencies.
+
+Ever wanted to test a new crate, an idea or debug a concept, like with the [rust-playground][rust-playground]
+but on your system? `cargo-temp` lets you create a fully functional Rust project in a temporary
+directory.
+
+- **Instant setup**: Create a new project with dependencies in one command.
+- **No clean up required**: Projects are temporary by default but can be preserved if you change your
+  mind.
+- [**Git-friendly**][#git]: Clone and test projects from Git repos, with history truncated for a clean
+  slate.
+- [**Customizable**][#configuration]: You can customize the behavior of `cargo-temp` in a single configuration file.
 
 ## Install
 
-Requires Rust 1.51.
-
 ```
-cargo install cargo-temp
+cargo install --locked cargo-temp
 ```
 
 ## Usage
 
 Create a new temporary project:
+```
+cargo-temp
+```
 
-* With no additional dependencies:
-    ```
-    cargo-temp
-    ```
+TODO: Add section about the real usage (shell, possibility, what the user is facing).
 
-* With multiple dependencies:
-    ```
-    cargo-temp rand tokio
-    ```
+### Dependencies
 
-* When specifying a version:
-    ```
-    cargo-temp anyhow=1.0
-    ```
+You can specify multiple dependencies:
+```
+cargo-temp rand tokio
+```
 
-Using the [cargo's comparison requirements][comparison]:
+By default, `*` will be used as the version but you can specify it using `=`:
+```
+cargo-temp anyhow=1.0
+```
 
-* Exact version:
-    ```
-    cargo-temp anyhow==1.0.13
-    ```
-
-* Maximal version:
-    ```
-    cargo-temp anyhow=<1.0.2
-    ```
+[Cargo's comparison requirements][comparison] are supported. For example, you can specify a maximal
+version, like this:
+```
+cargo-temp anyhow=<1.0.2
+```
 
 ### Repositories
 
-You can add repositories to your `Cargo.toml`.
-
-Examples:
+You can use URL to repositories:
 
 * HTTP:
     ```
     cargo-temp anyhow=https://github.com/dtolnay/anyhow
     ```
-
 * SSH
     ```
     cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
     ```
 
-If you have some problems to add a dependency over SSH, please refer to this:
-[Support SSH Git URLs][ssh-issue]. If it doesn't help, please file an issue.
+If you have issues with adding dependencies over SSH, please refer to this: [Support SSH Git URLs][ssh-issue].
+If it doesn't help, please file an issue.
 
-* Without package name
-    ```
-    cargo-temp https://github.com/dtolnay/anyhow.git
-    ```
+If not provided, the package name will be parsed from the URL. For example, this will add the
+`anyhow` package:
+```
+cargo-temp https://github.com/dtolnay/anyhow.git
+```
 
-To choose a branch or a revision:
-
+You can also specify a branch or a revision:
 * Branch:
     ```
     cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master
     ```
-
 * Revision:
     ```
     cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38
@@ -96,20 +96,13 @@ Examples:
     ```
     cargo-temp serde+derive
     ```
-
 * A dependency with version and feature
     ```
     cargo-temp serde=1.0+derive
     ```
-
 * A repository with branch and feature
     ```
     cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
-    ```
-
-* Without specifying package name
-    ```
-    cargo-temp https://github.com/tokio-rs/tokio#branch=compat+io_std
     ```
 
 If you want to add multiple features you can do it with `+`, like this:
@@ -126,27 +119,14 @@ If you change your mind and decide to keep the project, you can just delete the
 `TO_DELETE` file and the directory will not be deleted when the shell or the
 editor exits.
 
-### Git Working Tree
+It's possible to specify the directory where the project will be preserved with the
+`preserved_project_dir` setting.
 
-You can create a [git worktree][worktree] from the current repository using:
+### Git
 
-```
-cargo-temp --worktree
-```
+#### Temporary Git Clone
 
-This will create a new working tree at the current HEAD.
-You can specify a branch like this:
-
-```
-cargo-temp --worktree <branch>
-```
-
-When exiting the shell (or your editor) the working tree will be cleaned up.
-Equivalent to `git worktree prune`.
-
-### Temporary Git Clone
-
-If you want to create a temporary project from a Git repository, you can use the `--git` option with
+If you want to create a project from a Git repository, you can use the `--git` option with
 the repository's URL:
 
 ```
@@ -167,19 +147,31 @@ config file:
     git_repo_depth = false
     ```
 
-`git_repo_depth = true` is the same as the default behavior.
+#### Git Working Tree
+
+You can create a [git worktree][worktree] from the current repository using:
+```
+cargo-temp --worktree
+```
+
+This will create a new working tree at the current HEAD.
+You can specify a branch like this:
+```
+cargo-temp --worktree <branch>
+```
+
+When exiting the shell (or your editor) the working tree will be cleaned up.
+Equivalent to `git worktree prune`.
 
 ### Benchmarking
 
 If you want to create a temporary project with benchmarking using [`criterion-rs`][criterion], you
 can use the `--bench` option with an optional name for the benchmark file:
-
 ```
 cargo-temp --bench my_benchmark
 ```
 
 The resulting directory layout will look like this:
-
 ```
 tmp-id/
 ├── benches
@@ -191,7 +183,6 @@ tmp-id/
 ```
 
 This will also add these lines to the `Cargo.toml` of the project:
-
 ```toml
 [dev-dependencies]
 criterion = "*"
@@ -205,7 +196,6 @@ harness = false
 ```
 
 And finally, the benchmark file contains some imports and a `Hello, world!` example:
-
 ```rust
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
@@ -224,7 +214,6 @@ criterion_main!(benches);
 
 If you want to specify a specific edition for the temporary project, you can use the `--edition`
 option:
-
 ```
 cargo-temp --edition 2015
 ```
@@ -240,7 +229,6 @@ If the argument doesn't match these options, the default is the latest edition.
 ### Project name
 
 If you want to provide a specific project name, you can use the `--name` option:
-
 ```
 cargo-temp --name project
 ```
@@ -248,7 +236,7 @@ cargo-temp --name project
 This name will be used as the suffix of the temporary project directory, like `tmp-wXyZ-project`.
 If you decide to preserve the project, the directory will be renamed to match the project's name.
 
-## Settings
+## Configuration
 
 The config file is located at `{CONFIG_DIR}/cargo-temp/config.toml`.
 When you run `cargo-temp` for the first time it will be created automatically.
@@ -261,9 +249,8 @@ Each time you create a temporary project, a welcome message explain how to exit 
 project and how to preserve it when exiting.
 
 This message is enabled by default and can be disabled using the `welcome_message` setting:
-
 ```toml
-welcome_message = false # You can also remove this line from the config file
+welcome_message = false # You can also completely remove the line
 ```
 
 ### Temporary project directory
@@ -286,6 +273,15 @@ environment variable is already set.
 
 ```toml
 cargo_target_dir = "/home/name/repos/tmp"
+```
+
+### Preserved project directory
+
+Path to the directory where you want to preserve a saved project. This setting is optional and will
+default to `temporary_project_dir` if not specified.
+
+```toml
+preserved_project_dir
 ```
 
 ### Editor
@@ -326,18 +322,18 @@ The `--vcs` value will be passed as is to cargo.
 
 ### Confirmation prompt before deleting the project
 
-cargo-temp will automatically delete the temporary project if the flag file `TO_DELETE` exists
-in the project when exiting the shell. If you prefer to enable a prompt that asks you if you want
-to delete the project, you can add this to your `config.toml`:
-
+The project will be automatically deleted if the flag file `TO_DELETE` exists when exiting the
+shell. If you prefer to enable a prompt that ask a confirmation before deleting the project, you can
+add this to your `config.toml`:
 ```toml
 prompt = true
 ```
 
+This is disabled by default.
+
 ### Subprocesses
 
 You can spawn subprocess along your temporary shell like this:
-
 ```toml
 [[subprocess]]
 command = "alacritty -e cargo watch -x run"
@@ -370,59 +366,6 @@ Windows:
   the parameter is false, the handles are not inherited
   (see [CreateProcessW][CreateProcessW]).
 
-#### Examples
-
-* Unix:
-    ```toml
-    [[subprocess]]
-    command = "cargo run"
-    foreground = true
-
-    [[subprocess]]
-    command = "firefox"
-    foreground = false
-    ```
-* Windows
-    ```toml
-    [[subprocess]]
-    command = "cargo.exe run"
-    foreground = true
-
-    [[subprocess]]
-    command = "firefox.exe"
-    foreground = false
-    ```
-## Configuration file example
-
-```toml
-# Print a welcome message when creating a new temporary project. Enabled by default.
-welcome-message = true
-
-# Path where the temporary projects are created. Cache directory by default.
-temporary_project_dir = "/home/me/repos/temp"
-
-# Cargo's target directory override. Optional.
-cargo_target_dir = "/home/me/repos/target"
-
-# Open the temporary project with VS Code. Optional.
-editor = "/usr/bin/code"
-editor_args = ["--wait", "--new-window"]
-
-# Specify the VCS you want to use within the project. Default is `git`.
-vcs = "pijul"
-
-# Specify the path to the directory where you want to preserve a saved project. Optional (default is `temporary_project_dir`).
-preserved_project_dir = "/home/me/projects/"
-
-# Use a confirmation prompt before deleting a project
-prompt = true
-
-# Watch over changes in the project using `cargo watch`
-[[subprocess]]
-command = "cargo watch"
-foreground = true
-```
-
 [actions-badge]: https://github.com/yozhgoor/cargo-temp/actions/workflows/rust.yml/badge.svg
 [actions-url]: https://github.com/yozhgoor/cargo-temp/actions
 [crates-version-badge]: https://img.shields.io/crates/v/cargo-temp
@@ -430,6 +373,7 @@ foreground = true
 [deps-badge]: https://deps.rs/repo/github/yozhgoor/cargo-temp/status.svg
 [deps-url]: https://deps.rs/crate/cargo-temp
 [licenses-badge]: https://img.shields.io/crates/l/cargo-temp
+[rust-playground]: https://play.rust-lang.org
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [criterion]: https://docs.rs/criterion/latest/criterion
 [xdg]: https://docs.rs/xdg/latest/xdg/
