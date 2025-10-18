@@ -20,7 +20,7 @@ jobs:
           - os: macos-latest
             name: macos
             binary: cargo-temp
-          - os: windows
+          - os: windows-latest
             name: windows
             binary: cargo-temp.exe
 
