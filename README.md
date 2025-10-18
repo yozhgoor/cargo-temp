@@ -5,10 +5,8 @@
 [![dependencies status][deps-badge]][deps-url]
 ![licenses][licenses-badge]
 
-A CLI tool that allows you to create a new rust project in a temporary directory
-with already installed dependencies.
-
-![Cargo-temp demo][demo]
+A CLI tool that allows you to create a new rust project in a temporary directory with already
+installed dependencies.
 
 ## Install
 
@@ -432,7 +430,6 @@ foreground = true
 [deps-badge]: https://deps.rs/repo/github/yozhgoor/cargo-temp/status.svg
 [deps-url]: https://deps.rs/crate/cargo-temp
 [licenses-badge]: https://img.shields.io/crates/l/cargo-temp
-[demo]: t-rec.gif
 [comparison]: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#comparison-requirements
 [criterion]: https://docs.rs/criterion/latest/criterion
 [xdg]: https://docs.rs/xdg/latest/xdg/
