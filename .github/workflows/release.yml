@@ -11,13 +11,27 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - windows-latest
           - macos-latest
+          - windows-latest
+        include:
+          - os: ubuntu-latest
+            name: linux
+            binary: cargo-temp
+          - os: macos-latest
+            name: macos
+            binary: cargo-temp
+          - os: windows
+            name: windows
+            binary: cargo-temp.exe
 
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
 
       - name: Update rustup
         run: rustup update
@@ -25,20 +39,13 @@ jobs:
       - name: Build release
         run: cargo build --release
 
-      - if: matrix.os == 'ubuntu-latest'
+      - if: runner.os != 'Windows'
         run: strip target/release/cargo-temp
 
       - uses: actions/upload-artifact@v4
-        if: matrix.os != 'windows-latest'
         with:
-          name: build-${{ matrix.os }}
-          path: target/release/cargo-temp
-
-      - uses: actions/upload-artifact@v4
-        if: matrix.os == 'windows-latest'
-        with:
-          name: build-${{ matrix.os }}
-          path: target/release/cargo-temp.exe
+          name: build-${{ matrix.name }}
+          path: target/release/${{ matrix.binary }}
 
   release:
     needs: [ build ]
@@ -50,21 +57,23 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: build-ubuntu-latest
-          path: build-ubuntu-latest
-      - run: mv build-ubuntu-latest/cargo-temp build-ubuntu-latest/cargo-temp-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
+          name: build-linux
+          path: build-linux
 
       - uses: actions/download-artifact@v4
         with:
-          name: build-windows-latest
-          path: build-windows-latest
-      - run: mv build-windows-latest/cargo-temp.exe build-windows-latest/cargo-temp-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
+          name: build-macos
+          path: build-macos
 
       - uses: actions/download-artifact@v4
         with:
-          name: build-macos-latest
-          path: build-macos-latest
-      - run: mv build-macos-latest/cargo-temp build-macos-latest/cargo-temp-${{ steps.get_version.outputs.VERSION }}-macos-x86_64
+          name: build-windows
+          path: build-windows
+
+      - run: |
+        mv build-linux/cargo-temp build-linux/cargo-temp-${{ steps.get_version.outputs.VERSION }}-linux-x86_64
+        mv build-macos/cargo-temp build-macos/cargo-temp-${{ steps.get_version.outputs.VERSION }}-macos-x86_64
+        mv build-windows/cargo-temp.exe build-windows/cargo-temp-${{ steps.get_version.outputs.VERSION }}-windows-x86_64.exe
 
       - name: Release
         uses: softprops/action-gh-release@v2
@@ -72,6 +81,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            build-ubuntu-latest/*
-            build-macos-latest/*
-            build-windows-latest/*
+            build-linux/*
+            build-macos/*
+            build-windows/*
