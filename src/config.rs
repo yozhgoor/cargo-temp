@@ -1,6 +1,6 @@
 use crate::subprocess::SubProcess;
 use anyhow::{Context, Result};
-use serde::{Deserialize};
+use serde::Deserialize;
 use std::{fs, path::PathBuf};
 
 #[derive(Debug, Deserialize, Eq, PartialEq)]
@@ -28,14 +28,15 @@ pub struct Config {
 }
 
 impl Config {
-    fn from_template() -> Result<Self> {
-        let temporary_project_dir = Self::default_temporary_project_dir()?;
+    fn template() -> Result<String> {
+        let welcome_message = true;
+        let temporary_project_dir = Config::default_temporary_project_dir()?;
 
-        let template = format!(include_str!("../config_template.toml"), true, temporary_project_dir.display());
-
-        let config = toml::de::from_str(&template)?;
-
-        Ok(config)
+        Ok(format!(
+            include_str!("../config_template.toml"),
+            welcome_message,
+            temporary_project_dir.display()
+        ))
     }
 
     #[cfg(unix)]
@@ -72,7 +73,7 @@ impl Config {
         let config: Self = match fs::read_to_string(&config_file_path) {
             Ok(file) => toml::de::from_str(&file)?,
             Err(_) => {
-                fs::write(&config_file_path, include_str!("../config_template.toml"))?;
+                fs::write(&config_file_path, Config::template()?)?;
                 log::info!("Config file created at: {}", config_file_path.display());
 
                 Config::default()
@@ -118,10 +119,12 @@ mod tests {
 
     #[test]
     fn from_template() {
-        let template = Config::from_template().unwrap();
+        let template: Config = toml::de::from_str(&Config::template().unwrap()).unwrap();
 
-        let mut default = Config::default();
-        default.temporary_project_dir = Some(Config::default_temporary_project_dir().unwrap());
+        let default = Config {
+            temporary_project_dir: Some(Config::default_temporary_project_dir().unwrap()),
+            ..Default::default()
+        };
 
         assert_eq!(template, default);
     }

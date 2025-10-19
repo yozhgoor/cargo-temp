@@ -1,6 +1,6 @@
 use crate::config::Config;
 use anyhow::Result;
-use serde::{Deserialize};
+use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
 #[cfg(unix)]
