@@ -1,4 +1,4 @@
-# `cargo-temp`'s configuration file.
+# cargo-temp's configuration file.
 
 # Path to the directory where the temporary projects are created.
 #

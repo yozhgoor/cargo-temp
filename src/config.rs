@@ -29,8 +29,9 @@ pub struct Config {
 
 impl Config {
     fn template() -> Result<String> {
-        let welcome_message = true;
         let temporary_project_dir = Config::default_temporary_project_dir()?;
+
+        let welcome_message = true;
 
         #[cfg(unix)]
         let editor = "/usr/bin/code";
@@ -39,9 +40,9 @@ impl Config {
 
         Ok(format!(
             include_str!("../config_template.toml"),
-            welcome_message,
             temporary_project_dir.display(),
-            code_path,
+            welcome_message,
+            editor,
         ))
     }
 
