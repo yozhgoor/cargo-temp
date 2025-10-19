@@ -7,7 +7,7 @@
 
 Quickly create disposable Rust project with pre-installed dependencies.
 
-Ever wanted to test a new crate, an idea or debug a concept, like with the [rust-playground][rust-playground]
+Ever wanted to test a new crate, an idea or debug a concept, like in the [rust-playground][rust-playground]
 but on your system? `cargo-temp` lets you create a fully functional Rust project in a temporary
 directory.
 
@@ -16,7 +16,7 @@ directory.
   mind.
 - [**Git-friendly**][#git]: Clone and test projects from Git repos, with history truncated for a clean
   slate.
-- [**Customizable**][#configuration]: You can customize the behavior of `cargo-temp` in a single configuration file.
+- [**Customizable**][#configuration]: Tailor `cargo-temp`'s behavior with a simple configuration file.
 
 ## Install
 
@@ -31,82 +31,67 @@ Create a new temporary project:
 cargo-temp
 ```
 
-TODO: Add section about the real usage (shell, possibility, what the user is facing).
+This command open a shell in the project root, letting you test or prototype using
+your favorite workflow. When you're done, just exit the shell and the project will be automatically
+deleted. However, if you want to keep the project, simply remove the [`TO_DELETE`](#features) file
+before exiting.
+
+## Command-line arguments
 
 ### Dependencies
 
-You can specify multiple dependencies:
+Specify one or more dependencies directly:
 ```
 cargo-temp rand tokio
 ```
 
-By default, `*` will be used as the version but you can specify it using `=`:
+By default, the latest version (`*`) is used. To specify a version, use `=`:
 ```
 cargo-temp anyhow=1.0
 ```
 
-[Cargo's comparison requirements][comparison] are supported. For example, you can specify a maximal
-version, like this:
+You can also use [Cargo's comparison requirements][comparison] for more control:
 ```
 cargo-temp anyhow=<1.0.2
 ```
 
 ### Repositories
 
-You can use URL to repositories:
+Add dependencies directly from a Git repository using HTTP or SSH URLs:
+```
+cargo-temp rand=https://github.com/rust-random/rand
 
-* HTTP:
-    ```
-    cargo-temp anyhow=https://github.com/dtolnay/anyhow
-    ```
-* SSH
-    ```
-    cargo-temp anyhow=ssh://git@github.com/dtolnay/anyhow.git
-    ```
+cargo-temp rand=ssh://git@github.com/rust-random/rand.git
+```
 
-If you have issues with adding dependencies over SSH, please refer to this: [Support SSH Git URLs][ssh-issue].
+If you encounter issues with SSH, please refer to [this guide][ssh-issue].
 If it doesn't help, please file an issue.
 
-If not provided, the package name will be parsed from the URL. For example, this will add the
-`anyhow` package:
+If no package name are provided, it will be parsed from the URL. For example, this will add the
+`rand` package:
 ```
-cargo-temp https://github.com/dtolnay/anyhow.git
+cargo-temp https://github.com/rust-random/rand.git
 ```
 
 You can also specify a branch or a revision:
-* Branch:
-    ```
-    cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#branch=master
-    ```
-* Revision:
-    ```
-    cargo-temp anyhow=https://github.com/dtolnay/anyhow.git#rev=7e0f77a38
+```
+cargo-temp rand=https://github.com/rust-random/rand.git#branch=master
+
+cargo-temp rand=https://github.com/rust-random/rand.git#rev=7e0f77a38
+```
+
+If neither is specified, the default branch of the repository is used.
+
+You can add features to a dependency with `+`:
+```
+cargo-temp serde+derive
+
+cargo-temp serde=1.0+derive
+
+cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
     ```
 
-Without a branch or a revision, cargo will use the default branch of the
-repository.
-
-### Dependencies features
-
-You can add features to a dependency with `+`.
-
-Examples:
-
-* A dependency with feature
-    ```
-    cargo-temp serde+derive
-    ```
-* A dependency with version and feature
-    ```
-    cargo-temp serde=1.0+derive
-    ```
-* A repository with branch and feature
-    ```
-    cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
-    ```
-
-If you want to add multiple features you can do it with `+`, like this:
-
+For multiple features, chain them with `+`:
 ```
 cargo-temp serde=1.0+derive+alloc
 ```
@@ -120,7 +105,7 @@ If you change your mind and decide to keep the project, you can just delete the
 editor exits.
 
 It's possible to specify the directory where the project will be preserved with the
-`preserved_project_dir` setting.
+`preserved_project_dir` [setting](#configuration).
 
 ### Git
 
@@ -171,45 +156,6 @@ can use the `--bench` option with an optional name for the benchmark file:
 cargo-temp --bench my_benchmark
 ```
 
-The resulting directory layout will look like this:
-```
-tmp-id/
-├── benches
-│   └── my_benchmark.rs
-├── Cargo.toml
-├── src
-│   └── main.rs
-└── TO_DELETE
-```
-
-This will also add these lines to the `Cargo.toml` of the project:
-```toml
-[dev-dependencies]
-criterion = "*"
-
-[profile.release]
-debug = true
-
-[[bench]]
-name = "my_benchmark"
-harness = false
-```
-
-And finally, the benchmark file contains some imports and a `Hello, world!` example:
-```rust
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
-
-fn criterion_benchmark(_c: &mut Criterion) {
-    println!("Hello, world!");
-}
-
-criterion_group!(
-    benches,
-    criterion_benchmark
-);
-criterion_main!(benches);
-```
-
 ### Edition
 
 If you want to specify a specific edition for the temporary project, you can use the `--edition`
@@ -218,12 +164,11 @@ option:
 cargo-temp --edition 2015
 ```
 
+TODO: This shouldn't be in the readme but in the `--help` and error output
 The available options are:
-
 * `15` or `2015`
 * `18` or `2018`
 * `21` or `2021`
-
 If the argument doesn't match these options, the default is the latest edition.
 
 ### Project name
@@ -238,51 +183,19 @@ If you decide to preserve the project, the directory will be renamed to match th
 
 ## Configuration
 
-The config file is located at `{CONFIG_DIR}/cargo-temp/config.toml`.
-When you run `cargo-temp` for the first time it will be created automatically.
-We use the [XDG system][xdg] for both Linux and OSX
-and the [Known Folder system][knownfolder] on Windows.
 
-### Welcome message
+The configuration file is located at `{CONFIG_DIR}/cargo-temp/config.toml`.
+When you run `cargo-temp` for the first time it will be created automatically following the [XDG system][xdg]
+for both Linux and OSX and the [Known Folder system][knownfolder] on Windows.
 
-Each time you create a temporary project, a welcome message explain how to exit the temporary
-project and how to preserve it when exiting.
-
-This message is enabled by default and can be disabled using the `welcome_message` setting:
-```toml
-welcome_message = false # You can also completely remove the line
-```
-
-### Temporary project directory
-
-The path where the temporary projects are created.
-Set on the cache directory by default.
-
-```toml
-temporary_project_dir = "/home/name/.cache/cargo-temp/"
-```
-
-If the directory doesn't exist, it will be created with all of its parent components if
-they are missing.
-
-### Cargo target directory
-
-Cargo's target directory override.
-This setting is unset by default and will be ignored if the `CARGO_TARGET_DIR`
-environment variable is already set.
-
-```toml
-cargo_target_dir = "/home/name/repos/tmp"
-```
-
-### Preserved project directory
-
-Path to the directory where you want to preserve a saved project. This setting is optional and will
-default to `temporary_project_dir` if not specified.
-
-```toml
-preserved_project_dir
-```
+| Setting | Default | Type | Description |
+| --- | --- | --- | --- |
+| `welcome_message` | true | bool | Welcome message explaining how to exit the project and how to preserve it. |
+| `temporary_project_dir` | system cache directory | path | Path were the temporary projects are created. |
+| `cargo_target_dir` | None | path | Cargo's target directory override. |
+| `preserved_project_dir` | `temporary_project_dir` | path | Path to the directory where you want to preserve a saved project. |
+| `prompt` | false | bool | Enable a prompt that ask a confirmation before deleting the project on exit. |
+| `vcs` | "git" | String | Specify the VCS Cargo will use for your projects. |
 
 ### Editor
 
@@ -300,36 +213,6 @@ and `editor_args` to provide its arguments. These settings are unset by default.
     editor = "C:\\Program Files\\Microsoft VS Code\\Code.exe"
     editor_args = [ "--wait", "--new-window" ]
     ```
-
-### Use a VCS
-
-By default, cargo-temp will use the default cargo VCS for your projects (which
-is normally git), you can change that in the config file with the `vcs` option.
-
-```toml
-vcs = "pijul"
-```
-
-The possible values are
-
-* pijul
-* fossil
-* hg
-* git
-* none
-
-The `--vcs` value will be passed as is to cargo.
-
-### Confirmation prompt before deleting the project
-
-The project will be automatically deleted if the flag file `TO_DELETE` exists when exiting the
-shell. If you prefer to enable a prompt that ask a confirmation before deleting the project, you can
-add this to your `config.toml`:
-```toml
-prompt = true
-```
-
-This is disabled by default.
 
 ### Subprocesses
 
