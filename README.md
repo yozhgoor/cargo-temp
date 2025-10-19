@@ -180,70 +180,11 @@ If you decide to preserve the project, the directory will be renamed to match th
 ## Configuration
 
 The configuration file is located at `{CONFIG_DIR}/cargo-temp/config.toml`.
-When you run `cargo-temp` for the first time it will be created automatically following the
-[XDG system][xdg] for both Linux and OSX and the [Known Folder system][knownfolder] on Windows.
+When you run `cargo-temp` for the first time it will be created automatically.
+`CONFIG_DIR` is determined by following the [XDG system][xdg] for both Linux and OSX and the
+[Known Folder system][knownfolder] on Windows.
 
-
-
-| Setting | Default | Type | Description |
-| --- | --- | --- | --- |
-| `welcome_message` | true | bool | Welcome message explaining how to exit the project and how to preserve it. |
-| `temporary_project_dir` | system cache directory | path | Path were the temporary projects are created. |
-| `cargo_target_dir` | None | path | Cargo's target directory override. |
-| `preserved_project_dir` | None | path | Path to the directory where you want to preserve a saved project. |
-| `prompt` | false | bool | Enable a prompt that ask a confirmation before deleting the project on exit. |
-| `vcs` | "git" | String | Specify the VCS Cargo will use for your projects. |
-
-### Editor
-
-You can use `editor` to start an IDE instead of a shell and `editor_args` to provide its arguments.
-
-* Example to run VS Code on Unix
-    ```toml
-    editor = "/usr/bin/code"
-    editor_args = [ "--wait", "--new-window" ]
-    ```
-
-* Example to run VS Code on Windows
-    ```toml
-    editor = "C:\\Program Files\\Microsoft VS Code\\Code.exe"
-    editor_args = [ "--wait", "--new-window" ]
-    ```
-
-### Subprocesses
-
-You can spawn subprocess along your temporary shell like this:
-```toml
-[[subprocess]]
-command = "alacritty -e cargo watch -x run"
-foreground = false
-```
-
-The `command` field is a shell command like `echo Hello`.
-The `foreground` field allows to run the program in foreground instead of
-background.
-
-#### Additional settings
-
-* `working_dir` overrides the default working directory. The default is to use
-  the temporary directory that has been created.
-* `keep_on_exit` is used to keep the process alive after exiting the shell.
-  The default is to kill the process when the shell exits. This setting doesn't
-  work with foreground process.
-
-##### Platform specific
-
-Unix:
-* `stdout` and `stderr` settings allows enabling or disabling outputs. With a
-  background process, the default will be false, with a foreground process, the
-  default will be true. The `stdin` setting doesn't exist since it's always
-  disabled.
-
-Windows:
-* `inherit_handles` allows handles inheritance - If this parameter is true, each
-  inheritable handle in the calling process is inherited by the new process. If
-  the parameter is false, the handles are not inherited
-  (see [CreateProcessW][CreateProcessW]).
+A documented example is available [here][config_template].
 
 [actions-badge]: https://github.com/yozhgoor/cargo-temp/actions/workflows/rust.yml/badge.svg
 [actions-url]: https://github.com/yozhgoor/cargo-temp/actions
@@ -259,4 +200,4 @@ Windows:
 [knownfolder]: https://docs.rs/dirs-2/latest/dirs_2/
 [ssh-issue]: https://github.com/rust-lang/cargo/issues/1851
 [worktree]: https://git-scm.com/docs/git-worktree
-[CreateProcessW]: https://docs.rs/CreateProcessW/latest/CreateProcessW/struct.Command.html#method.inherit_handles
+[config_template]: https://github.com/yozhgoor/cargo-temp/blob/main/config_template.toml
