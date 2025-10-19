@@ -1,0 +1,34 @@
+# Template for `cargo-temp`'s configuration file.
+
+# Welcome message explaining how to exit the project and how to preserve it.
+# Comment this line to disable it.
+welcome_message = {}
+
+# Path to the directory where the temporary projects are created.
+# Default to the system's cache directory.
+temporary_project_dir = "{}"
+
+# Path to the directory where the temporary projects will be preserved.
+# preserved_project_dir = "/home/user/lab"
+
+# Enable a prompt that ask a confirmation before deleting the project on exit.
+# prompt = true
+
+# Specify the VCS Cargo will use for the projects.
+# vcs = "pijul"
+
+
+# Choose how many commits will stay in the git history of a project created from a repository.
+# git_repo_depth = 3
+
+# Cargo's target directory override.
+# cargo_target_dir = "/tmp/targets"
+
+# Open the temporary project in an IDE instead of a shell.
+# editor = "{{code_path}}"
+# editor_args = [ "--wait", "--new-window" ]
+
+# Subprocesses
+# [[subprocess]]
+# command = "cargo build"
+# foreground = false

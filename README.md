@@ -118,19 +118,15 @@ the repository's URL:
 cargo-temp --git <url>
 ```
 
-Cargo-temp truncates the history to the last commit by default. You can change this behavior in the
-config file:
+Cargo-temp truncates the history to the last commit by default. You can choose how many commits
+will stay in the history from the configuration file:
+```toml
+git_repo_depth = 3
+```
 
-* You can choose how many commits will stay in the history.
-    ```toml
-    git_repo_depth = 3
-    ```
-    This will leave the 3 last commits of the history.
-* If you do not want to truncate the history, you can set the `git_repo_depth`
-    to false.
-    ```toml
-    git_repo_depth = false
-    ```
+This will leave the 3 last commits of the history.
+
+The history is not truncated by default.
 
 #### Git Working Tree
 
@@ -183,24 +179,24 @@ If you decide to preserve the project, the directory will be renamed to match th
 
 ## Configuration
 
-
 The configuration file is located at `{CONFIG_DIR}/cargo-temp/config.toml`.
-When you run `cargo-temp` for the first time it will be created automatically following the [XDG system][xdg]
-for both Linux and OSX and the [Known Folder system][knownfolder] on Windows.
+When you run `cargo-temp` for the first time it will be created automatically following the
+[XDG system][xdg] for both Linux and OSX and the [Known Folder system][knownfolder] on Windows.
+
+
 
 | Setting | Default | Type | Description |
 | --- | --- | --- | --- |
 | `welcome_message` | true | bool | Welcome message explaining how to exit the project and how to preserve it. |
 | `temporary_project_dir` | system cache directory | path | Path were the temporary projects are created. |
 | `cargo_target_dir` | None | path | Cargo's target directory override. |
-| `preserved_project_dir` | `temporary_project_dir` | path | Path to the directory where you want to preserve a saved project. |
+| `preserved_project_dir` | None | path | Path to the directory where you want to preserve a saved project. |
 | `prompt` | false | bool | Enable a prompt that ask a confirmation before deleting the project on exit. |
 | `vcs` | "git" | String | Specify the VCS Cargo will use for your projects. |
 
 ### Editor
 
-You can use `editor` to start an IDE instead of a shell
-and `editor_args` to provide its arguments. These settings are unset by default.
+You can use `editor` to start an IDE instead of a shell and `editor_args` to provide its arguments.
 
 * Example to run VS Code on Unix
     ```toml
