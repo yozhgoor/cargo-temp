@@ -1,6 +1,6 @@
 use crate::config::Config;
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
 #[cfg(unix)]
@@ -11,7 +11,7 @@ pub use CreateProcessW::{Child, Command};
 #[cfg(unix)]
 pub use std::process::{Child, Command};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct SubProcess {
     pub command: String,
     pub foreground: bool,
