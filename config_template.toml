@@ -1,34 +1,64 @@
-# Template for `cargo-temp`'s configuration file.
-
-# Welcome message explaining how to exit the project and how to preserve it.
-# Comment this line to disable it.
-welcome_message = {}
+# `cargo-temp`'s configuration file.
 
 # Path to the directory where the temporary projects are created.
-# Default to the system's cache directory.
+#
+# Default to the system's cache directory. If the directory doesn't exists, it will be created with
+# all of its parent components if they are missing.
 temporary_project_dir = "{}"
 
-# Path to the directory where the temporary projects will be preserved.
-# preserved_project_dir = "/home/user/lab"
+# Welcome message explaining how to exit and preserve the temporary project. Default to `true`.
+welcome_message = {}
 
 # Enable a prompt that ask a confirmation before deleting the project on exit.
 # prompt = true
 
-# Specify the VCS Cargo will use for the projects.
+# Path to the directory where the temporary projects will be preserved.
+# preserved_project_dir = "/home/user/lab"
+
+# Specify the VCS Cargo is going to use for the projects.
+#
+# Implicit default to `git`. The possible values are the same as the one used for `cargo new --vcs`
+# as the as passed as is.`
 # vcs = "pijul"
 
-
-# Choose how many commits will stay in the git history of a project created from a repository.
+# `cargo-temp` truncates the history of the last commit by default. You can choose how many commits
+# will stay in the history. If you do not want to truncate the history, you can set it to `false`.
 # git_repo_depth = 3
 
-# Cargo's target directory override.
-# cargo_target_dir = "/tmp/targets"
+# Override cargo's target directory for your projects.
+# cargo_target_dir = "/tmp/cargo-target"
 
-# Open the temporary project in an IDE instead of a shell.
-# editor = "{{code_path}}"
+# Editor
+#
+# If you prefer to use an IDE instead of a shell, you can use the `editor` with the path to your IDE
+# and `editor_args` to provide additional arguments.
+#
+# editor = "{}"
 # editor_args = [ "--wait", "--new-window" ]
 
 # Subprocesses
+#
+# You can spawn subprocesses along your temporary shell (or IDE).
+#
+# The required fields are:
+# - `command`: a shell command, like `echo Hello`.
+# - `foreground`: a Boolean allowing to run the program in foreground instead of background.
+#
+# Additional settings are:
+# - `working_dir`: a path that overrides the default working directory which is the
+#   `temporary_project_dir` setting.
+# - `keep_on_exit`: Boolean defining if the process is kept alive after exiting the shell (or IDE).
+#   default to ``false`. Note that this setting doesn't work with foreground process.
+#
+# Platform specifics settings are:
+# - Unix
+#   - `stdout` and `stderr` settings: Boolean values enabling or disabling outputs. With a
+#   background process, they default to `false` and `true` for foreground process. Note that the
+#   `stdin` setting doesn't exist since it's always disabled.
+# - Windows
+#   - `inherit_handles`: Boolean allowing handles inheritance. If this setting is true, each
+#   inheritable handle in the calling process is inherited by the new process.
+#
 # [[subprocess]]
 # command = "cargo build"
 # foreground = false

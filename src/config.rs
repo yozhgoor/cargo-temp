@@ -32,10 +32,16 @@ impl Config {
         let welcome_message = true;
         let temporary_project_dir = Config::default_temporary_project_dir()?;
 
+        #[cfg(unix)]
+        let editor = "/usr/bin/code";
+        #[cfg(windows)]
+        let editor = "C:\\Program Files\\Microsoft VS Code\\Code.exe";
+
         Ok(format!(
             include_str!("../config_template.toml"),
             welcome_message,
-            temporary_project_dir.display()
+            temporary_project_dir.display(),
+            code_path,
         ))
     }
 
