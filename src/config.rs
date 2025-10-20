@@ -33,16 +33,17 @@ impl Config {
 
         let welcome_message = true;
 
-        #[cfg(unix)]
-        let editor = "/usr/bin/code";
-        #[cfg(windows)]
-        let editor = "C:\\Program Files\\Microsoft VS Code\\Code.exe";
+        let editor = if cfg!(windows) {
+            PathBuf::from("C:\\Program Files\\Microsoft VS Code\\Code.exe")
+        } else {
+            PathBuf::from("/usr/bin/code")
+        };
 
         Ok(format!(
             include_str!("../config_template.toml"),
             temporary_project_dir.display(),
             welcome_message,
-            editor,
+            editor.display(),
         ))
     }
 
