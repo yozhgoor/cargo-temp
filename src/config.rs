@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::{fs, path::PathBuf};
 
-#[derive(Debug, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Default, Deserialize, Eq, PartialEq)]
 pub struct Config {
     #[serde(default)]
     pub welcome_message: bool,
@@ -87,31 +87,16 @@ impl Config {
         let config: Self = match fs::read_to_string(&config_file_path) {
             Ok(file) => toml::de::from_str(&file)?,
             Err(_) => {
-                fs::write(&config_file_path, Config::template()?)?;
+                let config_str = Config::template()?;
+
+                fs::write(&config_file_path, &config_str)?;
                 log::info!("Config file created at: {}", config_file_path.display());
 
-                Config::default()
+                toml::de::from_str(&config_str)?
             }
         };
 
         Ok(config)
-    }
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            welcome_message: true,
-            cargo_target_dir: None,
-            preserved_project_dir: None,
-            prompt: false,
-            editor: None,
-            editor_args: None,
-            temporary_project_dir: None,
-            git_repo_depth: None,
-            vcs: None,
-            subprocesses: Vec::new(),
-        }
     }
 }
 
@@ -133,10 +118,15 @@ mod tests {
 
     #[test]
     fn from_template() {
-        let template: Config = toml::de::from_str(&Config::template().unwrap()).unwrap();
+        let template_str = Config::template().expect("can generate template");
+        let template: Config = toml::de::from_str(&template_str).expect("can deserialize template");
 
         let default = Config {
-            temporary_project_dir: Some(Config::default_temporary_project_dir().unwrap()),
+            welcome_message: true,
+            temporary_project_dir: Some(
+                Config::default_temporary_project_dir()
+                    .expect("can determine default temporary project directory"),
+            ),
             ..Default::default()
         };
 
