@@ -21,6 +21,9 @@ pub struct Cli {
     pub lib: bool,
 
     /// Name of the temporary crate.
+    ///
+    /// This name will be used as the suffix of the temporary project. If you decide to preserve
+    /// the project, the directory will be renamed to match the project's name.
     #[arg(long = "name", short = 'n')]
     pub project_name: Option<String>,
 
@@ -33,10 +36,10 @@ pub struct Cli {
     #[arg(long, short = 'g')]
     pub git: Option<String>,
 
-    /// Add a `benches` to the temporary project.
+    /// Add benchmarking to the temporary project using `criterion-rs`..
     ///
-    /// You can choose the name of the benchmark file name as argument.
-    /// The default is `benchmark.rs`
+    /// You can choose the name of the benchmark file name as argument. The default is
+    /// `benchmark.rs`,
     #[arg(long, short = 'b')]
     pub bench: Option<Option<String>>,
 
