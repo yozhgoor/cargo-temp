@@ -41,9 +41,15 @@ impl Config {
 
         Ok(format!(
             include_str!("../config_template.toml"),
-            temporary_project_dir.as_os_str().display(),
+            temporary_project_dir
+                .to_str()
+                .expect("path shouldn't contains invalid unicode")
+                .replace('\\', "\\\\"),
             welcome_message,
-            editor.as_os_str().display(),
+            editor
+                .to_str()
+                .expect("path shouldn't contains invalid unicode")
+                .replace('\\', "\\\\"),
         ))
     }
 
