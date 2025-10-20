@@ -113,7 +113,7 @@ mod tests {
 
     #[test]
     fn read_empty_config() {
-        let _: Config = toml::from_str("").unwrap();
+        let _: Config = toml::from_str("").expect("can deserialize empty configuration");
     }
 
     #[test]
