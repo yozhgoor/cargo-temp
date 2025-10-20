@@ -92,7 +92,7 @@ cargo-temp serde+derive
 cargo-temp serde=1.0+derive
 
 cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
-    ```
+```
 
 For multiple features, chain them with `+`:
 ```
@@ -105,7 +105,6 @@ cargo-temp serde=1.0+derive+alloc
 
 If you want to create a project from a Git repository, you can use the `--git` option with
 the repository's URL:
-
 ```
 cargo-temp --git <url>
 ```
