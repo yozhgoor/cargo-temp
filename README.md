@@ -14,9 +14,9 @@ directory.
 - **Instant setup**: Create a new project with dependencies in one command.
 - **No clean up required**: Projects are temporary by default but can be preserved if you change
   your mind.
-- [**Git-friendly**][#git]: Clone and test projects from Git repositories, with history truncated
+- [**Git-friendly**](#git): Clone and test projects from Git repositories, with history truncated
   for a clean slate.
-- [**Customizable**][#configuration]: Tailor `cargo-temp`'s behavior with a simple configuration
+- [**Customizable**](#configuration): Tailor `cargo-temp`'s behavior with a simple configuration
   file.
 
 ## Install
