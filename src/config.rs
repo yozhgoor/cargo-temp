@@ -6,13 +6,13 @@ use std::{fs, path::PathBuf};
 #[derive(Debug, Default, Deserialize, Eq, PartialEq)]
 pub struct Config {
     #[serde(default)]
-    pub welcome_message: bool,
-    #[serde(default)]
     pub temporary_project_dir: Option<PathBuf>,
     #[serde(default)]
-    pub preserved_project_dir: Option<PathBuf>,
+    pub welcome_message: bool,
     #[serde(default)]
     pub prompt: bool,
+    #[serde(default)]
+    pub preserved_project_dir: Option<PathBuf>,
     #[serde(default)]
     pub vcs: Option<String>,
     #[serde(default)]
@@ -29,27 +29,21 @@ pub struct Config {
 
 impl Config {
     fn template() -> Result<String> {
-        let temporary_project_dir = Config::default_temporary_project_dir()?;
+        let temporary_project_dir = Config::default_temporary_project_dir()?
+            .to_str()
+            .expect("path shouldn't contains invalid unicode")
+            .replace('\\', "\\\\");
 
-        let welcome_message = true;
-
-        let editor = if cfg!(windows) {
-            PathBuf::from("C:\\Program Files\\Microsoft VS Code\\Code.exe")
-        } else {
-            PathBuf::from("/usr/bin/code")
-        };
+        #[cfg(target_family = "windows")]
+        let editor = "C:\\\\Program Files\\\\Microsoft VS Code\\\\Code.exe";
+        #[cfg(target_family = "unix")]
+        let editor = "/usr/bin/code";
 
         Ok(format!(
             include_str!("../config_template.toml"),
-            temporary_project_dir
-                .to_str()
-                .expect("path shouldn't contains invalid unicode")
-                .replace('\\', "\\\\"),
-            welcome_message,
-            editor
-                .to_str()
-                .expect("path shouldn't contains invalid unicode")
-                .replace('\\', "\\\\"),
+            welcome_message = true,
+            temporary_project_dir = temporary_project_dir,
+            editor = editor,
         ))
     }
 

@@ -28,7 +28,7 @@ cargo install --locked cargo-temp
 
 Create a new temporary Rust project:
 ```sh
-cargo-temp
+cargo temp
 ```
 
 This command opens a shell in the project directory, where you can immediately start coding. When
@@ -46,31 +46,31 @@ setting `preserved_project_dir`.
 
 Specify one or more dependencies directly:
 ```sh
-cargo-temp rand tokio
+cargo temp rand tokio
 ```
 
 By default, the latest version (`*`) is used. To specify a version, use `=`:
 ```sh
-cargo-temp anyhow=1.0
+cargo temp anyhow=1.0
 ```
 
 For more control, use [Cargo's comparison requirements][comparison]:
 ```sh
-cargo-temp anyhow=<1.0.2
+cargo temp anyhow=<1.0.2
 ```
 
 ### Add dependencies from Git
 
 Add dependencies directly from a Git repository using HTTP or SSH URLs:
 ```sh
-cargo-temp rand=https://github.com/rust-random/rand
+cargo temp rand=https://github.com/rust-random/rand
 
-cargo-temp rand=ssh://git@github.com/rust-random/rand.git
+cargo temp rand=ssh://git@github.com/rust-random/rand.git
 ```
 
 If no package name is provided, it is inferred from the URL. For example:
 ```sh
-cargo-temp https://github.com/rust-random/rand.git
+cargo temp https://github.com/rust-random/rand.git
 ```
 
 > [!NOTE] For SSH issues, please refer to [this guide][ssh-issue].
@@ -79,25 +79,25 @@ cargo-temp https://github.com/rust-random/rand.git
 
 You can also specify a branch or a revision:
 ```sh
-cargo-temp rand=https://github.com/rust-random/rand.git#branch=master
+cargo temp rand=https://github.com/rust-random/rand.git#branch=master
 
-cargo-temp rand=https://github.com/rust-random/rand.git#rev=7e0f77a38
+cargo temp rand=https://github.com/rust-random/rand.git#rev=7e0f77a38
 ```
 
 ### Dependencies features
 
 Add features to a dependency using `+`:
 ```sh
-cargo-temp serde+derive
+cargo temp serde+derive
 
-cargo-temp serde=1.0+derive
+cargo temp serde=1.0+derive
 
-cargo-temp serde=https://github.com/serde-rs/serde#branch=master+derive
+cargo temp serde=https://github.com/serde-rs/serde#branch=master+derive
 ```
 
 For multiple features, chain them together:
 ```sh
-cargo-temp serde=1.0+derive+alloc
+cargo temp serde=1.0+derive+alloc
 ```
 
 ### Git
@@ -106,7 +106,7 @@ cargo-temp serde=1.0+derive+alloc
 
 Create a temporary project from a Git repository using the `--git` option:
 ```sh
-cargo-temp --git <url>
+cargo temp --git <url>
 ```
 
 By default, the Git history is truncated to the last commit. To retain more commits, adjust the
@@ -116,13 +116,15 @@ By default, the Git history is truncated to the last commit. To retain more comm
 
 Create a temporary [git worktree][worktree] from the current repository:
 ```sh
-cargo-temp --worktree
+cargo temp --worktree
 ```
 
 To create a worktree for a specific branch:
 ```sh
-cargo-temp --worktree <branch>
+cargo temp --worktree <branch>
 ```
+
+If no branch is specified, the current HEAD is used.
 
 When exiting the shell or editor, the working tree will be cleaned up, equivalent to
 `git worktree prune`.
@@ -131,7 +133,7 @@ When exiting the shell or editor, the working tree will be cleaned up, equivalen
 
 Create a temporary project with benchmarking support using [`criterion-rs`][criterion]:
 ```sh
-cargo-temp --bench <name>
+cargo temp --bench <name>
 ```
 
 This adds `criterion` as a dev-dependency and generates a benchmark file named `<name>.rs` (default:
@@ -139,7 +141,7 @@ This adds `criterion` as a dev-dependency and generates a benchmark file named `
 
 > [!NOTE]
 >
-> For a full list of options, run `cargo-temp --help`.
+> For a full list of options, run `cargo temp --help`.
 
 ## Configuration
 
