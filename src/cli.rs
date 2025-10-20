@@ -1,34 +1,40 @@
 use crate::dependency::{Dependency, parse_dependency};
 
-/// This tool allow you to create a new Rust temporary project in a temporary
-/// directory.
+/// cargo-temp: Create disposable Rust projects with pre-installed dependencies.
 ///
-/// The dependencies can be provided in arguments (e.g.`cargo-temp anyhow
-/// tokio`). When the shell is exited, the temporary directory is deleted unless
-/// you removed the file `TO_DELETE`.
+/// This tool creates a new Rust project in a temporary directory, automatically installs the
+/// dependencies you specify and deletes the project on exit, unless you choose to preserve it.
 #[derive(clap::Parser, Debug, Clone)]
 #[command(author, version, about, long_about)]
 pub struct Cli {
     /// Dependencies to add to `Cargo.toml`.
     ///
-    /// The default version used is `*` but this can be replaced using `=`.
-    /// E.g. `cargo-temp anyhow=1.0.13`
+    /// Default version: `*` (latest).
+    ///
+    /// Specify versions with `=` (e.g. `anyhow=1.0`).
+    ///
+    /// Specify features using `+` (e.g. `serde+derive`).
+    ///
+    /// Specify branch using `#` (e.g. `https://github.com/rust-random/rand.git#branch=master`).
     #[arg(value_parser = parse_dependency)]
     pub dependencies: Vec<Dependency>,
 
-    /// Create a library instead of a binary.
+    /// Create a library project instead of a binary.
+    ///
+    /// This generate a `lib.rs` file instead of `main.rs`.
     #[arg(long, short = 'l')]
     pub lib: bool,
 
     /// Name of the temporary crate.
     ///
-    /// This name will be used as the suffix of the temporary project. If you decide to preserve
-    /// the project, the directory will be renamed to match the project's name.
+    /// This name is used as the directory suffix. If you preserve the project, the directory is
+    /// renamed to this name.
     #[arg(long = "name", short = 'n')]
     pub project_name: Option<String>,
 
-    /// Create a temporary Git working tree based on the repository in the
-    /// current directory.
+    /// Create a temporary Git worktree from the repository in the current directory.
+    ///
+    /// If no branch is specified, the current HEAD is used.
     #[arg(long = "worktree", short = 'w')]
     pub worktree_branch: Option<Option<String>>,
 
@@ -36,21 +42,16 @@ pub struct Cli {
     #[arg(long, short = 'g')]
     pub git: Option<String>,
 
-    /// Add benchmarking to the temporary project using `criterion-rs`..
+    /// Add benchmarking support using `criterion.rs`.
     ///
-    /// You can choose the name of the benchmark file name as argument. The default is
-    /// `benchmark.rs`,
+    /// Optionally specify the benchmark file name (default: `benchmark.rs`).
     #[arg(long, short = 'b')]
     pub bench: Option<Option<String>>,
 
-    /// Select the Rust's edition of the temporary project.
+    /// Select the Rust edition for the temporary project.
+    /// Available editions: 2015, 2018, 2021, 2024.
     ///
-    /// Available options are:
-    /// * 15 | 2015 => edition 2015,
-    /// * 18 | 2018 => edition 2018,
-    /// * 21 | 2021 => edition 2021,
-    ///
-    /// If the argument doesn't match any of the options, the default is the latest edition
+    /// Default: latest stable edition.
     #[arg(long, short = 'e')]
     pub edition: Option<u32>,
 }

@@ -1,64 +1,78 @@
 # cargo-temp's configuration file.
 
-# Path to the directory where the temporary projects are created.
-#
-# Default to the system's cache directory. If the directory doesn't exists, it will be created with
-# all of its parent components if they are missing.
+# ================
+# General settings
+# ================
+
+# Directory where temporary projects are created.
+# Default: System cache directory.
+# If the directory does not exist, it will be created automatically.
 temporary_project_dir = "{}"
 
-# Welcome message explaining how to exit and preserve the temporary project. Default to `true`.
+# Display a welcome message explaining how to exit and preserve the project on when a new temporary
+# project is created.
+# Default: true
 welcome_message = {}
 
-# Enable a prompt that ask a confirmation before deleting the project on exit.
+# Prompt for confirmation before deleting the project on exit.
+# Default: false
 # prompt = true
 
-# Path to the directory where the temporary projects will be preserved.
+# Directory where the temporary projects will be preserved.
+# Default: None, temporary projects are not moved on exit.
 # preserved_project_dir = "/home/user/lab"
 
-# Specify the VCS Cargo is going to use for the projects.
-#
-# Implicit default to `git`. The possible values are the same as the one used for `cargo new --vcs`
-# as the as passed as is.`
+# Version Control System (VCS) to use for new projects..
+# Possible values: "git", "none" or any VCS supported by `cargo new -vcs`.
+# Default: "git" (implicit default from Cargo).
 # vcs = "pijul"
 
-# `cargo-temp` truncates the history of the last commit by default. You can choose how many commits
-# will stay in the history. If you do not want to truncate the history, you can set it to `false`.
+# Number of commits to retain in the history when cloning a Git repository.
+# Set to 0 to keep the full history.
+# Default: 1 (only the latest commit).
 # git_repo_depth = 3
 
-# Override cargo's target directory for your projects.
+# Override the default target directory for cargo builds.
+# Default: project-specific `target` directory.
 # cargo_target_dir = "/tmp/cargo-target"
 
-# Editor
-#
-# If you prefer to use an IDE instead of a shell, you can use the `editor` with the path to your IDE
-# and `editor_args` to provide additional arguments.
-#
+# ===============
+# Editor settings
+# ===============
+
+# Path to your preferred editor or IDE.
+# If specified, `cargo-temp` will open the editor instead of a shell.
+
+# Example for VS Code:
 # editor = "{}"
 # editor_args = [ "--wait", "--new-window" ]
 
+# ============
 # Subprocesses
+# ============
+
+# You can spawn subprocesses to run alongside your temporary project.
 #
-# You can spawn subprocesses along your temporary shell (or IDE).
+# The required fields for each subprocess:
+# - `command`: a shell command to run (e.g., "cargo watch").
+# - `foreground`: Boolean. If true, the process runs in the foreground; if false, it runs in the
+#   background.
 #
-# The required fields are:
-# - `command`: a shell command, like `echo Hello`.
-# - `foreground`: a Boolean allowing to run the program in foreground instead of background.
+# Optional fields:
+# - `working_dir`: Override the working directory (default: temporary project directory).
+# - `keep_on_exit`: Keep the process running after exiting the shell/editor (default: false).
+#   Note: This setting has no effect for foreground processes.
 #
-# Additional settings are:
-# - `working_dir`: a path that overrides the default working directory which is the
-#   `temporary_project_dir` setting.
-# - `keep_on_exit`: Boolean defining if the process is kept alive after exiting the shell (or IDE).
-#   default to ``false`. Note that this setting doesn't work with foreground process.
-#
-# Platform specifics settings are:
+# Platform specifics settings:
 # - Unix
-#   - `stdout` and `stderr` settings: Boolean values enabling or disabling outputs. With a
-#   background process, they default to `false` and `true` for foreground process. Note that the
-#   `stdin` setting doesn't exist since it's always disabled.
+#   - `stdout`: Boolean. Enable or disable stdout output (default: false for background, true for
+#   foreground).
+#   - `stderr`: Boolean. Enable or disable stderr output (default: true for foreground, false for
+#   foreground).
 # - Windows
-#   - `inherit_handles`: Boolean allowing handles inheritance. If this setting is true, each
-#   inheritable handle in the calling process is inherited by the new process.
+#   - `inherit_handles`: Boolean. Allow the subprocess to inherit handles from the parent process
+#   (default: false).
 #
 # [[subprocess]]
-# command = "cargo build"
-# foreground = false
+# command = "cargo watch"
+# foreground = true
