@@ -41,9 +41,9 @@ impl Config {
 
         Ok(format!(
             include_str!("../config_template.toml"),
-            temporary_project_dir.display(),
+            temporary_project_dir.as_os_str().display(),
             welcome_message,
-            editor.display(),
+            editor.as_os_str().display(),
         ))
     }
 
