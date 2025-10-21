@@ -22,8 +22,8 @@ pub enum Dependency {
 
 pub fn parse_dependency(s: &str) -> Result<Dependency> {
     static RE: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"^((?P<name>[^+=/]+)=)?(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]*?(?P<url_end>/[^#+/]+)?)(#branch=(?P<branch>[^+]+)|#rev=(?P<rev>[^+]+))?)|[^+]+)?(?P<features>(\+[^+]+)*)$")
-            .expect("dependency's regex must be compiled")
+        Regex::new(r"^((?P<name>[^+=/!]+)=)?(?P<version>((?P<url>\w+://([^:@]+(:[^@]+)?@)?[^#+]*?(?P<url_end>/[^#+/]+)?)(#branch=(?P<branch>[^!+]+)|#rev=(?P<rev>[^!+]+))?)|[^!+]+)?(?P<features>(?:\+[^!+]+)*)(?:!(?P<default_features>default))?$")
+          .expect("dependency's regex must be compiled")
     });
 
     match RE.captures(s) {
@@ -37,7 +37,7 @@ pub fn parse_dependency(s: &str) -> Result<Dependency> {
                         .skip(1)
                         .collect::<Vec<String>>()
                 })
-                .unwrap();
+                .unwrap_or_default();
             let default_features = caps.name("default_features").is_none();
             let name: Option<String> = caps.name("name").map(|x| x.as_str().to_string());
 
@@ -253,8 +253,8 @@ mod dependency_tests {
             features: Vec::new(),
             default_features: false,
         },
-        "rand-default",
-        "tokio = { version = \"*\", default-features = false }"
+        "rand!default",
+        "rand = { version = \"*\", default-features = false }"
     );
 
     test_dependency!(
@@ -270,6 +270,18 @@ mod dependency_tests {
     );
 
     test_dependency!(
+        dependency_with_feature_and_no_default_feature,
+        Dependency::CratesIo {
+            name: "rand".to_string(),
+            version: None,
+            features: vec!["small_rng".to_string()],
+            default_features: false,
+        },
+        "rand+small_rng!default",
+        "rand = { version = \"*\", default-features = false, features = [\"small_rng\"] }"
+    );
+
+    test_dependency!(
         dependency_with_features,
         Dependency::CratesIo {
             name: "tokio".to_string(),
@@ -279,6 +291,18 @@ mod dependency_tests {
         },
         "tokio+io_std+io_utils",
         "tokio = { version = \"*\", features = [\"io_std\", \"io_utils\"] }"
+    );
+
+    test_dependency!(
+        dependency_with_features_and_no_default_features,
+        Dependency::CratesIo {
+            name: "rand".to_string(),
+            version: None,
+            features: vec!["small_rng".to_string(), "os_rng".to_string()],
+            default_features: false,
+        },
+        "rand+small_rng+os_rng!default",
+        "rand = { version = \"*\", default-features = false, features = [\"small_rng\", \"os_rng\"] }"
     );
 
     test_dependency!(
