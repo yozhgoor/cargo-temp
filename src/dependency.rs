@@ -8,6 +8,7 @@ pub enum Dependency {
         name: String,
         version: Option<String>,
         features: Vec<String>,
+        default_features: bool,
     },
     Repository {
         branch: Option<String>,
@@ -15,6 +16,7 @@ pub enum Dependency {
         rev: Option<String>,
         url: String,
         features: Vec<String>,
+        default_features: bool,
     },
 }
 
@@ -36,6 +38,7 @@ pub fn parse_dependency(s: &str) -> Result<Dependency> {
                         .collect::<Vec<String>>()
                 })
                 .unwrap();
+            let default_features = caps.name("default_features").is_none();
             let name: Option<String> = caps.name("name").map(|x| x.as_str().to_string());
 
             if let Some(url) = caps.name("url").map(|x| x.as_str().to_string()) {
@@ -51,17 +54,19 @@ pub fn parse_dependency(s: &str) -> Result<Dependency> {
                 };
 
                 Ok(Dependency::Repository {
+                    name,
+                    url,
                     branch: caps.name("branch").map(|x| x.as_str().to_string()),
                     rev: caps.name("rev").map(|x| x.as_str().to_string()),
                     features,
-                    url,
-                    name,
+                    default_features,
                 })
             } else if let Some(name) = name {
                 Ok(Dependency::CratesIo {
                     name,
                     version: caps.name("version").map(|x| x.as_str().to_string()),
                     features,
+                    default_features,
                 })
             } else {
                 let end = caps.name("features").unwrap().start();
@@ -69,6 +74,7 @@ pub fn parse_dependency(s: &str) -> Result<Dependency> {
                     name: s[..end].to_string(),
                     version: None,
                     features,
+                    default_features,
                 })
             }
         }
@@ -82,17 +88,28 @@ pub fn format_dependency(dependency: &Dependency) -> String {
             name,
             version,
             features,
+            default_features,
         } => {
-            if let Some(version) = version {
-                if !features.is_empty() {
-                    format!("{name} = {{ version = \"{version}\", features = {features:?} }}",)
-                } else {
-                    format!("{name} = \"{version}\"")
-                }
-            } else if !features.is_empty() {
-                format!("{name} = {{ version = \"*\", features = {features:?} }}")
+            let version = version.as_deref().unwrap_or("*");
+
+            if *default_features && features.is_empty() {
+                format!("{name} = \"{version}\"")
             } else {
-                format!("{name} = \"*\"")
+                let mut s = format!("{name} = {{ version = \"{version}\"");
+
+                if !default_features {
+                    s.push_str(", default-features = false");
+                }
+
+                if !features.is_empty() {
+                    s.push_str(", features = [\"");
+                    s.push_str(&features.join("\", \""));
+                    s.push_str("\"]");
+                }
+
+                s.push_str(" }");
+
+                s
             }
         }
         Dependency::Repository {
@@ -101,22 +118,35 @@ pub fn format_dependency(dependency: &Dependency) -> String {
             branch,
             rev,
             features,
+            default_features,
         } => {
-            let mut string = format!("{name} = {{ git = {url:?}");
+            let mut s = format!("{name} = {{ git = {url:?}");
 
             if let Some(branch) = branch {
-                string.push_str(format!(", branch = {branch:?}").as_str())
+                s.push_str(", branch = \"");
+                s.push_str(branch);
+                s.push('"');
             }
+
             if let Some(rev) = rev {
-                string.push_str(format!(", rev = {rev:?}").as_str())
+                s.push_str(", rev = \"");
+                s.push_str(rev);
+                s.push('"');
             }
+
+            if !default_features {
+                s.push_str(", default-features = false")
+            }
+
             if !features.is_empty() {
-                string.push_str(format!(", features = {features:?}").as_str())
+                s.push_str(", features = [\"");
+                s.push_str(&features.join("\", \""));
+                s.push_str("\"]");
             }
 
-            string.push_str(" }");
+            s.push_str(" }");
 
-            string
+            s
         }
     }
 }
@@ -173,6 +203,7 @@ mod dependency_tests {
             name: "anyhow".to_string(),
             version: None,
             features: Vec::new(),
+            default_features: true,
         },
         "anyhow",
         "anyhow = \"*\""
@@ -184,6 +215,7 @@ mod dependency_tests {
             name: "anyhow".to_string(),
             version: Some("0.1".to_string()),
             features: Vec::new(),
+            default_features: true,
         },
         "anyhow=0.1",
         "anyhow = \"0.1\""
@@ -195,6 +227,7 @@ mod dependency_tests {
             name: "anyhow".to_string(),
             version: Some("=0.1".to_string()),
             features: Vec::new(),
+            default_features: true,
         },
         "anyhow==0.1",
         "anyhow = \"=0.1\""
@@ -206,9 +239,22 @@ mod dependency_tests {
             name: "anyhow".to_string(),
             version: Some("<1.0.2".to_string()),
             features: Vec::new(),
+            default_features: true,
         },
         "anyhow=<1.0.2",
         "anyhow = \"<1.0.2\""
+    );
+
+    test_dependency!(
+        dependency_with_no_default_feature,
+        Dependency::CratesIo {
+            name: "rand".to_string(),
+            version: None,
+            features: Vec::new(),
+            default_features: false,
+        },
+        "rand-default",
+        "tokio = { version = \"*\", default-features = false }"
     );
 
     test_dependency!(
@@ -217,6 +263,7 @@ mod dependency_tests {
             name: "tokio".to_string(),
             version: None,
             features: vec!["io_std".to_string()],
+            default_features: true,
         },
         "tokio+io_std",
         "tokio = { version = \"*\", features = [\"io_std\"] }"
@@ -228,6 +275,7 @@ mod dependency_tests {
             name: "tokio".to_string(),
             version: None,
             features: vec!["io_std".to_string(), "io_utils".to_string()],
+            default_features: true,
         },
         "tokio+io_std+io_utils",
         "tokio = { version = \"*\", features = [\"io_std\", \"io_utils\"] }"
@@ -239,6 +287,7 @@ mod dependency_tests {
             name: "tokio".to_string(),
             version: Some("1.0".to_string()),
             features: vec!["io_std".to_string()],
+            default_features: true,
         },
         "tokio=1.0+io_std",
         "tokio = { version = \"1.0\", features = [\"io_std\"] }"
@@ -250,6 +299,7 @@ mod dependency_tests {
             name: "tokio".to_string(),
             version: Some("1.0".to_string()),
             features: vec!["io_std".to_string(), "io_utils".to_string()],
+            default_features: true,
         },
         "tokio=1.0+io_std+io_utils",
         "tokio = { version = \"1.0\", features = [\"io_std\", \"io_utils\"] }"
@@ -263,6 +313,7 @@ mod dependency_tests {
             branch: None,
             rev: None,
             features: Vec::new(),
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio.git",
         "https://github.com/tokio-rs/tokio.git",
@@ -277,6 +328,7 @@ mod dependency_tests {
             branch: None,
             rev: None,
             features: Vec::new(),
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio",
         "https://github.com/tokio-rs/tokio",
@@ -291,6 +343,7 @@ mod dependency_tests {
             branch: None,
             rev: None,
             features: Vec::new(),
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde.git",
         "ssh://git@github.com/serde-rs/serde.git",
@@ -305,6 +358,7 @@ mod dependency_tests {
             branch: None,
             rev: None,
             features: Vec::new(),
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde",
         "ssh://git@github.com/serde-rs/serde",
@@ -319,6 +373,7 @@ mod dependency_tests {
             branch: None,
             rev: None,
             features: vec!["io_std".to_string()],
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio.git+io_std",
         "https://github.com/tokio-rs/tokio.git+io_std",
@@ -333,6 +388,7 @@ mod dependency_tests {
             branch: None,
             rev: None,
             features: vec!["derive".to_string()],
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde.git+derive",
         "ssh://git@github.com/serde-rs/serde.git+derive",
@@ -347,6 +403,7 @@ mod dependency_tests {
             branch: None,
             rev: None,
             features: vec!["io_std".to_string(), "io_utils".to_string()],
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio.git+io_std+io_utils",
         "https://github.com/tokio-rs/tokio.git+io_std+io_utils",
@@ -361,6 +418,7 @@ mod dependency_tests {
             branch: None,
             rev: None,
             features: vec!["derive".to_string(), "alloc".to_string()],
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde.git+derive+alloc",
         "ssh://git@github.com/serde-rs/serde.git+derive+alloc",
@@ -375,6 +433,7 @@ mod dependency_tests {
             branch: Some("compat".to_string()),
             rev: None,
             features: Vec::new(),
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio.git#branch=compat",
         "https://github.com/tokio-rs/tokio.git#branch=compat",
@@ -389,6 +448,7 @@ mod dependency_tests {
             branch: Some("watt".to_string()),
             rev: None,
             features: Vec::new(),
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt",
         "ssh://git@github.com/serde-rs/serde.git#branch=watt",
@@ -403,6 +463,7 @@ mod dependency_tests {
             branch: Some("compat".to_string()),
             rev: None,
             features: vec!["io_std".to_string()],
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio.git#branch=compat+io_std",
         "https://github.com/tokio-rs/tokio.git#branch=compat+io_std",
@@ -417,6 +478,7 @@ mod dependency_tests {
             branch: Some("watt".to_string()),
             rev: None,
             features: vec!["derive".to_string()],
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt+derive",
         "ssh://git@github.com/serde-rs/serde.git#branch=watt+derive",
@@ -431,6 +493,7 @@ mod dependency_tests {
             branch: Some("compat".to_string()),
             rev: None,
             features: vec!["io_std".to_string(), "io_utils".to_string()],
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils",
         "https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils",
@@ -445,6 +508,7 @@ mod dependency_tests {
             branch: Some("watt".to_string()),
             rev: None,
             features: vec!["derive".to_string(), "alloc".to_string()],
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc",
         "ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc",
@@ -459,6 +523,7 @@ mod dependency_tests {
             branch: None,
             rev: Some("75c0777".to_string()),
             features: Vec::new(),
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777",
         "https://github.com/tokio-rs/tokio.git#rev=75c0777",
@@ -473,6 +538,7 @@ mod dependency_tests {
             branch: None,
             rev: Some("5b140361a".to_string()),
             features: Vec::new(),
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a",
         "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a",
@@ -487,6 +553,7 @@ mod dependency_tests {
             branch: None,
             rev: Some("75c0777".to_string()),
             features: vec!["io_std".to_string()],
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std",
         "https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std",
@@ -501,6 +568,7 @@ mod dependency_tests {
             branch: None,
             rev: Some("5b140361a".to_string()),
             features: vec!["derive".to_string()],
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive",
         "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive",
@@ -515,6 +583,7 @@ mod dependency_tests {
             branch: None,
             rev: Some("75c0777".to_string()),
             features: vec!["io_std".to_string(), "io_utils".to_string()],
+            default_features: true,
         },
         "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils",
         "https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils",
@@ -529,6 +598,7 @@ mod dependency_tests {
             branch: None,
             rev: Some("5b140361a".to_string()),
             features: vec!["derive".to_string(), "alloc".to_string()],
+            default_features: true,
         },
         "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc",
         "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc",
