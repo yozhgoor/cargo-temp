@@ -11,12 +11,13 @@ pub enum Dependency {
         default_features: bool,
     },
     Repository {
-        branch: Option<String>,
         name: String,
-        rev: Option<String>,
-        url: String,
+        version: Option<String>,
         features: Vec<String>,
         default_features: bool,
+        url: String,
+        branch: Option<String>,
+        rev: Option<String>,
     },
 }
 
@@ -28,6 +29,7 @@ pub fn parse_dependency(s: &str) -> Result<Dependency> {
 
     match RE.captures(s) {
         Some(caps) => {
+            let name: Option<String> = caps.name("name").map(|x| x.as_str().to_string());
             let features = caps
                 .name("features")
                 .map(|x| {
@@ -39,7 +41,6 @@ pub fn parse_dependency(s: &str) -> Result<Dependency> {
                 })
                 .unwrap_or_default();
             let default_features = caps.name("default_features").is_none();
-            let name: Option<String> = caps.name("name").map(|x| x.as_str().to_string());
 
             if let Some(url) = caps.name("url").map(|x| x.as_str().to_string()) {
                 let name = if let Some(name) = name {
@@ -56,10 +57,11 @@ pub fn parse_dependency(s: &str) -> Result<Dependency> {
                 Ok(Dependency::Repository {
                     name,
                     url,
-                    branch: caps.name("branch").map(|x| x.as_str().to_string()),
-                    rev: caps.name("rev").map(|x| x.as_str().to_string()),
+                    version: caps.name("version").map(|x| x.as_str().to_string()),
                     features,
                     default_features,
+                    branch: caps.name("branch").map(|x| x.as_str().to_string()),
+                    rev: caps.name("rev").map(|x| x.as_str().to_string()),
                 })
             } else if let Some(name) = name {
                 Ok(Dependency::CratesIo {
@@ -114,13 +116,20 @@ pub fn format_dependency(dependency: &Dependency) -> String {
         }
         Dependency::Repository {
             name,
+            version,
+            features,
+            default_features,
             url,
             branch,
             rev,
-            features,
-            default_features,
         } => {
             let mut s = format!("{name} = {{ git = {url:?}");
+
+            if let Some(version) = version {
+                s.push_str(", version = \"");
+                s.push_str(version);
+                s.push('"');
+            }
 
             if let Some(branch) = branch {
                 s.push_str(", branch = \"");
@@ -158,16 +167,8 @@ mod tests {
     macro_rules! test_module {
         (
             $mod_name:ident,
-            $(
-                (
-                    $name:ident,
-                    $dep:expr,
-                    $in:expr,
-                    $out:expr
-                    $(, $extra_in:expr)?
-                )
-            ),*
-            $(,)?
+            $(($name:ident, $dep:expr, $in:expr, $out:expr)),*
+            $(,)+
         ) => {
             mod $mod_name {
                 use super::*;
@@ -182,13 +183,6 @@ mod tests {
                             dependency,
                             "cannot parse dependency"
                         );
-                        $(
-                            assert_eq!(
-                                parse_dependency($extra_in).unwrap(),
-                                dependency,
-                                "cannot parse dependency"
-                            );
-                        )?
                         assert_eq!(
                             format_dependency(&dependency),
                             $out,
@@ -206,7 +200,7 @@ mod tests {
         test_module!(
             simple,
             (
-                pkg,
+                dep,
                 Dependency::CratesIo {
                     name: "anyhow".to_string(),
                     version: None,
@@ -220,36 +214,36 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: Vec::new(),
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio.git".to_string(),
                     branch: None,
                     rev: None,
-                    features: Vec::new(),
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio.git",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\" }",
-                "https://github.com/tokio-rs/tokio.git"
+                "https://github.com/tokio-rs/tokio.git",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\" }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: Vec::new(),
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                     branch: None,
                     rev: None,
-                    features: Vec::new(),
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde.git",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\" }",
-                "ssh://git@github.com/serde-rs/serde.git"
-            )
+                "ssh://git@github.com/serde-rs/serde.git",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\" }"
+            ),
         );
 
         test_module!(
             version,
             (
-                pkg,
+                dep,
                 Dependency::CratesIo {
                     name: "anyhow".to_string(),
                     version: Some("0.1".to_string()),
@@ -259,12 +253,40 @@ mod tests {
                 "anyhow=0.1",
                 "anyhow = \"0.1\""
             ),
+            (
+                http,
+                Dependency::Repository {
+                    name: "tokio".to_string(),
+                    version: Some("1.0".to_string()),
+                    features: Vec::new(),
+                    default_features: true,
+                    url: "https://github.com/tokio-rs/tokio.git".to_string(),
+                    branch: None,
+                    rev: None,
+                },
+                "https://github.com/tokio-rs/tokio.git=1.0",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git, version = \"1.0\" }"
+            ),
+            (
+                ssh,
+                Dependency::Repository {
+                    name: "serde".to_string(),
+                    version: Some("1.0".to_string()),
+                    features: Vec::new(),
+                    default_features: true,
+                    url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
+                    branch: None,
+                    rev: None,
+                },
+                "ssh://git@github.com/serde-rs/serde.git=1.0",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", version = \"1.0\" }"
+            ),
         );
 
         test_module!(
             exact_version,
             (
-                pkg,
+                dep,
                 Dependency::CratesIo {
                     name: "anyhow".to_string(),
                     version: Some("=0.1".to_string()),
@@ -274,12 +296,40 @@ mod tests {
                 "anyhow==0.1",
                 "anyhow = \"=0.1\""
             ),
+            (
+                http,
+                Dependency::Repository {
+                    name: "tokio".to_string(),
+                    version: Some("=1.0".to_string()),
+                    features: Vec::new(),
+                    default_features: true,
+                    url: "https://github.com/tokio-rs/tokio.git".to_string(),
+                    branch: None,
+                    rev: None,
+                },
+                "https://github.com/tokio-rs/tokio.git==1.0",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git, version = \"=1.0\" }"
+            ),
+            (
+                ssh,
+                Dependency::Repository {
+                    name: "serde".to_string(),
+                    version: Some("=1.0".to_string()),
+                    features: Vec::new(),
+                    default_features: true,
+                    url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
+                    branch: None,
+                    rev: None,
+                },
+                "ssh://git@github.com/serde-rs/serde.git==1.0",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", version = \"=1.0\" }"
+            ),
         );
 
         test_module!(
             maximal_version,
             (
-                pkg,
+                dep,
                 Dependency::CratesIo {
                     name: "anyhow".to_string(),
                     version: Some("<1.0.2".to_string()),
@@ -289,12 +339,40 @@ mod tests {
                 "anyhow=<1.0.2",
                 "anyhow = \"<1.0.2\""
             ),
+            (
+                http,
+                Dependency::Repository {
+                    name: "tokio".to_string(),
+                    version: Some("<1.48".to_string()),
+                    features: Vec::new(),
+                    default_features: true,
+                    url: "https://github.com/tokio-rs/tokio.git".to_string(),
+                    branch: None,
+                    rev: None,
+                },
+                "https://github.com/tokio-rs/tokio.git=<1.48",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git, version = \"<1.48\" }"
+            ),
+            (
+                ssh,
+                Dependency::Repository {
+                    name: "serde".to_string(),
+                    version: Some("<1.0".to_string()),
+                    features: Vec::new(),
+                    default_features: true,
+                    url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
+                    branch: None,
+                    rev: None,
+                },
+                "ssh://git@github.com/serde-rs/serde.git=<1.0",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", version = \"<1.0\" }"
+            ),
         );
 
         test_module!(
             feature,
             (
-                pkg,
+                dep,
                 Dependency::CratesIo {
                     name: "tokio".to_string(),
                     version: None,
@@ -308,36 +386,36 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: vec!["io_std".to_string()],
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio.git".to_string(),
                     branch: None,
                     rev: None,
-                    features: vec!["io_std".to_string()],
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio.git+io_std",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\"] }",
-                "https://github.com/tokio-rs/tokio.git+io_std"
+                "https://github.com/tokio-rs/tokio.git+io_std",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\"] }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: vec!["derive".to_string()],
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                     branch: None,
                     rev: None,
-                    features: vec!["derive".to_string()],
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde.git+derive",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\"] }",
-                "ssh://git@github.com/serde-rs/serde.git+derive"
+                "ssh://git@github.com/serde-rs/serde.git+derive",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\"] }"
             ),
         );
 
         test_module!(
             features,
             (
-                pkg,
+                dep,
                 Dependency::CratesIo {
                     name: "tokio".to_string(),
                     version: None,
@@ -351,36 +429,36 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: vec!["io_std".to_string(), "io_utils".to_string()],
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio.git".to_string(),
                     branch: None,
                     rev: None,
-                    features: vec!["io_std".to_string(), "io_utils".to_string()],
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio.git+io_std+io_utils",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\", \"io_utils\"] }",
-                "https://github.com/tokio-rs/tokio.git+io_std+io_utils"
+                "https://github.com/tokio-rs/tokio.git+io_std+io_utils",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", features = [\"io_std\", \"io_utils\"] }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: vec!["derive".to_string(), "alloc".to_string()],
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                     branch: None,
                     rev: None,
-                    features: vec!["derive".to_string(), "alloc".to_string()],
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde.git+derive+alloc",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\", \"alloc\"] }",
-                "ssh://git@github.com/serde-rs/serde.git+derive+alloc"
+                "ssh://git@github.com/serde-rs/serde.git+derive+alloc",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", features = [\"derive\", \"alloc\"] }"
             ),
         );
 
         test_module!(
             version_and_features,
             (
-                pkg,
+                dep,
                 Dependency::CratesIo {
                     name: "tokio".to_string(),
                     version: Some("1.0".to_string()),
@@ -402,29 +480,29 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: Vec::new(),
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio".to_string(),
                     branch: None,
                     rev: None,
-                    features: Vec::new(),
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio\" }",
-                "https://github.com/tokio-rs/tokio"
+                "https://github.com/tokio-rs/tokio",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio\" }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: Vec::new(),
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde".to_string(),
                     branch: None,
                     rev: None,
-                    features: Vec::new(),
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde\" }",
-                "ssh://git@github.com/serde-rs/serde"
+                "ssh://git@github.com/serde-rs/serde",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde\" }"
             ),
         );
 
@@ -434,29 +512,29 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: Vec::new(),
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio.git".to_string(),
                     branch: Some("compat".to_string()),
                     rev: None,
-                    features: Vec::new(),
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio.git#branch=compat",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\" }",
-                "https://github.com/tokio-rs/tokio.git#branch=compat"
+                "https://github.com/tokio-rs/tokio.git#branch=compat",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\" }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: Vec::new(),
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                     branch: Some("watt".to_string()),
                     rev: None,
-                    features: Vec::new(),
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\" }",
-                "ssh://git@github.com/serde-rs/serde.git#branch=watt"
+                "ssh://git@github.com/serde-rs/serde.git#branch=watt",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\" }"
             ),
         );
 
@@ -466,29 +544,29 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: vec!["io_std".to_string()],
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio.git".to_string(),
                     branch: Some("compat".to_string()),
                     rev: None,
-                    features: vec!["io_std".to_string()],
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio.git#branch=compat+io_std",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\"] }",
-                "https://github.com/tokio-rs/tokio.git#branch=compat+io_std"
+                "https://github.com/tokio-rs/tokio.git#branch=compat+io_std",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\"] }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: vec!["derive".to_string()],
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                     branch: Some("watt".to_string()),
                     rev: None,
-                    features: vec!["derive".to_string()],
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt+derive",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\"] }",
-                "ssh://git@github.com/serde-rs/serde.git#branch=watt+derive"
+                "ssh://git@github.com/serde-rs/serde.git#branch=watt+derive",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\"] }"
             ),
         );
 
@@ -498,29 +576,29 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: vec!["io_std".to_string(), "io_utils".to_string()],
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio.git".to_string(),
                     branch: Some("compat".to_string()),
                     rev: None,
-                    features: vec!["io_std".to_string(), "io_utils".to_string()],
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\", \"io_utils\"] }",
-                "https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils"
+                "https://github.com/tokio-rs/tokio.git#branch=compat+io_std+io_utils",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"compat\", features = [\"io_std\", \"io_utils\"] }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: vec!["derive".to_string(), "alloc".to_string()],
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                     branch: Some("watt".to_string()),
                     rev: None,
-                    features: vec!["derive".to_string(), "alloc".to_string()],
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\", \"alloc\"] }",
-                "ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc"
+                "ssh://git@github.com/serde-rs/serde.git#branch=watt+derive+alloc",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", branch = \"watt\", features = [\"derive\", \"alloc\"] }"
             ),
         );
 
@@ -530,29 +608,29 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: Vec::new(),
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio.git".to_string(),
                     branch: None,
                     rev: Some("75c0777".to_string()),
-                    features: Vec::new(),
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\" }",
-                "https://github.com/tokio-rs/tokio.git#rev=75c0777"
+                "https://github.com/tokio-rs/tokio.git#rev=75c0777",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\" }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: Vec::new(),
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                     branch: None,
                     rev: Some("5b140361a".to_string()),
-                    features: Vec::new(),
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\" }",
-                "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a"
+                "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\" }"
             ),
         );
 
@@ -562,29 +640,29 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: vec!["io_std".to_string()],
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio.git".to_string(),
                     branch: None,
                     rev: Some("75c0777".to_string()),
-                    features: vec!["io_std".to_string()],
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\"] }",
-                "https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std"
+                "https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\"] }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: vec!["derive".to_string()],
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                     branch: None,
                     rev: Some("5b140361a".to_string()),
-                    features: vec!["derive".to_string()],
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\"] }",
-                "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive"
+                "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\"] }"
             ),
         );
 
@@ -594,29 +672,29 @@ mod tests {
                 http,
                 Dependency::Repository {
                     name: "tokio".to_string(),
+                    version: None,
+                    features: vec!["io_std".to_string(), "io_utils".to_string()],
+                    default_features: true,
                     url: "https://github.com/tokio-rs/tokio.git".to_string(),
                     branch: None,
                     rev: Some("75c0777".to_string()),
-                    features: vec!["io_std".to_string(), "io_utils".to_string()],
-                    default_features: true,
                 },
-                "tokio=https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils",
-                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\", \"io_utils\"] }",
-                "https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils"
+                "https://github.com/tokio-rs/tokio.git#rev=75c0777+io_std+io_utils",
+                "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"75c0777\", features = [\"io_std\", \"io_utils\"] }"
             ),
             (
                 ssh,
                 Dependency::Repository {
                     name: "serde".to_string(),
+                    version: None,
+                    features: vec!["derive".to_string(), "alloc".to_string()],
+                    default_features: true,
                     url: "ssh://git@github.com/serde-rs/serde.git".to_string(),
                     branch: None,
                     rev: Some("5b140361a".to_string()),
-                    features: vec!["derive".to_string(), "alloc".to_string()],
-                    default_features: true,
                 },
-                "serde=ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc",
-                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\", \"alloc\"] }",
-                "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc"
+                "ssh://git@github.com/serde-rs/serde.git#rev=5b140361a+derive+alloc",
+                "serde = { git = \"ssh://git@github.com/serde-rs/serde.git\", rev = \"5b140361a\", features = [\"derive\", \"alloc\"] }"
             ),
         );
     }
