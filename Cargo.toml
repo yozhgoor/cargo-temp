@@ -29,3 +29,6 @@ xdg = "3"
 [target.'cfg(windows)'.dependencies]
 dirs = "6"
 CreateProcessW = "0.1"
+
+[dev-dependencies]
+pastey = "0.1"
