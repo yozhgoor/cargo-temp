@@ -11,14 +11,10 @@ macro_rules! test_function {
             let Inputs(input, dependency) = Inputs::$ident();
 
             assert_eq!(
-                parse_dependency(&input).expect("failed to parse dependency"),
+                Dependency::from_str(&input).expect("failed to parse dependency"),
                 dependency,
             );
-            assert_eq!(
-                format_dependency(&dependency),
-                $out,
-                "failed to format dependency"
-            );
+            assert_eq!(dependency.to_string(), $out, "failed to format dependency");
         }
     };
     (
@@ -31,14 +27,10 @@ macro_rules! test_function {
             let Inputs(input, dependency) = Inputs::$ident().$modifier();
 
             assert_eq!(
-                parse_dependency(&input).expect("failed to parse dependency"),
+                Dependency::from_str(&input).expect("failed to parse dependency"),
                 dependency,
             );
-            assert_eq!(
-                format_dependency(&dependency),
-                $out,
-                "failed to format dependency"
-            );
+            assert_eq!(dependency.to_string(), $out, "failed to format dependency");
         }
     };
 }
@@ -2031,6 +2023,6 @@ test_modules!(
 
 #[test]
 fn could_not_parse() {
-    let res = parse_dependency("http://localhost");
+    let res = Dependency::from_str("http://localhost");
     assert!(res.is_err(), "{res:?}");
 }

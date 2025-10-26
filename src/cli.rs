@@ -1,4 +1,4 @@
-use crate::dependency::{Dependency, parse_dependency};
+use crate::dependency::Dependency;
 
 /// cargo-temp: Create disposable Rust projects with pre-installed dependencies.
 ///
@@ -16,7 +16,6 @@ pub struct Cli {
     /// Specify features using `+` (e.g. `serde+derive`).
     ///
     /// Specify branch using `#` (e.g. `https://github.com/rust-random/rand.git#branch=master`).
-    #[arg(value_parser = parse_dependency)]
     pub dependencies: Vec<Dependency>,
 
     /// Create a library project instead of a binary.
