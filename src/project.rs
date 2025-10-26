@@ -1,7 +1,6 @@
 use crate::{
     cli::Cli,
     config::{Config, Depth},
-    dependency::format_dependency,
     subprocess::{Child, kill_subprocesses, start_subprocesses},
 };
 use anyhow::{Context, Result, bail, ensure};
@@ -223,7 +222,7 @@ impl Project {
                 .open(tmp_dir_path.join("Cargo.toml"))?;
 
             for dependency in cli.dependencies.iter() {
-                writeln!(toml, "{}", format_dependency(dependency))?
+                writeln!(toml, "{}", dependency)?
             }
         }
 
