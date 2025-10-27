@@ -221,8 +221,17 @@ impl Project {
                 .append(true)
                 .open(tmp_dir_path.join("Cargo.toml"))?;
 
+            let mut tables = Vec::new();
             for dependency in cli.dependencies.iter() {
-                writeln!(toml, "{}", dependency)?
+                if !dependency.is_long() {
+                    writeln!(toml, "{}", dependency)?;
+                } else {
+                    tables.push(dependency);
+                }
+            }
+
+            for table in tables {
+                writeln!(toml, "\n{}", table)?;
             }
         }
 
