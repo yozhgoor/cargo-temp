@@ -114,19 +114,17 @@ impl fmt::Display for Dependency {
                     if *default_features && !features.is_empty() {
                         write!(f, "version = \"{}\"", version)?;
                     } else {
-                        write!(f, "version = \"{}\"", version)?;
+                        writeln!(f, "version = \"{}\"", version)?;
                     }
                 }
 
                 if !default_features {
                     if !self.is_long() {
                         write!(f, ", default-features = false")?;
+                    } else if features.is_empty() {
+                        write!(f, "default-features = false")?;
                     } else {
-                        if features.is_empty() {
-                            write!(f, "default-features = false")?;
-                        } else {
-                            writeln!(f, "default-features = false")?;
-                        }
+                        writeln!(f, "default-features = false")?;
                     }
                 }
 
@@ -166,48 +164,40 @@ impl fmt::Display for Dependency {
                 if let Some(branch) = branch.as_deref() {
                     if !self.is_long() {
                         write!(f, ", branch = \"{}\"", branch)?;
+                    } else if version.is_none() && *default_features && features.is_empty() {
+                        write!(f, "branch = \"{}\"", branch)?;
                     } else {
-                        if version.is_none() && *default_features && features.is_empty() {
-                            write!(f, "branch = \"{}\"", branch)?;
-                        } else {
-                            writeln!(f, "branch = \"{}\"", branch)?;
-                        }
+                        writeln!(f, "branch = \"{}\"", branch)?;
                     }
                 }
 
                 if let Some(rev) = rev.as_deref() {
                     if !self.is_long() {
                         write!(f, ", rev = \"{}\"", rev)?;
+                    } else if version.is_none() && *default_features && features.is_empty() {
+                        write!(f, "rev = \"{}\"", rev)?;
                     } else {
-                        if version.is_none() && *default_features && features.is_empty() {
-                            write!(f, "rev = \"{}\"", rev)?;
-                        } else {
-                            writeln!(f, "rev = \"{}\"", rev)?;
-                        }
+                        writeln!(f, "rev = \"{}\"", rev)?;
                     }
                 }
 
                 if let Some(version) = version.as_deref() {
                     if !self.is_long() {
                         write!(f, ", version = \"{}\"", version)?;
+                    } else if *default_features && features.is_empty() {
+                        write!(f, "version = \"{}\"", version)?;
                     } else {
-                        if *default_features && features.is_empty() {
-                            write!(f, "version = \"{}\"", version)?;
-                        } else {
-                            writeln!(f, "version = \"{}\"", version)?;
-                        }
+                        writeln!(f, "version = \"{}\"", version)?;
                     }
                 }
 
                 if !default_features {
                     if !self.is_long() {
                         write!(f, ", default-features = false")?;
+                    } else if features.is_empty() {
+                        write!(f, "default-features = false")?;
                     } else {
-                        if features.is_empty() {
-                            write!(f, "default-features = false")?;
-                        } else {
-                            writeln!(f, "default-features = false")?;
-                        }
+                        writeln!(f, "default-features = false")?;
                     }
                 }
 
