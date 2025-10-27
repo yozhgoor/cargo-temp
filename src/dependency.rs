@@ -95,6 +95,82 @@ impl FromStr for Dependency {
 
 impl fmt::Display for Dependency {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = if self.is_long() {
+            self.format_multi_lines()
+        } else {
+            self.format_one_line()
+        };
+
+        write!(f, "{}", s)
+    }
+}
+
+impl Dependency {
+    pub fn is_long(&self) -> bool {
+        let mut len = 0;
+
+        match self {
+            Self::CratesIo {
+                name,
+                version,
+                features,
+                default_features,
+            } => {
+                len += name.len() + 5;
+
+                if let Some(version) = version.as_deref() {
+                    len += version.len() + 10;
+                }
+
+                len += 14;
+                for feature in features {
+                    len += feature.len() + 6;
+                }
+
+                if !default_features {
+                    len += 24;
+                }
+            }
+            Self::Repository {
+                name,
+                version,
+                features,
+                default_features,
+                url,
+                branch,
+                rev,
+            } => {
+                len += name.len() + 5;
+
+                if let Some(version) = version.as_deref() {
+                    len += version.len() + 9;
+                }
+
+                len += 13;
+                for feature in features {
+                    len += feature.len() + 6;
+                }
+
+                if !default_features {
+                    len += 24;
+                }
+
+                len += url.len() + 10;
+
+                if let Some(branch) = branch.as_deref() {
+                    len += branch.len() + 10;
+                }
+
+                if let Some(rev) = rev.as_deref() {
+                    len += rev.len() + 6;
+                }
+            }
+        }
+
+        len >= 100
+    }
+
+    fn format_one_line(&self) -> String {
         match self {
             Self::CratesIo {
                 name,
@@ -105,9 +181,9 @@ impl fmt::Display for Dependency {
                 let version = version.as_deref().unwrap_or("*");
 
                 if *default_features && features.is_empty() {
-                    write!(f, "{} = \"{}\"", name, version)
+                    format!("{} = \"{}\"", name, version)
                 } else {
-                    let mut s = format!("{name} = {{ version = \"{version}\"");
+                    let mut s = format!("{} = {{ version = \"{}\"", name, version);
 
                     if !default_features {
                         s.push_str(", default-features = false");
@@ -121,7 +197,7 @@ impl fmt::Display for Dependency {
 
                     s.push_str(" }");
 
-                    write!(f, "{}", s)
+                    s
                 }
             }
             Self::Repository {
@@ -133,7 +209,7 @@ impl fmt::Display for Dependency {
                 branch,
                 rev,
             } => {
-                let mut s = format!("{name} = {{ git = {url:?}");
+                let mut s = format!("{} = {{ git = {:?}", name, url);
 
                 if let Some(branch) = branch.as_deref() {
                     s.push_str(", branch = \"");
@@ -165,7 +241,75 @@ impl fmt::Display for Dependency {
 
                 s.push_str(" }");
 
-                write!(f, "{}", s)
+                s
+            }
+        }
+    }
+
+    fn format_multi_lines(&self) -> String {
+        match self {
+            Self::CratesIo {
+                name,
+                version,
+                features,
+                default_features,
+            } => {
+                let version = version.as_deref().unwrap_or("*");
+
+                let mut s = format!("[dependencies.{}]\nversion = \"{}\"", name, version);
+
+                if !default_features {
+                    s.push_str("\ndefault-features = false");
+                }
+
+                if !features.is_empty() {
+                    s.push_str("\nfeatures = [\"");
+                    s.push_str(&features.join("\", \""));
+                    s.push_str("\"]");
+                }
+
+                s
+            }
+            Self::Repository {
+                name,
+                version,
+                features,
+                default_features,
+                url,
+                branch,
+                rev,
+            } => {
+                let mut s = format!("[dependencies.{}]\ngit = {:?}", name, url);
+
+                if let Some(branch) = branch.as_deref() {
+                    s.push_str("\nbranch = \"");
+                    s.push_str(branch);
+                    s.push('"');
+                }
+
+                if let Some(rev) = rev.as_deref() {
+                    s.push_str("\nrev = \"");
+                    s.push_str(rev);
+                    s.push('"');
+                }
+
+                if let Some(version) = version.as_deref() {
+                    s.push_str("\nversion = \"");
+                    s.push_str(version);
+                    s.push('"');
+                }
+
+                if !default_features {
+                    s.push_str("\ndefault-features = false");
+                }
+
+                if !features.is_empty() {
+                    s.push_str("\nfeatures = [\"");
+                    s.push_str(&features.join("\", \""));
+                    s.push_str("\"]");
+                }
+
+                s
             }
         }
     }
