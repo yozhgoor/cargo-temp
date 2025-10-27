@@ -95,13 +95,136 @@ impl FromStr for Dependency {
 
 impl fmt::Display for Dependency {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let s = if self.is_long() {
-            self.format_multi_lines()
-        } else {
-            self.format_one_line()
-        };
+        match self {
+            Self::CratesIo {
+                name,
+                version,
+                features,
+                default_features,
+            } => {
+                let version = version.as_deref().unwrap_or("*");
 
-        write!(f, "{}", s)
+                if *default_features && features.is_empty() {
+                    return write!(f, "{} = \"{}\"", name, version);
+                } else if !self.is_long() {
+                    write!(f, "{} = {{ version = \"{}\"", name, version)?;
+                } else {
+                    writeln!(f, "[dependencies.{}]", name)?;
+
+                    if *default_features && !features.is_empty() {
+                        write!(f, "version = \"{}\"", version)?;
+                    } else {
+                        write!(f, "version = \"{}\"", version)?;
+                    }
+                }
+
+                if !default_features {
+                    if !self.is_long() {
+                        write!(f, ", default-features = false")?;
+                    } else {
+                        if features.is_empty() {
+                            write!(f, "default-features = false")?;
+                        } else {
+                            writeln!(f, "default-features = false")?;
+                        }
+                    }
+                }
+
+                if !features.is_empty() {
+                    if !self.is_long() {
+                        write!(f, ", features = [\"{}\"]", features.join("\", \""))?;
+                    } else {
+                        write!(f, "features = [\"{}\"]", features.join("\", \""))?;
+                    }
+                }
+
+                if !self.is_long() {
+                    write!(f, " }}")?;
+                }
+            }
+            Dependency::Repository {
+                name,
+                version,
+                features,
+                default_features,
+                url,
+                branch,
+                rev,
+            } => {
+                if !self.is_long() {
+                    write!(f, "{} = {{ git = \"{}\"", name, url)?;
+                } else {
+                    writeln!(f, "[dependencies.{}]", name)?;
+                    if branch.is_none() && rev.is_none() && *default_features && features.is_empty() {
+                        write!(f, "git = \"{}\"", url)?;
+                    } else {
+                        writeln!(f, "git = \"{}\"", url)?;
+                    }
+                }
+
+                if let Some(branch) = branch.as_deref() {
+                    if !self.is_long() {
+                        write!(f, ", branch = \"{}\"", branch)?;
+                    } else {
+                        if version.is_none() && *default_features && features.is_empty() {
+                            write!(f, "branch = \"{}\"", branch)?;
+                        } else {
+                            writeln!(f, "branch = \"{}\"", branch)?;
+                        }
+                    }
+                }
+
+                if let Some(rev) = rev.as_deref() {
+                    if !self.is_long() {
+                        write!(f, ", rev = \"{}\"", rev)?;
+                    } else {
+                        if version.is_none() && *default_features && features.is_empty() {
+                            write!(f, "rev = \"{}\"", rev)?;
+                        } else {
+                            writeln!(f, "rev = \"{}\"", rev)?;
+                        }
+                    }
+                }
+
+                if let Some(version) = version.as_deref() {
+                    if !self.is_long() {
+                        write!(f, ", version = \"{}\"", version)?;
+                    } else {
+                        if *default_features && features.is_empty() {
+                            write!(f, "version = \"{}\"", version)?;
+                        } else {
+                            writeln!(f, "version = \"{}\"", version)?;
+                        }
+                    }
+                }
+
+                if !default_features {
+                    if !self.is_long() {
+                        write!(f, ", default-features = false")?;
+                    } else {
+                        if features.is_empty() {
+                            write!(f, "default-features = false")?;
+                        } else {
+                            writeln!(f, "default-features = false")?;
+                        }
+                    }
+                }
+
+                if !features.is_empty() {
+                    if !self.is_long() {
+                        write!(f, ", features = [\"{}\"]", features.join("\", \""))?;
+                    } else {
+                        write!(f, "features = [\"{}\"]", features.join("\", \""))?;
+                    }
+                }
+
+                if !self.is_long() {
+                    write!(f, " }}")?;
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -168,149 +291,5 @@ impl Dependency {
         }
 
         len >= 100
-    }
-
-    fn format_one_line(&self) -> String {
-        match self {
-            Self::CratesIo {
-                name,
-                version,
-                features,
-                default_features,
-            } => {
-                let version = version.as_deref().unwrap_or("*");
-
-                if *default_features && features.is_empty() {
-                    format!("{} = \"{}\"", name, version)
-                } else {
-                    let mut s = format!("{} = {{ version = \"{}\"", name, version);
-
-                    if !default_features {
-                        s.push_str(", default-features = false");
-                    }
-
-                    if !features.is_empty() {
-                        s.push_str(", features = [\"");
-                        s.push_str(&features.join("\", \""));
-                        s.push_str("\"]");
-                    }
-
-                    s.push_str(" }");
-
-                    s
-                }
-            }
-            Self::Repository {
-                name,
-                version,
-                features,
-                default_features,
-                url,
-                branch,
-                rev,
-            } => {
-                let mut s = format!("{} = {{ git = {:?}", name, url);
-
-                if let Some(branch) = branch.as_deref() {
-                    s.push_str(", branch = \"");
-                    s.push_str(branch);
-                    s.push('"');
-                }
-
-                if let Some(rev) = rev.as_deref() {
-                    s.push_str(", rev = \"");
-                    s.push_str(rev);
-                    s.push('"');
-                }
-
-                if let Some(version) = version.as_deref() {
-                    s.push_str(", version = \"");
-                    s.push_str(version);
-                    s.push('"');
-                }
-
-                if !default_features {
-                    s.push_str(", default-features = false")
-                }
-
-                if !features.is_empty() {
-                    s.push_str(", features = [\"");
-                    s.push_str(&features.join("\", \""));
-                    s.push_str("\"]");
-                }
-
-                s.push_str(" }");
-
-                s
-            }
-        }
-    }
-
-    fn format_multi_lines(&self) -> String {
-        match self {
-            Self::CratesIo {
-                name,
-                version,
-                features,
-                default_features,
-            } => {
-                let version = version.as_deref().unwrap_or("*");
-
-                let mut s = format!("[dependencies.{}]\nversion = \"{}\"", name, version);
-
-                if !default_features {
-                    s.push_str("\ndefault-features = false");
-                }
-
-                if !features.is_empty() {
-                    s.push_str("\nfeatures = [\"");
-                    s.push_str(&features.join("\", \""));
-                    s.push_str("\"]");
-                }
-
-                s
-            }
-            Self::Repository {
-                name,
-                version,
-                features,
-                default_features,
-                url,
-                branch,
-                rev,
-            } => {
-                let mut s = format!("[dependencies.{}]\ngit = {:?}", name, url);
-
-                if let Some(branch) = branch.as_deref() {
-                    s.push_str("\nbranch = \"");
-                    s.push_str(branch);
-                    s.push('"');
-                }
-
-                if let Some(rev) = rev.as_deref() {
-                    s.push_str("\nrev = \"");
-                    s.push_str(rev);
-                    s.push('"');
-                }
-
-                if let Some(version) = version.as_deref() {
-                    s.push_str("\nversion = \"");
-                    s.push_str(version);
-                    s.push('"');
-                }
-
-                if !default_features {
-                    s.push_str("\ndefault-features = false");
-                }
-
-                if !features.is_empty() {
-                    s.push_str("\nfeatures = [\"");
-                    s.push_str(&features.join("\", \""));
-                    s.push_str("\"]");
-                }
-
-                s
-            }
-        }
     }
 }
