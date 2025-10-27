@@ -155,7 +155,8 @@ impl fmt::Display for Dependency {
                     write!(f, "{} = {{ git = \"{}\"", name, url)?;
                 } else {
                     writeln!(f, "[dependencies.{}]", name)?;
-                    if branch.is_none() && rev.is_none() && *default_features && features.is_empty() {
+                    if branch.is_none() && rev.is_none() && *default_features && features.is_empty()
+                    {
                         write!(f, "git = \"{}\"", url)?;
                     } else {
                         writeln!(f, "git = \"{}\"", url)?;
