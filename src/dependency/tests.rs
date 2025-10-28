@@ -664,7 +664,7 @@ features = [\"small_rng\", \"os_rng\"]",
 test_module!(
     no_default_features,
     |mut inputs: Inputs| {
-        inputs.0.push_str("!default");
+        inputs.0.push_str("%default");
         match &mut inputs.1 {
             Dependency::CratesIo {
                 default_features, ..
