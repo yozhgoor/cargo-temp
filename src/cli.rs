@@ -7,15 +7,37 @@ use crate::dependency::Dependency;
 #[derive(clap::Parser, Debug, Clone)]
 #[command(author, version, about, long_about)]
 pub struct Cli {
-    /// Dependencies to add to `Cargo.toml`.
-    ///
-    /// Default version: `*` (latest).
-    ///
-    /// Specify versions with `=` (e.g. `anyhow=1.0`).
-    ///
-    /// Specify features using `+` (e.g. `serde+derive`).
-    ///
-    /// Specify branch using `#` (e.g. `https://github.com/rust-random/rand.git#branch=master`).
+    /// Dependencies to add to the project's `Cargo.toml`.
+    #[arg(long_help(
+"Each DEPENDENCY can take one of the following forms:
+
+    (<NAME> | <URL>[#<BRANCH> | <REV>])[=<VERSION>][%default][<FEATURE>...]
+
+You must provide either a `NAME` (e.g. `anyhow`) or a `URL` pointing to a git repository.
+
+URLs can use `http(s)` or `ssh` schemes and may include a branch or a revision using `#`.
+
+You can optionally a version with `=` (e.g. `tokio=1.48`). Operators following cargo's
+comparison requirements can also be provided after the `=`:
+
+- `=`: Exact version (e.g. `tokio==1.48`).
+- `>`: Maximal version (e.g. `tokio=>1.48`).
+- `<`: Minimal version (e.g. `tokio=<1.48`).
+- `~`: Minimal version with some ability to update (e.g. `tokio=~1`).
+
+Features can be enabled using `+` (e.g. `derive+derive` or `clap+derive+cargo`. If you want
+to disable the default features, you can use `%default` (e.g. `ratatui%default+termion`).
+
+# Examples
+
+```sh
+cargo temp anyhow
+cargo temp tokio=1.48
+cargo temp clap+derive
+cargo temp https://github.com/rust-random/rand#thread_rng
+cargo temp ssh://git@github.com/ratatui/ratatui.git=0.28%default+termion
+```"
+))]
     pub dependencies: Vec<Dependency>,
 
     /// Create a library project instead of a binary.
@@ -26,8 +48,8 @@ pub struct Cli {
 
     /// Name of the temporary crate.
     ///
-    /// This name is used as the directory suffix. If you preserve the project, the directory is
-    /// renamed to this name.
+    /// This name is used as the directory suffix to avoid conflicts. If you preserve the project,
+    /// the directory will be renamed to the value you provided.
     #[arg(long = "name", short = 'n')]
     pub project_name: Option<String>,
 
