@@ -9,15 +9,14 @@ use crate::dependency::Dependency;
 pub struct Cli {
     /// Dependencies to add to the project's `Cargo.toml`.
     #[arg(long_help(
-"Each DEPENDENCY can take one of the following forms:
+        "Each DEPENDENCY can take one of the following forms:
 
-    (<NAME> | <URL>[#<BRANCH> | <REV>])[=<VERSION>][%default][<FEATURE>...]
+    (<NAME> | <URL>[#<BRANCH> | <REV>])[=<VERSION>][+][<FEATURE>...]
 
-You must provide either a `NAME` (e.g. `anyhow`) or a `URL` pointing to a git repository.
+You must provide either a `NAME` (e.g. `anyhow`) or a `URL` pointing to a git repository. URLs can
+use `http(s)` or `ssh` schemes and may include a branch or a revision using `#`.
 
-URLs can use `http(s)` or `ssh` schemes and may include a branch or a revision using `#`.
-
-You can optionally a version with `=` (e.g. `tokio=1.48`). Operators following cargo's
+You can optionally specify a version with `=` (e.g. `tokio=1.48`). Operators following cargo's
 comparison requirements can also be provided after the `=`:
 
 - `=`: Exact version (e.g. `tokio==1.48`).
@@ -25,8 +24,9 @@ comparison requirements can also be provided after the `=`:
 - `<`: Minimal version (e.g. `tokio=<1.48`).
 - `~`: Minimal version with some ability to update (e.g. `tokio=~1`).
 
-Features can be enabled using `+` (e.g. `derive+derive` or `clap+derive+cargo`. If you want
-to disable the default features, you can use `%default` (e.g. `ratatui%default+termion`).
+Features can be enabled by appending them with `+` (e.g. `clap+derive` or `clap+derive+cargo`. To
+disable default features, prefix the first feature with an additional `+`(e.g. `ratatui++termion`
+or `ratatui++termion+serde`).
 
 # Examples
 
@@ -35,9 +35,9 @@ cargo temp anyhow
 cargo temp tokio=1.48
 cargo temp clap+derive
 cargo temp https://github.com/rust-random/rand#thread_rng
-cargo temp ssh://git@github.com/ratatui/ratatui.git=0.28%default+termion
+cargo temp ssh://git@github.com/ratatui/ratatui.git=0.28++termion
 ```"
-))]
+    ))]
     pub dependencies: Vec<Dependency>,
 
     /// Create a library project instead of a binary.

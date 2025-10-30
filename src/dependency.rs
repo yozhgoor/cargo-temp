@@ -29,7 +29,7 @@ impl FromStr for Dependency {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         static RE: LazyLock<Regex> = LazyLock::new(|| {
-            Regex::new(r"^(?:(?P<url>(?:http|https|ssh)://(?:[^:@]+(?::[^@]+)?@)?[^/:@?#+=%]+(?:/[^#+=%]+)+(?:\.git)?)|(?P<name>[^=+#%]+))(?:#(?P<git_ref>[^+=%]+))?(?:=(?P<version>(?:>=|<=|>|<|=|~)?[0-9A-Za-z\.\-]+))?(?P<default_features>%default[^+#%]?)?(?P<features>(?:\+[^+#%]+)*)$")
+            Regex::new(r"^(?:(?P<url>(?:http|https|ssh)://(?:[^:@]+(?::[^@]+)?@)?[^/:@?#+=~]+(?:/[^#+=~]+)+(?:\.git)?)|(?P<name>[^=+]+))(?:#(?P<git_ref>[^+=]+))?(?:=(?P<version>(?:>=|<=|>|<|=|~)?[0-9A-Za-z\.\-]+))?(?P<default_features>\+[^+]?)?(?P<features>(?:\+[^+]+)*)$")
             .expect("dependency's regex must be compiled")
         });
 
