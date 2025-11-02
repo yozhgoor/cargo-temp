@@ -11,7 +11,7 @@ pub struct Cli {
     #[arg(long_help(
         "Each DEPENDENCY can take one of the following forms:
 
-    (<NAME> | <URL>[#<BRANCH> | <REV>])[=<VERSION>][+][<FEATURE>...]
+    (<NAME> | <URL>[#<BRANCH> | <REV>])[=<VERSION>][+][+<FEATURE>...]
 
 You must provide either a `NAME` (e.g. `anyhow`) or a `URL` pointing to a git repository. URLs can
 use `http(s)` or `ssh` schemes and may include a branch or a revision using `#`.
@@ -22,6 +22,8 @@ comparison requirements can also be provided after the `=`:
 - `=`: Exact version (e.g. `tokio==1.48`).
 - `>`: Maximal version (e.g. `tokio=>1.48`).
 - `<`: Minimal version (e.g. `tokio=<1.48`).
+- `>=`: Maximal or equal version (e.g. `tokio=>=1.48`).
+- `<=`: Minimal or equal version (e.g. `tokio=<=1.48`).
 - `~`: Minimal version with some ability to update (e.g. `tokio=~1`).
 
 Features can be enabled by appending them with `+` (e.g. `clap+derive` or `clap+derive+cargo`. To
