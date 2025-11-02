@@ -29,8 +29,18 @@ impl FromStr for Dependency {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         static RE: LazyLock<Regex> = LazyLock::new(|| {
-            Regex::new(r"^(?:(?P<url>(?:http|https|ssh)://(?:[^:@]+(?::[^@]+)?@)?[^/:@?#+=~]+(?:/[^#+=~]+)+(?:\.git)?)|(?P<name>[^=+]+))(?:#(?P<git_ref>[^+=]+))?(?:=(?P<version>(?:>=|<=|>|<|=|~)?[0-9A-Za-z\.\-]+))?(?P<default_features>\+[^+]?)?(?P<features>(?:\+[^+]+)*)$")
-            .expect("dependency's regex must be compiled")
+            let pattern = concat!(
+                r"^",
+                r"(?:(?P<url>(?:https?|ssh)://(?:[^:@]+(?::[^@]+)?@)?[^/:@?#+=]+(?:/[^#+=]+)+(?:\.git)?)",
+                r"|",
+                "(?P<name>[^+=]+))",
+                r"(?:#(?P<git_ref>[^=+]+))?",
+                r"(?:=(?P<version>(?:>=|<=|>|<|=|~)?[0-9A-Za-z.\-]+))?",
+                r"(?P<default_features>\+[^+]?)?",
+                r"(?P<features>(?:\+[^+]+)*)$",
+            );
+
+            Regex::new(pattern).expect("dependency regex must compile")
         });
 
         match RE.captures(s) {
