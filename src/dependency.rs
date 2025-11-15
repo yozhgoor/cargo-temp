@@ -31,11 +31,22 @@ impl FromStr for Dependency {
         static RE: LazyLock<Regex> = LazyLock::new(|| {
             Regex::new(
                 r"(?x)^
-(?:(?P<url>(?:https?|ssh)://(?:[^:@]+(?::[^@]+)?@)?[^/:@?\#+=]+(?:/[^\#+=]+)+(?:\.git)?)
-|
-(?P<name>[^+=]+))
+(?:
+    (?P<url>
+        (?:https?|ssh)://
+        (?:[^:@]+(?::[^@]+)?@)?
+        [^/:@?\#+=]+
+        (?:/[^\#+=]+)+
+        (?:\.git)?
+    )
+    |
+    (?P<name>[^+=]+)
+)
 (?:\#(?P<git_ref>[^=+]+))?
-(?:=(?P<version>(?:>=|<=|>|<|=|~)?[0-9A-Za-z.\-]+))?
+(?:=(?P<version>
+    (?:>=|<=|>|<|=|~)?
+    [0-9A-Za-z.\-]+
+))?
 (?P<default_features>\+[^+]?)?
 (?P<features>(?:\+[^+]+)*)$
 ",
