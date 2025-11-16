@@ -24,7 +24,7 @@ to preserve it.
 - Setup Criterion-based benchmarks with one flag.
 
 Think `cargo new`, but temporary, dependency-aware, Git-friendly and benchmark ready. A middle
-ground between the Rust playground and a full repository.
+ground between [the Rust playground][rust-playground] and a full repository.
 
 ## Install
 
@@ -41,13 +41,14 @@ Create a new temporary Rust project:
 cargo temp
 ```
 
-A shell is opened in the project directory, sp you can immediately start editing, building and
-running code right away. You can also [configure][config] `cargo-temp` to open directly in your
-preferred editor instead of a shell.
+A shell is opened in the project directory, so you can immediately start editing, building and
+running code right away. You can also [configure][config-template] `cargo-temp` to open directly the
+project in your preferred editor instead of a shell.
 
-When you exit the shell, the project and all its files are automatically deleted. To preserve it,
-simply delete the `TO_DELETE` file before exiting. The project directory will remain intact or you
-can also [configure][config] a default destination for the preserved projects.
+When you exit the shell (or the editor), the project and all its files are automatically deleted.
+To preserve it, simply delete the `TO_DELETE` file before exiting. The project directory will remain
+intact or you can also [configure][config-template] a default destination for the preserved
+projects.
 
 ### Dependencies
 
@@ -87,9 +88,9 @@ The name of the package is inferred from the URL and the `.git` extension is opt
 
 You can also specify a branch or a revision:
 ```sh
-cargo temp https://github.com/rust-random/rand.git#branch=master
+cargo temp https://github.com/rust-random/rand.git#master
 
-cargo temp https://github.com/rust-random/rand.git#rev=7e0f77a38
+cargo temp https://github.com/rust-random/rand.git#7e0f77a38
 ```
 
 ### Features
@@ -100,7 +101,7 @@ cargo temp tokio+io_std
 
 cargo temp tokio=1.0+io_std
 
-cargo temp https://github.com/tokio-rs/tokio#branch=compat+io_std
+cargo temp https://github.com/tokio-rs/tokio#compat+io_std
 ```
 
 For multiple features, chain them together:
@@ -167,13 +168,6 @@ This adds `criterion` as a dev-dependency and generates a benchmark file named `
 The file is created automatically when you run `cargo-temp` for the first time. For a detailed
 example, see the [configuration template][configuration_template].
 
-Common settings are:
-- `temporary_project_dir`: Directory where temporary projects are created (defaults to system's
-  cache).
-- `preserved_project_dir`: Directory where preserved projects are moved.
-- `git_repo_depth`: Number of commits to retain when cloning.
-- `editor` and `editor_args` replace the shell by your editor.
-
 [actions-badge]: https://github.com/yozhgoor/cargo-temp/actions/workflows/rust.yml/badge.svg
 [actions-url]: https://github.com/yozhgoor/cargo-temp/actions
 [crates-version-badge]: https://img.shields.io/crates/v/cargo-temp
@@ -186,5 +180,4 @@ Common settings are:
 [ssh-issue]: https://github.com/rust-lang/cargo/issues/1851
 [worktree]: https://git-scm.com/docs/git-worktree
 [criterion]: https://docs.rs/criterion/latest/criterion
-[config]: #configuration
-[config_template]: https://github.com/yozhgoor/cargo-temp/blob/main/config_template.toml
+[config-template]: https://github.com/yozhgoor/cargo-temp/blob/main/config_template.toml

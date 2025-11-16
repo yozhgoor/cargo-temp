@@ -74,16 +74,16 @@ impl FromStr for Dependency {
                         .trim_end_matches(".git")
                         .to_string();
 
-                    let git_ref = caps.name("git_ref").map(|x| x.as_str());
-                    let (branch, rev) = if let Some(r) = git_ref {
-                        if r.len() >= 7 && r.chars().all(|c| c.is_ascii_hexdigit()) {
-                            (None, Some(r.to_string()))
+                    let (branch, rev) =
+                        if let Some(ref r) = caps.name("git_ref").map(|x| x.as_str()) {
+                            if r.len() >= 7 && r.chars().all(|c| c.is_ascii_hexdigit()) {
+                                (None, Some(r.to_string()))
+                            } else {
+                                (Some(r.to_string()), None)
+                            }
                         } else {
-                            (Some(r.to_string()), None)
-                        }
-                    } else {
-                        (None, None)
-                    };
+                            (None, None)
+                        };
 
                     Ok(Self::Repository {
                         name,

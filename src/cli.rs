@@ -1,9 +1,9 @@
 use crate::dependency::Dependency;
 
-/// cargo-temp: Create disposable Rust projects with pre-installed dependencies.
+/// cargo-temp: Create temporary Rust projects with specified dependencies.
 ///
-/// This tool creates a new Rust project in a temporary directory, automatically installs the
-/// dependencies you specify and deletes the project on exit, unless you choose to preserve it.
+/// Cargo subcommand for quick experimentation. It creates a temporary project, adds any
+/// dependencies you specify and drops you into a shell.
 #[derive(clap::Parser, Debug, Clone)]
 #[command(author, version, about, long_about)]
 pub struct Cli {
