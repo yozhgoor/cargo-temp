@@ -43,17 +43,27 @@ cargo temp ssh://git@github.com/ratatui/ratatui.git=0.28++termion
     pub dependencies: Vec<Dependency>,
 
     /// Create a library project instead of a binary.
-    ///
-    /// This generate a `lib.rs` file instead of `main.rs`.
     #[arg(long, short = 'l')]
     pub lib: bool,
 
+    /// Select the Rust edition for the temporary project.
+    ///
+    /// Default to the latest stable edition. Possible values are the same as `cargo new --edition`.
+    #[arg(long, short = 'e')]
+    pub edition: Option<u32>,
+
     /// Name of the temporary crate.
     ///
-    /// This name is used as the directory suffix to avoid conflicts. If you preserve the project,
-    /// the directory will be renamed to the value you provided.
+    /// This name is used as the directory suffix to avoid conflicts.
+    /// If you preserve the project, the directory will be renamed to the value provided.
     #[arg(long = "name", short = 'n')]
     pub project_name: Option<String>,
+
+    /// Add benchmarking support using `criterion.rs`.
+    ///
+    /// Optionally specify the benchmark file name (default: `benchmark.rs`).
+    #[arg(long, short = 'b')]
+    pub bench: Option<Option<String>>,
 
     /// Create a temporary Git worktree from the repository in the current directory.
     ///
@@ -64,19 +74,6 @@ cargo temp ssh://git@github.com/ratatui/ratatui.git=0.28++termion
     /// Create a temporary clone of a Git repository.
     #[arg(long, short = 'g')]
     pub git: Option<String>,
-
-    /// Add benchmarking support using `criterion.rs`.
-    ///
-    /// Optionally specify the benchmark file name (default: `benchmark.rs`).
-    #[arg(long, short = 'b')]
-    pub bench: Option<Option<String>>,
-
-    /// Select the Rust edition for the temporary project.
-    /// Available editions: 2015, 2018, 2021, 2024.
-    ///
-    /// Default: latest stable edition.
-    #[arg(long, short = 'e')]
-    pub edition: Option<u32>,
 }
 
 #[cfg(test)]
