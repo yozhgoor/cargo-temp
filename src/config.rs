@@ -34,16 +34,11 @@ impl Config {
             .expect("path shouldn't contains invalid unicode")
             .replace('\\', "\\\\");
 
-        #[cfg(target_family = "windows")]
-        let editor = "C:\\\\Program Files\\\\Microsoft VS Code\\\\Code.exe";
-        #[cfg(target_family = "unix")]
-        let editor = "/usr/bin/code";
-
         Ok(format!(
             include_str!("../config_template.toml"),
             welcome_message = true,
             temporary_project_dir = temporary_project_dir,
-            editor = editor,
+            editor = "code",
         ))
     }
 

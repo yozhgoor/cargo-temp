@@ -438,7 +438,6 @@ test_module!(
         match &mut inputs.1 {
             Dependency::CratesIo { version, .. } => {
                 let v = "<1.0.100";
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
@@ -449,7 +448,6 @@ test_module!(
                     "rand" => "<0.9",
                     _ => "<0.4.28",
                 };
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
@@ -469,7 +467,6 @@ test_module!(
         match &mut inputs.1 {
             Dependency::CratesIo { version, .. } => {
                 let v = "<=1.0.100";
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
@@ -480,7 +477,6 @@ test_module!(
                     "rand" => "<=0.9",
                     _ => "<=0.4.28",
                 };
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
@@ -500,7 +496,6 @@ test_module!(
         match &mut inputs.1 {
             Dependency::CratesIo { version, .. } => {
                 let v = ">1.0.100";
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
@@ -511,7 +506,6 @@ test_module!(
                     "rand" => ">0.9",
                     _ => ">0.4.28",
                 };
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
@@ -531,7 +525,6 @@ test_module!(
         match &mut inputs.1 {
             Dependency::CratesIo { version, .. } => {
                 let v = ">=1.0.100";
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
@@ -542,7 +535,6 @@ test_module!(
                     "rand" => ">=0.9",
                     _ => ">=0.4.28",
                 };
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
@@ -562,7 +554,6 @@ test_module!(
         match &mut inputs.1 {
             Dependency::CratesIo { version, .. } => {
                 let v = "~1.0.100";
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
@@ -573,7 +564,6 @@ test_module!(
                     "rand" => "~0.9",
                     _ => "~0.4.28",
                 };
-                inputs.0.push('=');
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }

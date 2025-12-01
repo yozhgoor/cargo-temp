@@ -195,18 +195,18 @@ impl Project {
                 command.args(["--vcs", arg]);
             }
 
-            if let Some(num) = &cli.edition {
-                match num {
-                    15 | 2015 => {
+            if let Some(edition) = cli.edition.as_deref() {
+                match edition {
+                    "15" | "2015" => {
                         command.args(["--edition", "2015"]);
                     }
-                    18 | 2018 => {
+                    "18" | "2018" => {
                         command.args(["--edition", "2018"]);
                     }
-                    21 | 2021 => {
+                    "21" | "2021" => {
                         command.args(["--edition", "2021"]);
                     }
-                    _ => log::error!("cannot find the {} edition, using the latest", num),
+                    _ => log::error!("cannot find the {} edition, using the latest", edition),
                 }
             }
 
@@ -221,17 +221,15 @@ impl Project {
                 .append(true)
                 .open(tmp_dir_path.join("Cargo.toml"))?;
 
-            let mut tables = Vec::new();
-            for dependency in cli.dependencies.iter() {
-                if !dependency.is_long() {
-                    writeln!(toml, "{}", dependency)?;
-                } else {
-                    tables.push(dependency);
-                }
+            let (short, long): (Vec<_>, Vec<_>) =
+                cli.dependencies.iter().partition(|d| !d.is_long());
+
+            for dep in short {
+                writeln!(toml, "{}", dep)?;
             }
 
-            for table in tables {
-                writeln!(toml, "\n{}", table)?;
+            for dep in long {
+                writeln!(toml, "\n{}", dep)?;
             }
         }
 

@@ -20,11 +20,11 @@ You can optionally specify a version with `=` (e.g. `tokio=1.48`). Operators fol
 comparison requirements can also be provided after the `=`:
 
 - `=`: Exact version (e.g. `tokio==1.48`).
-- `>`: Maximal version (e.g. `tokio=>1.48`).
-- `<`: Minimal version (e.g. `tokio=<1.48`).
-- `>=`: Maximal or equal version (e.g. `tokio=>=1.48`).
-- `<=`: Minimal or equal version (e.g. `tokio=<=1.48`).
-- `~`: Minimal version with some ability to update (e.g. `tokio=~1`).
+- `>`: Maximal version (e.g. `tokio>1.48`).
+- `<`: Minimal version (e.g. `tokio<1.48`).
+- `>=`: Maximal or equal version (e.g. `tokio>=1.48`).
+- `<=`: Minimal or equal version (e.g. `tokio<=1.48`).
+- `~`: Minimal version with some ability to update (e.g. `tokio~1`).
 
 Features can be enabled by appending them with `+` (e.g. `clap+derive` or `clap+derive+cargo`. To
 disable default features, prefix the first feature with an additional `+`(e.g. `ratatui++termion`
@@ -37,7 +37,7 @@ cargo temp anyhow
 cargo temp tokio=1.48
 cargo temp clap+derive
 cargo temp https://github.com/rust-random/rand#thread_rng
-cargo temp ssh://git@github.com/ratatui/ratatui.git=0.28++termion
+cargo temp ssh://git@github.com/ratatui/ratatui.git#latest++termion
 ```"
     ))]
     pub dependencies: Vec<Dependency>,
@@ -50,7 +50,7 @@ cargo temp ssh://git@github.com/ratatui/ratatui.git=0.28++termion
     ///
     /// Default to the latest stable edition. Possible values are the same as `cargo new --edition`.
     #[arg(long, short = 'e')]
-    pub edition: Option<u32>,
+    pub edition: Option<String>,
 
     /// Name of the temporary crate.
     ///

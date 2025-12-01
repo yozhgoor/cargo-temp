@@ -35,19 +35,19 @@ impl FromStr for Dependency {
     (?P<url>
         (?:https?|ssh)://
         (?:[^:@]+(?::[^@]+)?@)?
-        [^/:@?\#+=]+
-        (?:/[^\#+=]+)+
+        [^/:@?\#=><~+]+
+        (?:/[^\#=><~+]+)+
         (?:\.git)?
     )
     |
-    (?P<name>[^+=]+)
+    (?P<name>[^=><~+]+)
 )
-(?:\#(?P<git_ref>[^=+]+))?
-(?:=(?P<version>
-    (?:>=|<=|>|<|=|~)?
-    [0-9A-Za-z.\-]+
-))?
-(?P<default_features>\+[^+]?)?
+(?:\#(?P<git_ref>[^=><~+]+))?
+(?:
+    (?P<op>==|>=|<=|>|<|~|=)?
+    (?P<version>[0-9A-Za-z.\-]+)
+)?
+(?P<default_features>\+)?
 (?P<features>(?:\+[^+]+)*)$
 ",
             )
@@ -56,7 +56,15 @@ impl FromStr for Dependency {
 
         match RE.captures(s) {
             Some(caps) => {
-                let version = caps.name("version").map(|x| x.as_str().to_string());
+                let op = caps.name("op").map(|x| x.as_str());
+                let ver = caps.name("version").map(|x| x.as_str());
+                let version = match (op, ver) {
+                    (Some("=="), Some(v)) => Some(format!("={}", v)),
+                    (Some("="), Some(v)) => Some(v.to_string()),
+                    (Some(o), Some(v)) => Some(format!("{}{}", o, v)),
+                    (None, Some(v)) => Some(v.to_string()),
+                    _ => None,
+                };
                 let features = caps.name("features").map_or(vec![], |x| {
                     x.as_str()
                         .split('+')
