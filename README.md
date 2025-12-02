@@ -18,10 +18,10 @@ to preserve it.
 **Why use `cargo-temp`**?
 
 - No more abandoned scratch projects, temporary by default
-- Support editors, local toolchain and configuration.
+- Support your editor, local toolchain and configuration.
 - Add crates (including Git sources) on creation, with versions, features, branch, etc.
 - Run experiments from a Git worktree or a temporary repository clone
-- Setup Criterion-based benchmarks with one flag.
+- Setup Criterion-based benchmarks with a single flag.
 
 Think `cargo new`, but temporary, dependency-aware, Git-friendly and benchmark ready. A middle
 ground between [the Rust playground][rust-playground] and a full repository.
@@ -41,11 +41,11 @@ Create a new temporary Rust project:
 cargo temp
 ```
 
-A shell is opened in the project directory, so you can immediately start editing, building and
-running code right away. You can also [configure][config-template] `cargo-temp` to open directly the
-project in your preferred editor instead of a shell.
+A shell opens in the project directory, so you can immediately start editing, building and
+running code right away. You can also [configure][config-template] `cargo-temp` to open the
+project directly in your preferred editor instead of a shell.
 
-When you exit the shell (or the editor), the project and all its files are automatically deleted.
+When you exit the shell (or editor), the project and all its files are automatically deleted.
 To preserve it, simply delete the `TO_DELETE` file before exiting. The project directory will remain
 intact or you can also [configure][config-template] a default destination for the preserved
 projects.
@@ -106,7 +106,7 @@ cargo temp tokio=1.0+io_std
 cargo temp https://github.com/tokio-rs/tokio#compat+io_std
 ```
 
-For multiple features, chain them together:
+For multiple features, chain them:
 ```
 cargo temp tokio==1.0+io_std+io_utils
 ```
@@ -168,7 +168,7 @@ This adds `criterion` as a dev-dependency and generates a benchmark file named `
 - Windows: `%APPDATA%\cargo-temp\config.toml`
 
 The file is created automatically when you run `cargo-temp` for the first time. For a detailed
-example, see the [configuration template][configuration_template].
+example, see the [configuration template][config-template].
 
 [actions-badge]: https://github.com/yozhgoor/cargo-temp/actions/workflows/rust.yml/badge.svg
 [actions-url]: https://github.com/yozhgoor/cargo-temp/actions

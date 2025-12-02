@@ -2,7 +2,7 @@ use crate::dependency::Dependency;
 
 /// cargo-temp: Create temporary Rust projects with specified dependencies.
 ///
-/// Cargo subcommand for quick experimentation. It creates a temporary project, adds any
+/// A Cargo subcommand for quick experimentation. It creates a temporary project, adds any
 /// dependencies you specify and drops you into a shell.
 #[derive(clap::Parser, Debug, Clone)]
 #[command(author, version, about, long_about)]
@@ -11,12 +11,12 @@ pub struct Cli {
     #[arg(long_help(
         "Each DEPENDENCY can take one of the following forms:
 
-    (<NAME> | <URL>[#<BRANCH> | <REV>])[=<VERSION>][+][+<FEATURE>...]
+    (<NAME> | <URL>[#<BRANCH> | <REV>])[=|==|>|<|>=|<=|~<VERSION>][+][+<FEATURE>...]
 
 You must provide either a `NAME` (e.g. `anyhow`) or a `URL` pointing to a git repository. URLs can
 use `http(s)` or `ssh` schemes and may include a branch or a revision using `#`.
 
-You can optionally specify a version with `=` (e.g. `tokio=1.48`) or use an operator following
+You can optionally specify a version with `=` (e.g. `tokio=1.48`) or with an operator that follows
 Cargo's comparison requirements:
 
 - `==`: Exact version (e.g. `tokio==1.48`).
@@ -26,8 +26,8 @@ Cargo's comparison requirements:
 - `<=`: Minimal or equal version (e.g. `tokio<=1.48`).
 - `~`: Minimal version with some ability to update (e.g. `tokio~1`).
 
-Features can be enabled by appending them with `+` (e.g. `clap+derive` or `clap+derive+cargo`. To
-disable default features, prefix the first feature with an additional `+`(e.g. `ratatui++termion`
+Features can be enabled by appending them with `+` (e.g. `clap+derive` or `clap+derive+cargo`.
+To disable default features, prefix the first feature with an additional `+`(e.g. `ratatui++termion`
 or `ratatui++termion+serde`).
 
 # Examples
