@@ -30,14 +30,14 @@ ground between [the Rust playground][rust-playground] and a full repository.
 
 Install `cargo-temp` using Cargo:
 
-```sh
+```
 cargo install --locked cargo-temp
 ```
 
 ## Usage
 
 Create a new temporary Rust project:
-```sh
+```
 cargo temp
 ```
 
@@ -53,28 +53,30 @@ projects.
 ### Dependencies
 
 Specify one or more dependencies directly:
-```sh
+```
 cargo temp rand log
 ```
 
 By default, the latest version (`*`) is used. To specify a version, use `=`:
-```sh
+```
 cargo temp anyhow=0.4
 ```
 
 For more control, use [Cargo's comparison requirements][comparison]:
-```sh
-cargo temp log=<0.4.28
+```
+cargo temp log==0.4.28
 
-cargo temp log=<=0.4.28
+cargo temp log>=0.4.28
 
-cargo temp log=~0.4.28
+cargo temp log<=0.4.28
+
+cargo temp log~0.4.28
 ```
 
 #### dependencies from Git
 
 Add dependencies directly from a Git repository using HTTP or SSH URLs:
-```sh
+```
 cargo temp https://github.com/rust-random/rand
 
 cargo temp ssh://git@github.com/rust-random/rand.git
@@ -87,7 +89,7 @@ The name of the package is inferred from the URL and the `.git` extension is opt
 > If it doesn't help, please file an issue.
 
 You can also specify a branch or a revision:
-```sh
+```
 cargo temp https://github.com/rust-random/rand.git#master
 
 cargo temp https://github.com/rust-random/rand.git#7e0f77a38
@@ -96,7 +98,7 @@ cargo temp https://github.com/rust-random/rand.git#7e0f77a38
 ### Features
 
 Add features to a dependency using `+`:
-```sh
+```
 cargo temp tokio+io_std
 
 cargo temp tokio=1.0+io_std
@@ -105,12 +107,12 @@ cargo temp https://github.com/tokio-rs/tokio#compat+io_std
 ```
 
 For multiple features, chain them together:
-```sh
+```
 cargo temp tokio==1.0+io_std+io_utils
 ```
 
 To disable default features, prefix the chain of features by a `+`:
-```sh
+```
 cargo temp tokio+
 
 cargo temp tokio++io_std
@@ -121,7 +123,7 @@ cargo temp tokio++io_std
 #### Clone a Git Repository
 
 Create a temporary project from a Git repository using the `--git` option:
-```sh
+```
 cargo temp --git <url>
 ```
 
@@ -131,12 +133,12 @@ By default, the Git history is truncated to the last commit. To retain more comm
 #### Git Working Tree
 
 Create a temporary [git worktree][worktree] from the current repository:
-```sh
+```
 cargo temp --worktree
 ```
 
 To create a worktree for a specific branch:
-```sh
+```
 cargo temp --worktree <branch>
 ```
 
@@ -148,7 +150,7 @@ When exiting the shell or editor, the working tree will be cleaned up, equivalen
 ### Benchmarking
 
 Create a temporary project with benchmarking support using [`criterion-rs`][criterion]:
-```sh
+```
 cargo temp --bench <name>
 ```
 

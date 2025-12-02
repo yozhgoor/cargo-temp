@@ -16,10 +16,10 @@ pub struct Cli {
 You must provide either a `NAME` (e.g. `anyhow`) or a `URL` pointing to a git repository. URLs can
 use `http(s)` or `ssh` schemes and may include a branch or a revision using `#`.
 
-You can optionally specify a version with `=` (e.g. `tokio=1.48`). Operators following cargo's
-comparison requirements can also be provided after the `=`:
+You can optionally specify a version with `=` (e.g. `tokio=1.48`) or use an operator following
+Cargo's comparison requirements:
 
-- `=`: Exact version (e.g. `tokio==1.48`).
+- `==`: Exact version (e.g. `tokio==1.48`).
 - `>`: Maximal version (e.g. `tokio>1.48`).
 - `<`: Minimal version (e.g. `tokio<1.48`).
 - `>=`: Maximal or equal version (e.g. `tokio>=1.48`).

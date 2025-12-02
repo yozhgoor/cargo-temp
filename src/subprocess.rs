@@ -15,7 +15,6 @@ pub use std::process::{Child, Command};
 pub struct SubProcess {
     pub command: String,
     pub foreground: bool,
-    #[serde(default)]
     pub keep_on_exit: bool,
     pub working_dir: Option<PathBuf>,
     #[cfg(unix)]
