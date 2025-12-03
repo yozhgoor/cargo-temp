@@ -221,14 +221,14 @@ impl Project {
                 .append(true)
                 .open(tmp_dir_path.join("Cargo.toml"))?;
 
-            let (short, long): (Vec<_>, Vec<_>) =
-                cli.dependencies.iter().partition(|d| !d.is_long());
+            let (tables, lines): (Vec<_>, Vec<_>) =
+                cli.dependencies.iter().partition(|d| d.is_long());
 
-            for dep in short {
+            for dep in lines {
                 writeln!(toml, "{}", dep)?;
             }
 
-            for dep in long {
+            for dep in tables {
                 writeln!(toml, "\n{}", dep)?;
             }
         }
