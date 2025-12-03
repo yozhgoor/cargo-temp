@@ -1,46 +1,45 @@
 use crate::subprocess::SubProcess;
 use anyhow::{Context, Result};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::{fs, path::PathBuf};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Default, Deserialize, Eq, PartialEq)]
 pub struct Config {
+    #[serde(default)]
+    pub temporary_project_dir: Option<PathBuf>,
     #[serde(default)]
     pub welcome_message: bool,
     #[serde(default)]
-    pub cargo_target_dir: Option<PathBuf>,
+    pub prompt: bool,
     #[serde(default)]
     pub preserved_project_dir: Option<PathBuf>,
     #[serde(default)]
-    pub prompt: bool,
+    pub vcs: Option<String>,
+    #[serde(default)]
+    pub git_repo_depth: Option<Depth>,
+    #[serde(default)]
+    pub cargo_target_dir: Option<PathBuf>,
     #[serde(default)]
     pub editor: Option<String>,
     #[serde(default)]
     pub editor_args: Option<Vec<String>>,
-    #[serde(default)]
-    pub temporary_project_dir: Option<PathBuf>,
-    #[serde(default)]
-    pub git_repo_depth: Option<Depth>,
-    #[serde(default)]
-    pub vcs: Option<String>,
     #[serde(default, rename = "subprocess", skip_serializing_if = "Vec::is_empty")]
     pub subprocesses: Vec<SubProcess>,
 }
 
 impl Config {
-    fn new() -> Result<Self> {
-        Ok(Self {
-            welcome_message: true,
-            cargo_target_dir: None,
-            preserved_project_dir: None,
-            prompt: false,
-            editor: None,
-            editor_args: None,
-            git_repo_depth: None,
-            temporary_project_dir: Some(Self::default_temporary_project_dir()?),
-            vcs: None,
-            subprocesses: Default::default(),
-        })
+    fn template() -> Result<String> {
+        let temporary_project_dir = Config::default_temporary_project_dir()?
+            .to_str()
+            .expect("path shouldn't contains invalid unicode")
+            .replace('\\', "\\\\");
+
+        Ok(format!(
+            include_str!("../config_template.toml"),
+            welcome_message = true,
+            temporary_project_dir = temporary_project_dir,
+            editor = "code",
+        ))
     }
 
     #[cfg(unix)]
@@ -77,11 +76,12 @@ impl Config {
         let config: Self = match fs::read_to_string(&config_file_path) {
             Ok(file) => toml::de::from_str(&file)?,
             Err(_) => {
-                let config = Self::new()?;
-                fs::write(&config_file_path, toml::ser::to_string(&config)?)?;
+                let config_str = Config::template()?;
+
+                fs::write(&config_file_path, &config_str)?;
                 log::info!("Config file created at: {}", config_file_path.display());
 
-                config
+                toml::de::from_str(&config_str)?
             }
         };
 
@@ -89,7 +89,7 @@ impl Config {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Eq, PartialEq)]
 #[serde(untagged)]
 pub enum Depth {
     Active(bool),
@@ -102,6 +102,23 @@ mod tests {
 
     #[test]
     fn read_empty_config() {
-        let _: Config = toml::from_str("").unwrap();
+        let _: Config = toml::from_str("").expect("can deserialize empty configuration");
+    }
+
+    #[test]
+    fn from_template() {
+        let template_str = Config::template().expect("can generate template");
+        let template: Config = toml::de::from_str(&template_str).expect("can deserialize template");
+
+        let default = Config {
+            welcome_message: true,
+            temporary_project_dir: Some(
+                Config::default_temporary_project_dir()
+                    .expect("can determine default temporary project directory"),
+            ),
+            ..Default::default()
+        };
+
+        assert_eq!(template, default);
     }
 }

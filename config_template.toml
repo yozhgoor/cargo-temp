@@ -1,0 +1,79 @@
+# cargo-temp's configuration file.
+
+# ================
+# General settings
+# ================
+
+# Display a welcome message explaining how to exit and preserve the project on when a new temporary
+# project is created.
+# Default: true
+welcome_message = {welcome_message}
+
+# Directory where temporary projects are created.
+# Default: System cache directory.
+# If the directory does not exist, it will be created automatically.
+temporary_project_dir = "{temporary_project_dir}"
+
+# Prompt for confirmation before deleting the project on exit.
+# Default: false
+# prompt = false
+
+# Directory where the temporary projects will be preserved.
+# Default: None, temporary projects are not moved on exit.
+# Example:
+# preserved_project_dir = "/home/user/lab"
+
+# Version Control System (VCS) to use for new projects..
+# Possible values: "git", "none" or any VCS supported by `cargo new -vcs`.
+# Default: "git" (implicit default from Cargo).
+# vcs = "git"
+
+# Number of commits to retain in the history when cloning a Git repository.
+# Set to 0 to keep the full history.
+# Default: 1 (only the latest commit).
+# git_repo_depth = 1
+
+# Override the default target directory for cargo builds.
+# Default: project-specific `target` directory.
+# cargo_target_dir = "target"
+
+# ===============
+# Editor settings
+# ===============
+
+# Path to your preferred editor or IDE.
+# If specified, `cargo-temp` will open the editor instead of a shell.
+
+# Example for VS Code:
+# editor = "{editor}"
+# editor_args = [ "--wait", "--new-window" ]
+
+# ============
+# Subprocesses
+# ============
+
+# You can spawn subprocesses to run alongside your temporary project.
+#
+# The required fields for each subprocess:
+# - `command`: a shell command to run (e.g., "cargo watch").
+# - `foreground`: Boolean. If true, the process runs in the foreground; if false, it runs in the
+#   background.
+#
+# Optional fields:
+# - `working_dir`: Override the working directory (default: temporary project directory).
+# - `keep_on_exit`: Keep the process running after exiting the shell/editor (default: false).
+#   Note: This setting has no effect for foreground processes.
+#
+# Platform specifics settings:
+# - Unix
+#   - `stdout`: Boolean. Enable or disable stdout output (default: false for background, true for
+#   foreground).
+#   - `stderr`: Boolean. Enable or disable stderr output (default: true for foreground, false for
+#   background).
+# - Windows
+#   - `inherit_handles`: Boolean. Allow the subprocess to inherit handles from the parent process
+#   (default: false).
+#
+# [[subprocess]]
+# command = "alacritty -e cargo watch"
+# foreground = true

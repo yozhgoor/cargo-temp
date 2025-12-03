@@ -1,7 +1,6 @@
 use crate::{
     cli::Cli,
     config::{Config, Depth},
-    dependency::format_dependency,
     subprocess::{Child, kill_subprocesses, start_subprocesses},
 };
 use anyhow::{Context, Result, bail, ensure};
@@ -196,18 +195,18 @@ impl Project {
                 command.args(["--vcs", arg]);
             }
 
-            if let Some(num) = &cli.edition {
-                match num {
-                    15 | 2015 => {
+            if let Some(edition) = cli.edition.as_deref() {
+                match edition {
+                    "15" | "2015" => {
                         command.args(["--edition", "2015"]);
                     }
-                    18 | 2018 => {
+                    "18" | "2018" => {
                         command.args(["--edition", "2018"]);
                     }
-                    21 | 2021 => {
+                    "21" | "2021" => {
                         command.args(["--edition", "2021"]);
                     }
-                    _ => log::error!("cannot find the {} edition, using the latest", num),
+                    _ => log::error!("cannot find the {} edition, using the latest", edition),
                 }
             }
 
@@ -222,8 +221,15 @@ impl Project {
                 .append(true)
                 .open(tmp_dir_path.join("Cargo.toml"))?;
 
-            for dependency in cli.dependencies.iter() {
-                writeln!(toml, "{}", format_dependency(dependency))?
+            let (tables, lines): (Vec<_>, Vec<_>) =
+                cli.dependencies.iter().partition(|d| d.is_long());
+
+            for dep in lines {
+                writeln!(toml, "{}", dep)?;
+            }
+
+            for dep in tables {
+                writeln!(toml, "\n{}", dep)?;
             }
         }
 

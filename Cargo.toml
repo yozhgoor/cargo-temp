@@ -3,7 +3,7 @@ name = "cargo-temp"
 version = "0.3.5"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-description = "A CLI tool that allow you to create a temporary new rust project using cargo with already installed dependencies"
+description = "Create temporary Rust project with specified dependencies"
 repository = "https://github.com/yozhgoor/cargo-temp"
 homepage = "https://github.com/yozhgoor/cargo-temp"
 documentation = "https://docs.rs/cargo-temp"
@@ -20,7 +20,7 @@ log = "0.4"
 serde = { version = "1", features = ["derive"] }
 tempfile = "3"
 toml = "0.9"
-regex = "1"
+regex = "1.12"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
@@ -29,3 +29,6 @@ xdg = "3"
 [target.'cfg(windows)'.dependencies]
 dirs = "6"
 CreateProcessW = "0.1"
+
+[dev-dependencies]
+pastey = "0.1"
