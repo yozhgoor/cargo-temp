@@ -1,8 +1,8 @@
 use crate::config::Config;
 use anyhow::Result;
 use serde::Deserialize;
-use std::path::{Path, PathBuf};
 use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 
 #[cfg(unix)]
 use std::{env, process::Stdio, time};
