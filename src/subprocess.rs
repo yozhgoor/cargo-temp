@@ -2,6 +2,7 @@ use crate::config::Config;
 use anyhow::Result;
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
+use std::collections::HashMap;
 
 #[cfg(unix)]
 use std::{env, process::Stdio, time};
@@ -15,8 +16,10 @@ pub use std::process::{Child, Command};
 pub struct SubProcess {
     pub command: String,
     pub foreground: bool,
+    #[serde(default)]
     pub keep_on_exit: bool,
     pub working_dir: Option<PathBuf>,
+    pub env: Option<HashMap<String, String>>,
     #[cfg(unix)]
     pub stdout: Option<bool>,
     #[cfg(unix)]
@@ -69,6 +72,12 @@ impl SubProcess {
                 process
             }
         };
+
+        if let Some(env_vars) = &self.env {
+            for (key, value) in env_vars {
+                process.env(key, value);
+            }
+        }
 
         if !self.foreground {
             match process.spawn().ok() {
