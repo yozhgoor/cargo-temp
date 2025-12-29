@@ -14,7 +14,9 @@ pub use std::process::{Child, Command};
 #[derive(Debug, Deserialize, Eq, PartialEq)]
 pub struct SubProcess {
     pub command: String,
+    #[serde(default)]
     pub foreground: bool,
+    #[serde(default)]
     pub keep_on_exit: bool,
     pub working_dir: Option<PathBuf>,
     #[cfg(unix)]
