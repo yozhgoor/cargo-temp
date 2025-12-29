@@ -38,7 +38,6 @@ impl Config {
             include_str!("../config_template.toml"),
             welcome_message = true,
             temporary_project_dir = temporary_project_dir,
-            editor = "code",
         ))
     }
 
