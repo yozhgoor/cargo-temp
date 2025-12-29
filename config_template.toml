@@ -54,12 +54,12 @@ temporary_project_dir = "{temporary_project_dir}"
 
 # You can spawn subprocesses to run alongside your temporary project.
 #
-# The required fields for each subprocess:
+# The required field for each subprocess:
 # - `command`: a shell command to run (e.g., "cargo watch").
-# - `foreground`: Boolean. If true, the process runs in the foreground; if false, it runs in the
-#   background.
 #
 # Optional fields:
+# - `foreground`: If true, the process runs in the foreground; if false, it runs in the
+#   background (default: false).
 # - `working_dir`: Override the working directory (default: temporary project directory).
 # - `keep_on_exit`: Keep the process running after exiting the shell/editor (default: false).
 #   Note: This setting has no effect for foreground processes.
@@ -76,4 +76,3 @@ temporary_project_dir = "{temporary_project_dir}"
 #
 #[[subprocess]]
 #command = "alacritty -e cargo watch"
-#foreground = false
