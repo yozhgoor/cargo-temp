@@ -95,6 +95,24 @@ cargo temp https://github.com/rust-random/rand.git#master
 cargo temp https://github.com/rust-random/rand.git#7e0f77a38
 ```
 
+#### Path dependencies
+
+Add dependencies from local filesystem paths:
+```
+cargo temp ./custom-core
+
+cargo temp ../utils
+
+cargo temp /home/user/projects/shared-lib
+
+cargo temp C:\Users\user\projects\core-utils
+```
+
+Path dependencies work with both relative and absolute paths, using forward slashes (`/`) on Unix or
+backslashes (`\`) on Windows.
+
+The crate name is automatically inferred from the last component of the path.
+
 ### Features
 
 Add features to a dependency using `+`:
