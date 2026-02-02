@@ -56,7 +56,12 @@ macro_rules! test_module {
         $http_repo_out:expr,
         $http_repo_no_extension_out:expr,
         $ssh_repo_out:expr,
-        $ssh_repo_no_extension_out:expr$(,)?
+        $ssh_repo_no_extension_out:expr,
+        $unix_current_dir_path_out:expr,
+        $unix_parent_dir_path_out:expr,
+        $unix_absolute_path_out:expr,
+        $windows_relative_path_out:expr,
+        $windows_absolute_path_out:expr$(,)?
     ) => {
         mod base {
             use super::*;
@@ -64,7 +69,13 @@ macro_rules! test_module {
             test_function!(crates_io, $crates_io_out);
             test_function!(http_repo, $http_repo_out);
             test_function!(http_repo_no_extension, $http_repo_no_extension_out);
+            test_function!(ssh_repo, $ssh_repo_out);
             test_function!(ssh_repo_no_extension, $ssh_repo_no_extension_out);
+            test_function!(unix_current_dir_path, $unix_current_dir_path_out);
+            test_function!(unix_parent_dir_path, $unix_parent_dir_path_out);
+            test_function!(unix_absolute_path, $unix_absolute_path_out);
+            test_function!(windows_relative_path, $windows_relative_path_out);
+            test_function!(windows_absolute_path, $windows_absolute_path_out);
         }
     };
     (
@@ -97,7 +108,12 @@ macro_rules! test_module {
         $http_repo_out:expr,
         $http_repo_no_extension_out:expr,
         $ssh_repo_out:expr,
-        $ssh_repo_no_extension_out:expr$(,)?
+        $ssh_repo_no_extension_out:expr,
+        $unix_current_dir_path_out:expr,
+        $unix_parent_dir_path_out:expr,
+        $unix_absolute_path_out:expr,
+        $windows_relative_path_out:expr,
+        $windows_absolute_path_out:expr$(,)?
     ) => {
         mod $ident {
             use super::*;
@@ -113,6 +129,11 @@ macro_rules! test_module {
             test_function!(http_repo_no_extension, $ident, $http_repo_no_extension_out);
             test_function!(ssh_repo, $ident, $ssh_repo_out);
             test_function!(ssh_repo_no_extension, $ident, $ssh_repo_no_extension_out);
+            test_function!(unix_current_dir_path, $ident, $unix_current_dir_path_out);
+            test_function!(unix_parent_dir_path, $ident, $unix_parent_dir_path_out);
+            test_function!(unix_absolute_path, $ident, $unix_absolute_path_out);
+            test_function!(windows_relative_path, $ident, $windows_relative_path_out);
+            test_function!(windows_absolute_path, $ident, $windows_absolute_path_out);
         }
     };
 }
@@ -156,7 +177,12 @@ macro_rules! test_module_extended {
         $http_repo_out:expr,
         $http_repo_no_extension_out:expr,
         $ssh_repo_out:expr,
-        $ssh_repo_no_extension_out:expr$(,)?
+        $ssh_repo_no_extension_out:expr,
+        $unix_current_dir_path_out:expr,
+        $unix_parent_dir_path_out:expr,
+        $unix_absolute_path_out:expr,
+        $windows_relative_path_out:expr,
+        $windows_absolute_path_out:expr$(,)?
     ) => {
         mod $ident {
             use super::*;
@@ -180,6 +206,11 @@ macro_rules! test_module_extended {
                 $ident,
                 $ssh_repo_no_extension_out,
             );
+            test_function!(unix_current_dir_path, $ident, $unix_current_dir_path_out);
+            test_function!(unix_parent_dir_path, $ident, $unix_parent_dir_path_out);
+            test_function!(unix_absolute_path, $ident, $unix_absolute_path_out);
+            test_function!(windows_relative_path, $ident, $windows_relative_path_out);
+            test_function!(windows_absolute_path, $ident, $windows_absolute_path_out);
         }
     };
 }
@@ -209,7 +240,12 @@ macro_rules! test_modules {
         $http_repo_out:expr,
         $http_repo_no_extension_out:expr,
         $ssh_repo_out:expr,
-        $ssh_repo_no_extension_out:expr$(,)?
+        $ssh_repo_no_extension_out:expr,
+        $unix_current_dir_path_out:expr,
+        $unix_parent_dir_path_out:expr,
+        $unix_absolute_path_out:expr,
+        $windows_relative_path_out:expr,
+        $windows_absolute_path_out:expr$(,)?
     ) => {
         paste! {
             test_module_extended!(
@@ -220,6 +256,11 @@ macro_rules! test_modules {
                 $http_repo_no_extension_out,
                 $ssh_repo_out,
                 $ssh_repo_no_extension_out,
+                $unix_current_dir_path_out,
+                $unix_parent_dir_path_out,
+                $unix_absolute_path_out,
+                $windows_relative_path_out,
+                $windows_absolute_path_out,
             );
         }
     };
@@ -247,7 +288,12 @@ macro_rules! test_modules {
         $http_repo_out:expr,
         $http_repo_no_extension_out:expr,
         $ssh_repo_out:expr,
-        $ssh_repo_no_extension_out:expr$(,)?
+        $ssh_repo_no_extension_out:expr,
+        $unix_current_dir_path_out:expr,
+        $unix_parent_dir_path_out:expr,
+        $unix_absolute_path_out:expr,
+        $windows_relative_path_out:expr,
+        $windows_absolute_path_out:expr$(,)?
     ) => {
         paste! {
             test_module_extended!(
@@ -257,7 +303,12 @@ macro_rules! test_modules {
                 $http_repo_out,
                 $http_repo_no_extension_out,
                 $ssh_repo_out,
-                $ssh_repo_no_extension_out
+                $ssh_repo_no_extension_out,
+                $unix_current_dir_path_out,
+                $unix_parent_dir_path_out,
+                $unix_absolute_path_out,
+                $windows_relative_path_out,
+                $windows_absolute_path_out,
             );
         }
     };
@@ -360,6 +411,76 @@ impl Inputs {
             },
         )
     }
+
+    fn unix_current_dir_path() -> Self {
+        let path = "./custom-core";
+        Self(
+            path.to_string(),
+            Dependency::Path {
+                name: "custom-core".to_string(),
+                path: path.to_string(),
+                version: None,
+                features: Vec::new(),
+                default_features: true,
+            },
+        )
+    }
+
+    fn unix_parent_dir_path() -> Self {
+        let path = "../utils";
+        Self(
+            path.to_string(),
+            Dependency::Path {
+                name: "utils".to_string(),
+                path: path.to_string(),
+                version: None,
+                features: Vec::new(),
+                default_features: true,
+            },
+        )
+    }
+
+    fn unix_absolute_path() -> Self {
+        let path = "/home/user/projects/shared-lib";
+        Self(
+            path.to_string(),
+            Dependency::Path {
+                name: "shared-lib".to_string(),
+                path: path.to_string(),
+                version: None,
+                features: Vec::new(),
+                default_features: true,
+            },
+        )
+    }
+
+    fn windows_relative_path() -> Self {
+        let path = r"..\common";
+        Self(
+            path.to_string(),
+            Dependency::Path {
+                name: "common".to_string(),
+                path: path.to_string(),
+                version: None,
+                features: Vec::new(),
+                default_features: true,
+            },
+        )
+    }
+
+    fn windows_absolute_path() -> Self {
+        let path = r"C:\Users\user\projects\core-utils";
+        Self(
+            path.to_string(),
+            Dependency::Path {
+                name: "core-utils".to_string(),
+                path: path.to_string(),
+                version: None,
+                features: Vec::new(),
+                default_features: true,
+            },
+        )
+    }
 }
 
 test_module!(
@@ -368,6 +489,11 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\" }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\" }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\" }",
+    "custom-core = { path = \"./custom-core\" }",
+    "utils = { path = \"../utils\" }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\" }",
+    "common = { path = \"..\\common\" }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\" }",
 );
 
 test_module!(
@@ -391,6 +517,18 @@ test_module!(
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
+            Dependency::Path { name, version, .. } => {
+                let v = match name.as_ref() {
+                    "custom-core" => "2.21",
+                    "utils" => "0.1.0",
+                    "shared-lib" => "1.5",
+                    "common" => "0.3.1",
+                    _ => "1.0.12",
+                };
+                inputs.0.push('=');
+                inputs.0.push_str(v);
+                *version = Some(v.to_string());
+            }
         }
         inputs
     },
@@ -399,6 +537,11 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\", version = \"4.5.50\" }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", version = \"0.9\" }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"0.4.28\" }",
+    "custom-core = { path = \"./custom-core\", version = \"2.21\" }",
+    "utils = { path = \"../utils\", version = \"0.1.0\" }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"1.5\" }",
+    "common = { path = \"..\\common\", version = \"0.3.1\" }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"1.0.12\" }",
 );
 
 test_module!(
@@ -422,6 +565,18 @@ test_module!(
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
+            Dependency::Path { name, version, .. } => {
+                let v = match name.as_ref() {
+                    "custom-core" => "=2.21",
+                    "utils" => "=0.1.0",
+                    "shared-lib" => "=1.5",
+                    "common" => "=0.3.1",
+                    _ => "=1.0.12",
+                };
+                inputs.0.push('=');
+                inputs.0.push_str(v);
+                *version = Some(v.to_string());
+            }
         }
         inputs
     },
@@ -430,6 +585,11 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\", version = \"=4.5.50\" }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", version = \"=0.9\" }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"=0.4.28\" }",
+    "custom-core = { path = \"./custom-core\", version = \"=2.21\" }",
+    "utils = { path = \"../utils\", version = \"=0.1.0\" }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"=1.5\" }",
+    "common = { path = \"..\\common\", version = \"=0.3.1\" }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"=1.0.12\" }",
 );
 
 test_module!(
@@ -451,6 +611,17 @@ test_module!(
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
+            Dependency::Path { name, version, .. } => {
+                let v = match name.as_ref() {
+                    "custom-core" => "<2.21",
+                    "utils" => "<0.1.0",
+                    "shared-lib" => "<1.5",
+                    "common" => "<0.3.1",
+                    _ => "<1.0.12",
+                };
+                inputs.0.push_str(v);
+                *version = Some(v.to_string());
+            }
         }
         inputs
     },
@@ -459,6 +630,11 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\", version = \"<4.5.50\" }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", version = \"<0.9\" }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"<0.4.28\" }",
+    "custom-core = { path = \"./custom-core\", version = \"<2.21\" }",
+    "utils = { path = \"../utils\", version = \"<0.1.0\" }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"<1.5\" }",
+    "common = { path = \"..\\common\", version = \"<0.3.1\" }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"<1.0.12\" }",
 );
 
 test_module!(
@@ -480,6 +656,17 @@ test_module!(
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
+            Dependency::Path { name, version, .. } => {
+                let v = match name.as_ref() {
+                    "custom-core" => "<=2.21",
+                    "utils" => "<=0.1.0",
+                    "shared-lib" => "<=1.5",
+                    "common" => "<=0.3.1",
+                    _ => "<=1.0.12",
+                };
+                inputs.0.push_str(v);
+                *version = Some(v.to_string());
+            }
         }
         inputs
     },
@@ -488,6 +675,11 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\", version = \"<=4.5.50\" }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", version = \"<=0.9\" }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"<=0.4.28\" }",
+    "custom-core = { path = \"./custom-core\", version = \"<=2.21\" }",
+    "utils = { path = \"../utils\", version = \"<=0.1.0\" }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"<=1.5\" }",
+    "common = { path = \"..\\common\", version = \"<=0.3.1\" }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"<=1.0.12\" }",
 );
 
 test_module!(
@@ -509,6 +701,17 @@ test_module!(
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
+            Dependency::Path { name, version, .. } => {
+                let v = match name.as_ref() {
+                    "custom-core" => ">2.21",
+                    "utils" => ">0.1.0",
+                    "shared-lib" => ">1.5",
+                    "common" => ">0.3.1",
+                    _ => ">1.0.12",
+                };
+                inputs.0.push_str(v);
+                *version = Some(v.to_string());
+            }
         }
         inputs
     },
@@ -517,6 +720,11 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\", version = \">4.5.50\" }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", version = \">0.9\" }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \">0.4.28\" }",
+    "custom-core = { path = \"./custom-core\", version = \">2.21\" }",
+    "utils = { path = \"../utils\", version = \">0.1.0\" }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \">1.5\" }",
+    "common = { path = \"..\\common\", version = \">0.3.1\" }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \">1.0.12\" }",
 );
 
 test_module!(
@@ -538,6 +746,17 @@ test_module!(
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
+            Dependency::Path { name, version, .. } => {
+                let v = match name.as_ref() {
+                    "custom-core" => ">=2.21",
+                    "utils" => ">=0.1.0",
+                    "shared-lib" => ">=1.5",
+                    "common" => ">=0.3.1",
+                    _ => ">=1.0.12",
+                };
+                inputs.0.push_str(v);
+                *version = Some(v.to_string());
+            }
         }
         inputs
     },
@@ -546,6 +765,11 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\", version = \">=4.5.50\" }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", version = \">=0.9\" }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \">=0.4.28\" }",
+    "custom-core = { path = \"./custom-core\", version = \">=2.21\" }",
+    "utils = { path = \"../utils\", version = \">=0.1.0\" }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \">=1.5\" }",
+    "common = { path = \"..\\common\", version = \">=0.3.1\" }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \">=1.0.12\" }",
 );
 
 test_module!(
@@ -567,6 +791,17 @@ test_module!(
                 inputs.0.push_str(v);
                 *version = Some(v.to_string());
             }
+            Dependency::Path { name, version, .. } => {
+                let v = match name.as_ref() {
+                    "custom-core" => "~2.21",
+                    "utils" => "~0.1.0",
+                    "shared-lib" => "~1.5",
+                    "common" => "~0.3.1",
+                    _ => "~1.0.12",
+                };
+                inputs.0.push_str(v);
+                *version = Some(v.to_string());
+            }
         }
         inputs
     },
@@ -575,6 +810,11 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\", version = \"~4.5.50\" }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", version = \"~0.9\" }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"~0.4.28\" }",
+    "custom-core = { path = \"./custom-core\", version = \"~2.21\" }",
+    "utils = { path = \"../utils\", version = \"~0.1.0\" }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"~1.5\" }",
+    "common = { path = \"..\\common\", version = \"~0.3.1\" }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"~1.0.12\" }",
 );
 
 test_module!(
@@ -598,6 +838,18 @@ test_module!(
                 inputs.0.push_str(f);
                 *features = vec![f.to_string()];
             }
+            Dependency::Path { name, features, .. } => {
+                let f = match name.as_ref() {
+                    "custom-core" => "async",
+                    "utils" => "logging",
+                    "shared-lib" => "serde",
+                    "common" => "default",
+                    _ => "std",
+                };
+                inputs.0.push('+');
+                inputs.0.push_str(f);
+                *features = vec![f.to_string()];
+            }
         }
         inputs
     },
@@ -606,6 +858,11 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\", features = [\"derive\"] }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", features = [\"small_rng\"] }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", features = [\"async\"] }",
+    "utils = { path = \"../utils\", features = [\"logging\"] }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", features = [\"serde\"] }",
+    "common = { path = \"..\\common\", features = [\"default\"] }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", features = [\"std\"] }",
 );
 
 test_module!(
@@ -639,6 +896,23 @@ test_module!(
                     })
                     .collect();
             }
+            Dependency::Path { name, features, .. } => {
+                let f = match name.as_ref() {
+                    "custom-core" => ["async", "tokio"],
+                    "utils" => ["logging", "tracing"],
+                    "shared-lib" => ["serde", "json"],
+                    "common" => ["default", "extra"],
+                    _ => ["std", "alloc"],
+                };
+                *features = f
+                    .iter()
+                    .map(|x| {
+                        inputs.0.push('+');
+                        inputs.0.push_str(x);
+                        x.to_string()
+                    })
+                    .collect();
+            }
         }
         inputs
     },
@@ -649,6 +923,11 @@ test_module!(
 git = \"ssh://git@github.com/rust-random/rand.git\"
 features = [\"small_rng\", \"os_rng\"]",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", features = [\"kv_std\", \"kv_sval\"] }",
+    "custom-core = { path = \"./custom-core\", features = [\"async\", \"tokio\"] }",
+    "utils = { path = \"../utils\", features = [\"logging\", \"tracing\"] }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", features = [\"serde\", \"json\"] }",
+    "common = { path = \"..\\common\", features = [\"default\", \"extra\"] }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", features = [\"std\", \"alloc\"] }",
 );
 
 test_module!(
@@ -661,6 +940,9 @@ test_module!(
             }
             | Dependency::Repository {
                 default_features, ..
+            }
+            | Dependency::Path {
+                default_features, ..
             } => {
                 *default_features = false;
             }
@@ -672,13 +954,18 @@ test_module!(
     "clap = { git = \"https://github.com/clap-rs/clap\", default-features = false }",
     "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", default-features = false }",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", default-features = false }",
+    "custom-core = { path = \"./custom-core\", default-features = false }",
+    "utils = { path = \"../utils\", default-features = false }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", default-features = false }",
+    "common = { path = \"..\\common\", default-features = false }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", default-features = false }",
 );
 
 test_module!(
     branch,
     |mut inputs: Inputs| {
         match &mut inputs.1 {
-            Dependency::CratesIo { .. } => {}
+            Dependency::CratesIo { .. } | Dependency::Path { .. } => {}
             Dependency::Repository { name, branch, .. } => {
                 let b = match name.as_ref() {
                     "tokio" => "compat",
@@ -703,7 +990,7 @@ test_module!(
     rev,
     |mut inputs: Inputs| {
         match &mut inputs.1 {
-            Dependency::CratesIo { .. } => {}
+            Dependency::CratesIo { .. } | Dependency::Path { .. } => {}
             Dependency::Repository { name, rev, .. } => {
                 let r = match name.as_ref() {
                     "tokio" => "556820f",
@@ -738,6 +1025,113 @@ git = \"ssh://git@github.com/rust-random/rand.git\"
 version = \"0.9\"
 features = [\"small_rng\"]",
     "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"0.4.28\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", version = \"2.21\", features = [\"async\"] }",
+    "utils = { path = \"../utils\", version = \"0.1.0\", features = [\"logging\"] }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"1.5\", features = [\"serde\"] }",
+    "common = { path = \"..\\common\", version = \"0.3.1\", features = [\"default\"] }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"1.0.12\", features = [\"std\"] }",
+);
+
+test_modules!(
+    (exact_version, feature),
+    "anyhow = { version = \"=1.0.100\", features = [\"backtrace\"] }",
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \"=1.48\", features = [\"io_std\"] }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", version = \"=4.5.50\", features = [\"derive\"] }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+version = \"=0.9\"
+features = [\"small_rng\"]",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"=0.4.28\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", version = \"=2.21\", features = [\"async\"] }",
+    "utils = { path = \"../utils\", version = \"=0.1.0\", features = [\"logging\"] }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"=1.5\", features = [\"serde\"] }",
+    "common = { path = \"..\\common\", version = \"=0.3.1\", features = [\"default\"] }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"=1.0.12\", features = [\"std\"] }",
+);
+
+test_modules!(
+    (maximal_version, feature),
+    "anyhow = { version = \"<1.0.100\", features = [\"backtrace\"] }",
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \"<1.48\", features = [\"io_std\"] }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", version = \"<4.5.50\", features = [\"derive\"] }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+version = \"<0.9\"
+features = [\"small_rng\"]",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"<0.4.28\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", version = \"<2.21\", features = [\"async\"] }",
+    "utils = { path = \"../utils\", version = \"<0.1.0\", features = [\"logging\"] }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"<1.5\", features = [\"serde\"] }",
+    "common = { path = \"..\\common\", version = \"<0.3.1\", features = [\"default\"] }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"<1.0.12\", features = [\"std\"] }",
+);
+
+test_modules!(
+    (maximal_or_equal_version, feature),
+    "anyhow = { version = \"<=1.0.100\", features = [\"backtrace\"] }",
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \"<=1.48\", features = [\"io_std\"] }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", version = \"<=4.5.50\", features = [\"derive\"] }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+version = \"<=0.9\"
+features = [\"small_rng\"]",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"<=0.4.28\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", version = \"<=2.21\", features = [\"async\"] }",
+    "utils = { path = \"../utils\", version = \"<=0.1.0\", features = [\"logging\"] }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"<=1.5\", features = [\"serde\"] }",
+    "common = { path = \"..\\common\", version = \"<=0.3.1\", features = [\"default\"] }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"<=1.0.12\", features = [\"std\"] }",
+);
+
+test_modules!(
+    (minimal_version, feature),
+    "anyhow = { version = \">1.0.100\", features = [\"backtrace\"] }",
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \">1.48\", features = [\"io_std\"] }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", version = \">4.5.50\", features = [\"derive\"] }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+version = \">0.9\"
+features = [\"small_rng\"]",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \">0.4.28\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", version = \">2.21\", features = [\"async\"] }",
+    "utils = { path = \"../utils\", version = \">0.1.0\", features = [\"logging\"] }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \">1.5\", features = [\"serde\"] }",
+    "common = { path = \"..\\common\", version = \">0.3.1\", features = [\"default\"] }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \">1.0.12\", features = [\"std\"] }",
+);
+
+test_modules!(
+    (minimal_or_equal_version, feature),
+    "anyhow = { version = \">=1.0.100\", features = [\"backtrace\"] }",
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \">=1.48\", features = [\"io_std\"] }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", version = \">=4.5.50\", features = [\"derive\"] }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+version = \">=0.9\"
+features = [\"small_rng\"]",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \">=0.4.28\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", version = \">=2.21\", features = [\"async\"] }",
+    "utils = { path = \"../utils\", version = \">=0.1.0\", features = [\"logging\"] }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \">=1.5\", features = [\"serde\"] }",
+    "common = { path = \"..\\common\", version = \">=0.3.1\", features = [\"default\"] }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \">=1.0.12\", features = [\"std\"] }",
+);
+
+test_modules!(
+    (major_version, feature),
+    "anyhow = { version = \"~1.0.100\", features = [\"backtrace\"] }",
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \"~1.48\", features = [\"io_std\"] }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", version = \"~4.5.50\", features = [\"derive\"] }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+version = \"~0.9\"
+features = [\"small_rng\"]",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"~0.4.28\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", version = \"~2.21\", features = [\"async\"] }",
+    "utils = { path = \"../utils\", version = \"~0.1.0\", features = [\"logging\"] }",
+    "shared-lib = { path = \"/home/user/projects/shared-lib\", version = \"~1.5\", features = [\"serde\"] }",
+    "common = { path = \"..\\common\", version = \"~0.3.1\", features = [\"default\"] }",
+    "core-utils = { path = \"C:\\Users\\user\\projects\\core-utils\", version = \"~1.0.12\", features = [\"std\"] }",
 );
 
 test_modules!(
@@ -759,18 +1153,17 @@ features = [\"small_rng\", \"os_rng\"]",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"0.4.28\"
 features = [\"kv_std\", \"kv_sval\"]",
-);
-
-test_modules!(
-    (exact_version, feature),
-    "anyhow = { version = \"=1.0.100\", features = [\"backtrace\"] }",
-    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \"=1.48\", features = [\"io_std\"] }",
-    "clap = { git = \"https://github.com/clap-rs/clap\", version = \"=4.5.50\", features = [\"derive\"] }",
-    "[dependencies.rand]
-git = \"ssh://git@github.com/rust-random/rand.git\"
-version = \"=0.9\"
-features = [\"small_rng\"]",
-    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"=0.4.28\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", version = \"2.21\", features = [\"async\", \"tokio\"] }",
+    "utils = { path = \"../utils\", version = \"0.1.0\", features = [\"logging\", \"tracing\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"1.5\"
+features = [\"serde\", \"json\"]",
+    "common = { path = \"..\\common\", version = \"0.3.1\", features = [\"default\", \"extra\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"1.0.12\"
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -792,66 +1185,17 @@ features = [\"small_rng\", \"os_rng\"]",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"=0.4.28\"
 features = [\"kv_std\", \"kv_sval\"]",
-);
-
-test_modules!(
-    (maximal_version, feature),
-    "anyhow = { version = \"<1.0.100\", features = [\"backtrace\"] }",
-    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \"<1.48\", features = [\"io_std\"] }",
-    "clap = { git = \"https://github.com/clap-rs/clap\", version = \"<4.5.50\", features = [\"derive\"] }",
-    "[dependencies.rand]
-git = \"ssh://git@github.com/rust-random/rand.git\"
-version = \"<0.9\"
-features = [\"small_rng\"]",
-    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"<0.4.28\", features = [\"kv_std\"] }",
-);
-
-test_modules!(
-    (maximal_or_equal_version, feature),
-    "anyhow = { version = \"<=1.0.100\", features = [\"backtrace\"] }",
-    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \"<=1.48\", features = [\"io_std\"] }",
-    "clap = { git = \"https://github.com/clap-rs/clap\", version = \"<=4.5.50\", features = [\"derive\"] }",
-    "[dependencies.rand]
-git = \"ssh://git@github.com/rust-random/rand.git\"
-version = \"<=0.9\"
-features = [\"small_rng\"]",
-    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"<=0.4.28\", features = [\"kv_std\"] }",
-);
-
-test_modules!(
-    (minimal_version, feature),
-    "anyhow = { version = \">1.0.100\", features = [\"backtrace\"] }",
-    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \">1.48\", features = [\"io_std\"] }",
-    "clap = { git = \"https://github.com/clap-rs/clap\", version = \">4.5.50\", features = [\"derive\"] }",
-    "[dependencies.rand]
-git = \"ssh://git@github.com/rust-random/rand.git\"
-version = \">0.9\"
-features = [\"small_rng\"]",
-    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \">0.4.28\", features = [\"kv_std\"] }",
-);
-
-test_modules!(
-    (minimal_or_equal_version, feature),
-    "anyhow = { version = \">=1.0.100\", features = [\"backtrace\"] }",
-    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \">=1.48\", features = [\"io_std\"] }",
-    "clap = { git = \"https://github.com/clap-rs/clap\", version = \">=4.5.50\", features = [\"derive\"] }",
-    "[dependencies.rand]
-git = \"ssh://git@github.com/rust-random/rand.git\"
-version = \">=0.9\"
-features = [\"small_rng\"]",
-    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \">=0.4.28\", features = [\"kv_std\"] }",
-);
-
-test_modules!(
-    (major_version, feature),
-    "anyhow = { version = \"~1.0.100\", features = [\"backtrace\"] }",
-    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", version = \"~1.48\", features = [\"io_std\"] }",
-    "clap = { git = \"https://github.com/clap-rs/clap\", version = \"~4.5.50\", features = [\"derive\"] }",
-    "[dependencies.rand]
-git = \"ssh://git@github.com/rust-random/rand.git\"
-version = \"~0.9\"
-features = [\"small_rng\"]",
-    "log = { git = \"ssh://git@github.com/rust-lang/log\", version = \"~0.4.28\", features = [\"kv_std\"] }",
+    "custom-core = { path = \"./custom-core\", version = \"=2.21\", features = [\"async\", \"tokio\"] }",
+    "utils = { path = \"../utils\", version = \"=0.1.0\", features = [\"logging\", \"tracing\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"=1.5\"
+features = [\"serde\", \"json\"]",
+    "common = { path = \"..\\common\", version = \"=0.3.1\", features = [\"default\", \"extra\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"=1.0.12\"
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -873,6 +1217,17 @@ features = [\"small_rng\", \"os_rng\"]",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"<0.4.28\"
 features = [\"kv_std\", \"kv_sval\"]",
+    "custom-core = { path = \"./custom-core\", version = \"<2.21\", features = [\"async\", \"tokio\"] }",
+    "utils = { path = \"../utils\", version = \"<0.1.0\", features = [\"logging\", \"tracing\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"<1.5\"
+features = [\"serde\", \"json\"]",
+    "common = { path = \"..\\common\", version = \"<0.3.1\", features = [\"default\", \"extra\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"<1.0.12\"
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -894,6 +1249,17 @@ features = [\"small_rng\", \"os_rng\"]",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"<=0.4.28\"
 features = [\"kv_std\", \"kv_sval\"]",
+    "custom-core = { path = \"./custom-core\", version = \"<=2.21\", features = [\"async\", \"tokio\"] }",
+    "utils = { path = \"../utils\", version = \"<=0.1.0\", features = [\"logging\", \"tracing\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"<=1.5\"
+features = [\"serde\", \"json\"]",
+    "common = { path = \"..\\common\", version = \"<=0.3.1\", features = [\"default\", \"extra\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"<=1.0.12\"
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -915,6 +1281,17 @@ features = [\"small_rng\", \"os_rng\"]",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \">0.4.28\"
 features = [\"kv_std\", \"kv_sval\"]",
+    "custom-core = { path = \"./custom-core\", version = \">2.21\", features = [\"async\", \"tokio\"] }",
+    "utils = { path = \"../utils\", version = \">0.1.0\", features = [\"logging\", \"tracing\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \">1.5\"
+features = [\"serde\", \"json\"]",
+    "common = { path = \"..\\common\", version = \">0.3.1\", features = [\"default\", \"extra\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \">1.0.12\"
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -936,6 +1313,17 @@ features = [\"small_rng\", \"os_rng\"]",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \">=0.4.28\"
 features = [\"kv_std\", \"kv_sval\"]",
+    "custom-core = { path = \"./custom-core\", version = \">=2.21\", features = [\"async\", \"tokio\"] }",
+    "utils = { path = \"../utils\", version = \">=0.1.0\", features = [\"logging\", \"tracing\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \">=1.5\"
+features = [\"serde\", \"json\"]",
+    "common = { path = \"..\\common\", version = \">=0.3.1\", features = [\"default\", \"extra\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \">=1.0.12\"
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -957,6 +1345,17 @@ features = [\"small_rng\", \"os_rng\"]",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"~0.4.28\"
 features = [\"kv_std\", \"kv_sval\"]",
+    "custom-core = { path = \"./custom-core\", version = \"~2.21\", features = [\"async\", \"tokio\"] }",
+    "utils = { path = \"../utils\", version = \"~0.1.0\", features = [\"logging\", \"tracing\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"~1.5\"
+features = [\"serde\", \"json\"]",
+    "common = { path = \"..\\common\", version = \"~0.3.1\", features = [\"default\", \"extra\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"~1.0.12\"
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -977,6 +1376,17 @@ default-features = false",
     "[dependencies.log]
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"0.4.28\"
+default-features = false",
+    "custom-core = { path = \"./custom-core\", version = \"2.21\", default-features = false }",
+    "utils = { path = \"../utils\", version = \"0.1.0\", default-features = false }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"1.5\"
+default-features = false",
+    "common = { path = \"..\\common\", version = \"0.3.1\", default-features = false }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"1.0.12\"
 default-features = false",
 );
 
@@ -999,6 +1409,17 @@ default-features = false",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"=0.4.28\"
 default-features = false",
+    "custom-core = { path = \"./custom-core\", version = \"=2.21\", default-features = false }",
+    "utils = { path = \"../utils\", version = \"=0.1.0\", default-features = false }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"=1.5\"
+default-features = false",
+    "common = { path = \"..\\common\", version = \"=0.3.1\", default-features = false }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"=1.0.12\"
+default-features = false",
 );
 
 test_modules!(
@@ -1019,6 +1440,17 @@ default-features = false",
     "[dependencies.log]
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"<0.4.28\"
+default-features = false",
+    "custom-core = { path = \"./custom-core\", version = \"<2.21\", default-features = false }",
+    "utils = { path = \"../utils\", version = \"<0.1.0\", default-features = false }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"<1.5\"
+default-features = false",
+    "common = { path = \"..\\common\", version = \"<0.3.1\", default-features = false }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"<1.0.12\"
 default-features = false",
 );
 
@@ -1041,6 +1473,17 @@ default-features = false",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"<=0.4.28\"
 default-features = false",
+    "custom-core = { path = \"./custom-core\", version = \"<=2.21\", default-features = false }",
+    "utils = { path = \"../utils\", version = \"<=0.1.0\", default-features = false }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"<=1.5\"
+default-features = false",
+    "common = { path = \"..\\common\", version = \"<=0.3.1\", default-features = false }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"<=1.0.12\"
+default-features = false",
 );
 
 test_modules!(
@@ -1061,6 +1504,17 @@ default-features = false",
     "[dependencies.log]
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \">0.4.28\"
+default-features = false",
+    "custom-core = { path = \"./custom-core\", version = \">2.21\", default-features = false }",
+    "utils = { path = \"../utils\", version = \">0.1.0\", default-features = false }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \">1.5\"
+default-features = false",
+    "common = { path = \"..\\common\", version = \">0.3.1\", default-features = false }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \">1.0.12\"
 default-features = false",
 );
 
@@ -1083,6 +1537,17 @@ default-features = false",
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \">=0.4.28\"
 default-features = false",
+    "custom-core = { path = \"./custom-core\", version = \">=2.21\", default-features = false }",
+    "utils = { path = \"../utils\", version = \">=0.1.0\", default-features = false }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \">=1.5\"
+default-features = false",
+    "common = { path = \"..\\common\", version = \">=0.3.1\", default-features = false }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \">=1.0.12\"
+default-features = false",
 );
 
 test_modules!(
@@ -1103,6 +1568,17 @@ default-features = false",
     "[dependencies.log]
 git = \"ssh://git@github.com/rust-lang/log\"
 version = \"~0.4.28\"
+default-features = false",
+    "custom-core = { path = \"./custom-core\", version = \"~2.21\", default-features = false }",
+    "utils = { path = \"../utils\", version = \"~0.1.0\", default-features = false }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"~1.5\"
+default-features = false",
+    "common = { path = \"..\\common\", version = \"~0.3.1\", default-features = false }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"~1.0.12\"
 default-features = false",
 );
 
@@ -1389,6 +1865,17 @@ features = [\"small_rng\"]",
 git = \"ssh://git@github.com/rust-lang/log\"
 default-features = false
 features = [\"kv_std\"]",
+    "custom-core = { path = \"./custom-core\", default-features = false, features = [\"async\"] }",
+    "utils = { path = \"../utils\", default-features = false, features = [\"logging\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+default-features = false
+features = [\"serde\"]",
+    "common = { path = \"..\\common\", default-features = false, features = [\"default\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+default-features = false
+features = [\"std\"]",
 );
 
 test_modules!(
@@ -1410,6 +1897,17 @@ features = [\"small_rng\", \"os_rng\"]",
 git = \"ssh://git@github.com/rust-lang/log\"
 default-features = false
 features = [\"kv_std\", \"kv_sval\"]",
+    "custom-core = { path = \"./custom-core\", default-features = false, features = [\"async\", \"tokio\"] }",
+    "utils = { path = \"../utils\", default-features = false, features = [\"logging\", \"tracing\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+default-features = false
+features = [\"serde\", \"json\"]",
+    "common = { path = \"..\\common\", default-features = false, features = [\"default\", \"extra\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+default-features = false
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -2147,6 +2645,23 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"0.4.28\"
 default-features = false
 features = [\"kv_std\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"2.21\"
+default-features = false
+features = [\"async\"]",
+    "utils = { path = \"../utils\", version = \"0.1.0\", default-features = false, features = [\"logging\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"1.5\"
+default-features = false
+features = [\"serde\"]",
+    "common = { path = \"..\\common\", version = \"0.3.1\", default-features = false, features = [\"default\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"1.0.12\"
+default-features = false
+features = [\"std\"]",
 );
 
 test_modules!(
@@ -2172,6 +2687,31 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"0.4.28\"
 default-features = false
 features = [\"kv_std\", \"kv_sval\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"2.21\"
+default-features = false
+features = [\"async\", \"tokio\"]",
+    "[dependencies.utils]
+path = \"../utils\"
+version = \"0.1.0\"
+default-features = false
+features = [\"logging\", \"tracing\"]",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"1.5\"
+default-features = false
+features = [\"serde\", \"json\"]",
+    "[dependencies.common]
+path = \"..\\common\"
+version = \"0.3.1\"
+default-features = false
+features = [\"default\", \"extra\"]",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"1.0.12\"
+default-features = false
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -2197,6 +2737,23 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"=0.4.28\"
 default-features = false
 features = [\"kv_std\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"=2.21\"
+default-features = false
+features = [\"async\"]",
+    "utils = { path = \"../utils\", version = \"=0.1.0\", default-features = false, features = [\"logging\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"=1.5\"
+default-features = false
+features = [\"serde\"]",
+    "common = { path = \"..\\common\", version = \"=0.3.1\", default-features = false, features = [\"default\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"=1.0.12\"
+default-features = false
+features = [\"std\"]",
 );
 
 test_modules!(
@@ -2222,6 +2779,31 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"=0.4.28\"
 default-features = false
 features = [\"kv_std\", \"kv_sval\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"=2.21\"
+default-features = false
+features = [\"async\", \"tokio\"]",
+    "[dependencies.utils]
+path = \"../utils\"
+version = \"=0.1.0\"
+default-features = false
+features = [\"logging\", \"tracing\"]",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"=1.5\"
+default-features = false
+features = [\"serde\", \"json\"]",
+    "[dependencies.common]
+path = \"..\\common\"
+version = \"=0.3.1\"
+default-features = false
+features = [\"default\", \"extra\"]",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"=1.0.12\"
+default-features = false
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -2247,6 +2829,23 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"<0.4.28\"
 default-features = false
 features = [\"kv_std\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"<2.21\"
+default-features = false
+features = [\"async\"]",
+    "utils = { path = \"../utils\", version = \"<0.1.0\", default-features = false, features = [\"logging\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"<1.5\"
+default-features = false
+features = [\"serde\"]",
+    "common = { path = \"..\\common\", version = \"<0.3.1\", default-features = false, features = [\"default\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"<1.0.12\"
+default-features = false
+features = [\"std\"]",
 );
 
 test_modules!(
@@ -2272,6 +2871,23 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"<=0.4.28\"
 default-features = false
 features = [\"kv_std\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"<=2.21\"
+default-features = false
+features = [\"async\"]",
+    "utils = { path = \"../utils\", version = \"<=0.1.0\", default-features = false, features = [\"logging\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"<=1.5\"
+default-features = false
+features = [\"serde\"]",
+    "common = { path = \"..\\common\", version = \"<=0.3.1\", default-features = false, features = [\"default\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"<=1.0.12\"
+default-features = false
+features = [\"std\"]",
 );
 
 test_modules!(
@@ -2297,6 +2913,23 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \">0.4.28\"
 default-features = false
 features = [\"kv_std\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \">2.21\"
+default-features = false
+features = [\"async\"]",
+    "utils = { path = \"../utils\", version = \">0.1.0\", default-features = false, features = [\"logging\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \">1.5\"
+default-features = false
+features = [\"serde\"]",
+    "common = { path = \"..\\common\", version = \">0.3.1\", default-features = false, features = [\"default\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \">1.0.12\"
+default-features = false
+features = [\"std\"]",
 );
 
 test_modules!(
@@ -2322,6 +2955,23 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \">=0.4.28\"
 default-features = false
 features = [\"kv_std\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \">=2.21\"
+default-features = false
+features = [\"async\"]",
+    "utils = { path = \"../utils\", version = \">=0.1.0\", default-features = false, features = [\"logging\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \">=1.5\"
+default-features = false
+features = [\"serde\"]",
+    "common = { path = \"..\\common\", version = \">=0.3.1\", default-features = false, features = [\"default\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \">=1.0.12\"
+default-features = false
+features = [\"std\"]",
 );
 
 test_modules!(
@@ -2347,6 +2997,23 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"~0.4.28\"
 default-features = false
 features = [\"kv_std\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"~2.21\"
+default-features = false
+features = [\"async\"]",
+    "utils = { path = \"../utils\", version = \"~0.1.0\", default-features = false, features = [\"logging\"] }",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"~1.5\"
+default-features = false
+features = [\"serde\"]",
+    "common = { path = \"..\\common\", version = \"~0.3.1\", default-features = false, features = [\"default\"] }",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"~1.0.12\"
+default-features = false
+features = [\"std\"]",
 );
 
 test_modules!(
@@ -2372,6 +3039,31 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"<0.4.28\"
 default-features = false
 features = [\"kv_std\", \"kv_sval\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"<2.21\"
+default-features = false
+features = [\"async\", \"tokio\"]",
+    "[dependencies.utils]
+path = \"../utils\"
+version = \"<0.1.0\"
+default-features = false
+features = [\"logging\", \"tracing\"]",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"<1.5\"
+default-features = false
+features = [\"serde\", \"json\"]",
+    "[dependencies.common]
+path = \"..\\common\"
+version = \"<0.3.1\"
+default-features = false
+features = [\"default\", \"extra\"]",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"<1.0.12\"
+default-features = false
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -2397,6 +3089,31 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"<=0.4.28\"
 default-features = false
 features = [\"kv_std\", \"kv_sval\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"<=2.21\"
+default-features = false
+features = [\"async\", \"tokio\"]",
+    "[dependencies.utils]
+path = \"../utils\"
+version = \"<=0.1.0\"
+default-features = false
+features = [\"logging\", \"tracing\"]",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"<=1.5\"
+default-features = false
+features = [\"serde\", \"json\"]",
+    "[dependencies.common]
+path = \"..\\common\"
+version = \"<=0.3.1\"
+default-features = false
+features = [\"default\", \"extra\"]",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"<=1.0.12\"
+default-features = false
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -2422,6 +3139,31 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \">0.4.28\"
 default-features = false
 features = [\"kv_std\", \"kv_sval\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \">2.21\"
+default-features = false
+features = [\"async\", \"tokio\"]",
+    "[dependencies.utils]
+path = \"../utils\"
+version = \">0.1.0\"
+default-features = false
+features = [\"logging\", \"tracing\"]",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \">1.5\"
+default-features = false
+features = [\"serde\", \"json\"]",
+    "[dependencies.common]
+path = \"..\\common\"
+version = \">0.3.1\"
+default-features = false
+features = [\"default\", \"extra\"]",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \">1.0.12\"
+default-features = false
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -2447,6 +3189,31 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \">=0.4.28\"
 default-features = false
 features = [\"kv_std\", \"kv_sval\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \">=2.21\"
+default-features = false
+features = [\"async\", \"tokio\"]",
+    "[dependencies.utils]
+path = \"../utils\"
+version = \">=0.1.0\"
+default-features = false
+features = [\"logging\", \"tracing\"]",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \">=1.5\"
+default-features = false
+features = [\"serde\", \"json\"]",
+    "[dependencies.common]
+path = \"..\\common\"
+version = \">=0.3.1\"
+default-features = false
+features = [\"default\", \"extra\"]",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \">=1.0.12\"
+default-features = false
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(
@@ -2472,6 +3239,31 @@ git = \"ssh://git@github.com/rust-lang/log\"
 version = \"~0.4.28\"
 default-features = false
 features = [\"kv_std\", \"kv_sval\"]",
+    "[dependencies.custom-core]
+path = \"./custom-core\"
+version = \"~2.21\"
+default-features = false
+features = [\"async\", \"tokio\"]",
+    "[dependencies.utils]
+path = \"../utils\"
+version = \"~0.1.0\"
+default-features = false
+features = [\"logging\", \"tracing\"]",
+    "[dependencies.shared-lib]
+path = \"/home/user/projects/shared-lib\"
+version = \"~1.5\"
+default-features = false
+features = [\"serde\", \"json\"]",
+    "[dependencies.common]
+path = \"..\\common\"
+version = \"~0.3.1\"
+default-features = false
+features = [\"default\", \"extra\"]",
+    "[dependencies.core-utils]
+path = \"C:\\Users\\user\\projects\\core-utils\"
+version = \"~1.0.12\"
+default-features = false
+features = [\"std\", \"alloc\"]",
 );
 
 test_modules!(

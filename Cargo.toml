@@ -31,4 +31,4 @@ dirs = "6"
 CreateProcessW = "0.1"
 
 [dev-dependencies]
-pastey = "0.1"
+pastey = "0.2"
