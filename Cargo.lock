@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "CreateProcessW"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "39bfdb6e9fd9660925cde72f8b734c6290b6ff345e87a1daa2774f9c2464fa43"
+checksum = "4c355763ba7b60b11f5c54d3d157fd928edca66b465ee8b77a5aca9b05e62ebc"
 
 [[package]]
 name = "aho-corasick"
