@@ -1,6 +1,6 @@
 [package]
 name = "cargo-temp"
-version = "0.3.5"
+version = "0.4.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Create temporary Rust project with specified dependencies"
@@ -10,7 +10,7 @@ documentation = "https://docs.rs/cargo-temp"
 readme = "README.md"
 keywords = ["cargo", "temporary", "project", "cli", "dependencies"]
 categories = ["development-tools::cargo-plugins"]
-include = ["src/**/*.rs", "README.md", "LICENSE.Apache-2.0", "LICENSE.MIT"]
+include = ["src/**/*.rs", "README.md", "LICENSE.Apache-2.0", "LICENSE.MIT", "config_template.toml"]
 
 [dependencies]
 anyhow = "1"
@@ -31,4 +31,4 @@ dirs = "6"
 CreateProcessW = "0.1"
 
 [dev-dependencies]
-pastey = "0.1"
+pastey = "0.2"

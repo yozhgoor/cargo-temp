@@ -22,6 +22,13 @@ pub enum Dependency {
         branch: Option<String>,
         rev: Option<String>,
     },
+    Path {
+        name: String,
+        path: String,
+        version: Option<String>,
+        features: Vec<String>,
+        default_features: bool,
+    },
 }
 
 impl FromStr for Dependency {
@@ -38,6 +45,17 @@ impl FromStr for Dependency {
         [^/:@?\#=><~+]+
         (?:/[^\#=><~+]+)+
         (?:\.git)?
+    )
+    |
+    (?P<path>
+        (?:
+            \.\.?[/\\]
+            |
+            /
+            |
+            [A-Za-z]:[/\\]
+        )
+        [^\#=><~+]+
     )
     |
     (?P<name>[^=><~+]+)
@@ -101,6 +119,26 @@ impl FromStr for Dependency {
                         default_features,
                         branch,
                         rev,
+                    })
+                } else if let Some(path) = caps.name("path").map(|x| x.as_str().to_string()) {
+                    let comp = ['/', '\\'];
+                    let name = path
+                        .trim_end_matches(comp)
+                        .rsplit(comp)
+                        .next()
+                        .ok_or_else(|| "could not infer name from path".to_string())?
+                        .to_string();
+
+                    if name.is_empty() {
+                        return Err("could not infer name from path".to_string());
+                    }
+
+                    Ok(Self::Path {
+                        name,
+                        path,
+                        version,
+                        features,
+                        default_features,
                     })
                 } else if let Some(name) = caps.name("name").map(|x| x.as_str().to_string()) {
                     if name.contains("://") {
@@ -242,6 +280,56 @@ impl fmt::Display for Dependency {
                     write!(f, " }}")?;
                 }
             }
+            Dependency::Path {
+                name,
+                path,
+                version,
+                features,
+                default_features,
+            } => {
+                if !self.is_long() {
+                    write!(f, "{} = {{ path = \"{}\"", name, path)?;
+                } else {
+                    writeln!(f, "[dependencies.{}]", name)?;
+                    if version.is_none() && *default_features && features.is_empty() {
+                        write!(f, "path = \"{}\"", path)?;
+                    } else {
+                        writeln!(f, "path = \"{}\"", path)?;
+                    }
+                }
+
+                if let Some(version) = version.as_deref() {
+                    if !self.is_long() {
+                        write!(f, ", version = \"{}\"", version)?;
+                    } else if *default_features && features.is_empty() {
+                        write!(f, "version = \"{}\"", version)?;
+                    } else {
+                        writeln!(f, "version = \"{}\"", version)?;
+                    }
+                }
+
+                if !default_features {
+                    if !self.is_long() {
+                        write!(f, ", default-features = false")?;
+                    } else if features.is_empty() {
+                        write!(f, "default-features = false")?;
+                    } else {
+                        writeln!(f, "default-features = false")?;
+                    }
+                }
+
+                if !features.is_empty() {
+                    if !self.is_long() {
+                        write!(f, ", features = [\"{}\"]", features.join("\", \""))?;
+                    } else {
+                        write!(f, "features = [\"{}\"]", features.join("\", \""))?;
+                    }
+                }
+
+                if !self.is_long() {
+                    write!(f, " }}")?;
+                }
+            }
         }
 
         Ok(())
@@ -307,6 +395,30 @@ impl Dependency {
                 if let Some(rev) = rev.as_deref() {
                     len += rev.len() + 6;
                 }
+            }
+            Self::Path {
+                name,
+                path,
+                version,
+                features,
+                default_features,
+            } => {
+                len += name.len() + 5;
+
+                if let Some(version) = version.as_deref() {
+                    len += version.len() + 9;
+                }
+
+                len += 13;
+                for feature in features {
+                    len += feature.len() + 6;
+                }
+
+                if !default_features {
+                    len += 24;
+                }
+
+                len += path.len() + 11;
             }
         }
 
