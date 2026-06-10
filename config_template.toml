@@ -63,6 +63,7 @@ temporary_project_dir = "{temporary_project_dir}"
 # - `working_dir`: Override the working directory (default: temporary project directory).
 # - `keep_on_exit`: Keep the process running after exiting the shell/editor (default: false).
 #   Note: This setting has no effect for foreground processes.
+# - `env`: Environment variables to set for the subprocess.
 #
 # Platform specifics settings:
 # - Unix
@@ -76,3 +77,4 @@ temporary_project_dir = "{temporary_project_dir}"
 #
 #[[subprocess]]
 #command = "alacritty -e cargo watch"
+#env = {{ RUSTFLAGS = "-A warnings", RUST_BACKTRACE = "1" }}
