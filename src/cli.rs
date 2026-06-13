@@ -14,8 +14,10 @@ pub struct Cli {
 - A git URL (http/https/ssh)
 - A local PATH (./, ../, /, or X:\\ prefix).
 
-A git URL may include `#BRANCH` or `#REV` to select a ref. The ref is
-treated as a branch unless it is 7+ hex digits, which selects a revision.
+A git URL may include `#BRANCH`, `#TAG`, or `#REV` to select a ref. The ref is
+treated as a branch unless it is 7+ hex digits (revision) or looks like a
+version (tag). Use an explicit prefix (`#branch:`, `#tag:`, `#rev:`) to
+override the detection.
 
 Version: `<OP><VERSION>` where OP is:
 - `=` or `==` (exact)
@@ -37,6 +39,7 @@ Examples:
     anyhow=1.0.100+backtrace
 
     https://github.com/rust-random/rand#thread_rng
+    https://github.com/rust-random/rand#0.9.0
     ssh://git@github.com/serde-rs/serde.git
 
     ./my-local-crate

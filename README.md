@@ -88,12 +88,19 @@ The name of the package is inferred from the URL and the `.git` extension is opt
 > For private repositories, ensure you have the necessary SSH keys or credentials.
 > If it doesn't help, please file an issue.
 
-You can also specify a branch or a revision:
+You can also specify a branch, tag, or revision using `#`:
 ```
 cargo temp https://github.com/rust-random/rand.git#master
 
+cargo temp https://github.com/rust-random/rand.git#0.9.0
+
 cargo temp https://github.com/rust-random/rand.git#7e0f77a38
 ```
+
+> [!NOTE]
+> `cargo-temp` auto-detects the type: 7+ hex chars are treated as a revision, version-like names
+> (e.g. `v1.0.0`, `0.1.0`) as a tag, and everything else as a branch. To override the detection,
+> use an explicit prefix: `#branch:name`, `#tag:name`, or `#rev:name`.
 
 #### Path dependencies
 
