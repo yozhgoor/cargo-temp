@@ -377,7 +377,7 @@ fn is_version_like(s: &str) -> bool {
             } else {
                 return false;
             }
-        } else if !c.is_ascii_alphanumeric() && c != '-' && c != '+' {
+        } else if !c.is_ascii_alphanumeric() && c != '-' {
             return false;
         }
     }

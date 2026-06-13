@@ -1234,6 +1234,31 @@ test_module!(
     "log = { git = \"ssh://git@github.com/rust-lang/log\", rev = \"old-rev\" }",
 );
 
+test_module!(
+    auto_detect_branch,
+    |mut inputs: Inputs| {
+        match &mut inputs.1 {
+            Dependency::CratesIo { .. } | Dependency::Path { .. } => {}
+            Dependency::Repository { name, branch, .. } => {
+                let b = match name.as_ref() {
+                    "tokio" => "feature-branch",
+                    "clap" => "develop",
+                    "rand" => "bug-fix",
+                    _ => "release",
+                };
+                inputs.0.push('#');
+                inputs.0.push_str(b);
+                *branch = Some(b.to_string());
+            }
+        }
+        inputs
+    },
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"feature-branch\" }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", branch = \"develop\" }",
+    "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", branch = \"bug-fix\" }",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", branch = \"release\" }",
+);
+
 test_modules!(
     (version, feature),
     "anyhow = { version = \"1.0.100\", features = [\"backtrace\"] }",
