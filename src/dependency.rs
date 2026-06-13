@@ -21,6 +21,7 @@ pub enum Dependency {
         url: String,
         branch: Option<String>,
         rev: Option<String>,
+        tag: Option<String>,
     },
     Path {
         name: String,
@@ -100,16 +101,10 @@ impl FromStr for Dependency {
                         .trim_end_matches(".git")
                         .to_string();
 
-                    let (branch, rev) =
-                        if let Some(ref r) = caps.name("git_ref").map(|x| x.as_str()) {
-                            if r.len() >= 7 && r.chars().all(|c| c.is_ascii_hexdigit()) {
-                                (None, Some(r.to_string()))
-                            } else {
-                                (Some(r.to_string()), None)
-                            }
-                        } else {
-                            (None, None)
-                        };
+                    let (branch, rev, tag) = caps
+                        .name("git_ref")
+                        .map(|x| classify_git_ref(x.as_str()))
+                        .unwrap_or((None, None, None));
 
                     Ok(Self::Repository {
                         name,
@@ -119,6 +114,7 @@ impl FromStr for Dependency {
                         default_features,
                         branch,
                         rev,
+                        tag,
                     })
                 } else if let Some(path) = caps.name("path").map(|x| x.as_str().to_string()) {
                     let comp = ['/', '\\'];
@@ -215,12 +211,17 @@ impl fmt::Display for Dependency {
                 url,
                 branch,
                 rev,
+                tag,
             } => {
                 if !self.is_long() {
                     write!(f, "{} = {{ git = \"{}\"", name, url)?;
                 } else {
                     writeln!(f, "[dependencies.{}]", name)?;
-                    if branch.is_none() && rev.is_none() && *default_features && features.is_empty()
+                    if branch.is_none()
+                        && rev.is_none()
+                        && tag.is_none()
+                        && *default_features
+                        && features.is_empty()
                     {
                         write!(f, "git = \"{}\"", url)?;
                     } else {
@@ -245,6 +246,16 @@ impl fmt::Display for Dependency {
                         write!(f, "rev = \"{}\"", rev)?;
                     } else {
                         writeln!(f, "rev = \"{}\"", rev)?;
+                    }
+                }
+
+                if let Some(tag) = tag.as_deref() {
+                    if !self.is_long() {
+                        write!(f, ", tag = \"{}\"", tag)?;
+                    } else if version.is_none() && *default_features && features.is_empty() {
+                        write!(f, "tag = \"{}\"", tag)?;
+                    } else {
+                        writeln!(f, "tag = \"{}\"", tag)?;
                     }
                 }
 
@@ -336,6 +347,43 @@ impl fmt::Display for Dependency {
     }
 }
 
+fn classify_git_ref(r: &str) -> (Option<String>, Option<String>, Option<String>) {
+    if let Some(stripped) = r.strip_prefix("branch:") {
+        (Some(stripped.to_string()), None, None)
+    } else if let Some(stripped) = r.strip_prefix("tag:") {
+        (None, None, Some(stripped.to_string()))
+    } else if let Some(stripped) = r.strip_prefix("rev:") {
+        (None, Some(stripped.to_string()), None)
+    } else if r.len() >= 7 && r.chars().all(|c| c.is_ascii_hexdigit()) {
+        (None, Some(r.to_string()), None)
+    } else if is_version_like(r) {
+        (None, None, Some(r.to_string()))
+    } else {
+        (Some(r.to_string()), None, None)
+    }
+}
+
+fn is_version_like(s: &str) -> bool {
+    let s = s.strip_prefix('v').unwrap_or(s);
+    let mut chars = s.chars();
+    if !chars.next().is_some_and(|c| c.is_ascii_digit()) {
+        return false;
+    }
+    let mut has_dot_digit = false;
+    while let Some(c) = chars.next() {
+        if c == '.' {
+            if chars.next().is_some_and(|c| c.is_ascii_digit()) {
+                has_dot_digit = true;
+            } else {
+                return false;
+            }
+        } else if !c.is_ascii_alphanumeric() && c != '-' {
+            return false;
+        }
+    }
+    has_dot_digit
+}
+
 impl Dependency {
     pub fn is_long(&self) -> bool {
         let mut len = 0;
@@ -370,6 +418,7 @@ impl Dependency {
                 url,
                 branch,
                 rev,
+                tag,
             } => {
                 len += name.len() + 5;
 
@@ -394,6 +443,10 @@ impl Dependency {
 
                 if let Some(rev) = rev.as_deref() {
                     len += rev.len() + 6;
+                }
+
+                if let Some(tag) = tag.as_deref() {
+                    len += tag.len() + 6;
                 }
             }
             Self::Path {

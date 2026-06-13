@@ -360,6 +360,7 @@ impl Inputs {
                 url: url.to_string(),
                 branch: None,
                 rev: None,
+                tag: None,
             },
         )
     }
@@ -376,6 +377,7 @@ impl Inputs {
                 url: url.to_string(),
                 branch: None,
                 rev: None,
+                tag: None,
             },
         )
     }
@@ -392,6 +394,7 @@ impl Inputs {
                 url: url.to_string(),
                 branch: None,
                 rev: None,
+                tag: None,
             },
         )
     }
@@ -408,6 +411,7 @@ impl Inputs {
                 url: url.to_string(),
                 branch: None,
                 rev: None,
+                tag: None,
             },
         )
     }
@@ -973,7 +977,7 @@ test_module!(
                     "rand" => "thread_rng",
                     _ => "0.3.x",
                 };
-                inputs.0.push('#');
+                inputs.0.push_str("#branch:");
                 inputs.0.push_str(b);
                 *branch = Some(b.to_string());
             }
@@ -1013,6 +1017,246 @@ rev = \"c7c761f988684ad97c8b2c521b05cf7f8192b3eb\"",
     "[dependencies.log]
 git = \"ssh://git@github.com/rust-lang/log\"
 rev = \"6e1735597bb21c5d979a077395df85e1d633e077\"",
+);
+
+test_module!(
+    tag,
+    |mut inputs: Inputs| {
+        match &mut inputs.1 {
+            Dependency::CratesIo { .. } | Dependency::Path { .. } => {}
+            Dependency::Repository { name, tag, .. } => {
+                let t = match name.as_ref() {
+                    "tokio" => "v1.0.0",
+                    "clap" => "0.1.0",
+                    "rand" => "v2.0.0-beta.1",
+                    _ => "0.4.0",
+                };
+                inputs.0.push('#');
+                inputs.0.push_str(t);
+                *tag = Some(t.to_string());
+            }
+        }
+        inputs
+    },
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", tag = \"v1.0.0\" }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", tag = \"0.1.0\" }",
+    "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", tag = \"v2.0.0-beta.1\" }",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", tag = \"0.4.0\" }",
+);
+
+test_modules!(
+    (tag, version),
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", tag = \"v1.0.0\", version = \"1.48\" }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", tag = \"0.1.0\", version = \"4.5.50\" }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+tag = \"v2.0.0-beta.1\"
+version = \"0.9\"",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", tag = \"0.4.0\", version = \"0.4.28\" }",
+);
+
+test_modules!(
+    (tag, exact_version),
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", tag = \"v1.0.0\", version = \"=1.48\" }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", tag = \"0.1.0\", version = \"=4.5.50\" }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+tag = \"v2.0.0-beta.1\"
+version = \"=0.9\"",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", tag = \"0.4.0\", version = \"=0.4.28\" }",
+);
+
+test_modules!(
+    (tag, feature),
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", tag = \"v1.0.0\", features = [\"io_std\"] }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", tag = \"0.1.0\", features = [\"derive\"] }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+tag = \"v2.0.0-beta.1\"
+features = [\"small_rng\"]",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", tag = \"0.4.0\", features = [\"kv_std\"] }",
+);
+
+test_modules!(
+    (tag, features),
+    "[dependencies.tokio]
+git = \"https://github.com/tokio-rs/tokio.git\"
+tag = \"v1.0.0\"
+features = [\"io_std\", \"io_utils\"]",
+    "clap = { git = \"https://github.com/clap-rs/clap\", tag = \"0.1.0\", features = [\"derive\", \"cargo\"] }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+tag = \"v2.0.0-beta.1\"
+features = [\"small_rng\", \"os_rng\"]",
+    "[dependencies.log]
+git = \"ssh://git@github.com/rust-lang/log\"
+tag = \"0.4.0\"
+features = [\"kv_std\", \"kv_sval\"]",
+);
+
+test_modules!(
+    (tag, no_default_features),
+    "[dependencies.tokio]
+git = \"https://github.com/tokio-rs/tokio.git\"
+tag = \"v1.0.0\"
+default-features = false",
+    "clap = { git = \"https://github.com/clap-rs/clap\", tag = \"0.1.0\", default-features = false }",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+tag = \"v2.0.0-beta.1\"
+default-features = false",
+    "[dependencies.log]
+git = \"ssh://git@github.com/rust-lang/log\"
+tag = \"0.4.0\"
+default-features = false",
+);
+
+test_modules!(
+    (tag, version, feature),
+    "[dependencies.tokio]
+git = \"https://github.com/tokio-rs/tokio.git\"
+tag = \"v1.0.0\"
+version = \"1.48\"
+features = [\"io_std\"]",
+    "[dependencies.clap]
+git = \"https://github.com/clap-rs/clap\"
+tag = \"0.1.0\"
+version = \"4.5.50\"
+features = [\"derive\"]",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+tag = \"v2.0.0-beta.1\"
+version = \"0.9\"
+features = [\"small_rng\"]",
+    "[dependencies.log]
+git = \"ssh://git@github.com/rust-lang/log\"
+tag = \"0.4.0\"
+version = \"0.4.28\"
+features = [\"kv_std\"]",
+);
+
+test_modules!(
+    (tag, version, features),
+    "[dependencies.tokio]
+git = \"https://github.com/tokio-rs/tokio.git\"
+tag = \"v1.0.0\"
+version = \"1.48\"
+features = [\"io_std\", \"io_utils\"]",
+    "[dependencies.clap]
+git = \"https://github.com/clap-rs/clap\"
+tag = \"0.1.0\"
+version = \"4.5.50\"
+features = [\"derive\", \"cargo\"]",
+    "[dependencies.rand]
+git = \"ssh://git@github.com/rust-random/rand.git\"
+tag = \"v2.0.0-beta.1\"
+version = \"0.9\"
+features = [\"small_rng\", \"os_rng\"]",
+    "[dependencies.log]
+git = \"ssh://git@github.com/rust-lang/log\"
+tag = \"0.4.0\"
+version = \"0.4.28\"
+features = [\"kv_std\", \"kv_sval\"]",
+);
+
+test_module!(
+    explicit_branch,
+    |mut inputs: Inputs| {
+        match &mut inputs.1 {
+            Dependency::CratesIo { .. } | Dependency::Path { .. } => {}
+            Dependency::Repository { name, branch, .. } => {
+                let b = match name.as_ref() {
+                    "tokio" => "my-feature-branch",
+                    "clap" => "develop",
+                    "rand" => "fix-bug",
+                    _ => "release-candidate",
+                };
+                inputs.0.push_str("#branch:");
+                inputs.0.push_str(b);
+                *branch = Some(b.to_string());
+            }
+        }
+        inputs
+    },
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"my-feature-branch\" }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", branch = \"develop\" }",
+    "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", branch = \"fix-bug\" }",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", branch = \"release-candidate\" }",
+);
+
+test_module!(
+    explicit_tag,
+    |mut inputs: Inputs| {
+        match &mut inputs.1 {
+            Dependency::CratesIo { .. } | Dependency::Path { .. } => {}
+            Dependency::Repository { name, tag, .. } => {
+                let t = match name.as_ref() {
+                    "tokio" => "v1.0.0",
+                    "clap" => "release",
+                    "rand" => "2.0.0",
+                    _ => "stable",
+                };
+                inputs.0.push_str("#tag:");
+                inputs.0.push_str(t);
+                *tag = Some(t.to_string());
+            }
+        }
+        inputs
+    },
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", tag = \"v1.0.0\" }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", tag = \"release\" }",
+    "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", tag = \"2.0.0\" }",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", tag = \"stable\" }",
+);
+
+test_module!(
+    explicit_rev,
+    |mut inputs: Inputs| {
+        match &mut inputs.1 {
+            Dependency::CratesIo { .. } | Dependency::Path { .. } => {}
+            Dependency::Repository { name, rev, .. } => {
+                let r = match name.as_ref() {
+                    "tokio" => "abc1234",
+                    "clap" => "0.9.0",
+                    "rand" => "abcdef1",
+                    _ => "old-rev",
+                };
+                inputs.0.push_str("#rev:");
+                inputs.0.push_str(r);
+                *rev = Some(r.to_string());
+            }
+        }
+        inputs
+    },
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", rev = \"abc1234\" }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", rev = \"0.9.0\" }",
+    "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", rev = \"abcdef1\" }",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", rev = \"old-rev\" }",
+);
+
+test_module!(
+    auto_detect_branch,
+    |mut inputs: Inputs| {
+        match &mut inputs.1 {
+            Dependency::CratesIo { .. } | Dependency::Path { .. } => {}
+            Dependency::Repository { name, branch, .. } => {
+                let b = match name.as_ref() {
+                    "tokio" => "feature-branch",
+                    "clap" => "develop",
+                    "rand" => "bug-fix",
+                    _ => "release",
+                };
+                inputs.0.push('#');
+                inputs.0.push_str(b);
+                *branch = Some(b.to_string());
+            }
+        }
+        inputs
+    },
+    "tokio = { git = \"https://github.com/tokio-rs/tokio.git\", branch = \"feature-branch\" }",
+    "clap = { git = \"https://github.com/clap-rs/clap\", branch = \"develop\" }",
+    "rand = { git = \"ssh://git@github.com/rust-random/rand.git\", branch = \"bug-fix\" }",
+    "log = { git = \"ssh://git@github.com/rust-lang/log\", branch = \"release\" }",
 );
 
 test_modules!(
