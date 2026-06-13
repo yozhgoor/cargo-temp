@@ -9,36 +9,38 @@ use crate::dependency::Dependency;
 pub struct Cli {
     /// Dependencies to add to the project's `Cargo.toml`.
     #[arg(long_help(
-        "Each DEPENDENCY can take one of the following forms:
+        "Each dependency is:
+- A NAME from crates.io
+- A git URL (http/https/ssh)
+- A local PATH (./, ../, /, or X:\\ prefix).
 
-    (<NAME> | <URL>[#<BRANCH> | <REV>])[=|==|>|<|>=|<=|~<VERSION>][+][+<FEATURE>...]
+A git URL may include `#BRANCH` or `#REV` to select a ref. The ref is
+treated as a branch unless it is 7+ hex digits, which selects a revision.
 
-You must provide either a `NAME` (e.g. `anyhow`) or a `URL` pointing to a git repository. URLs can
-use `http(s)` or `ssh` schemes and may include a branch or a revision using `#`.
+Version: `<OP><VERSION>` where OP is:
+- `=` or `==` (exact)
+- `>` (greater)
+- `<` (less)
+- `>=` (greater or equal)
+- `<=` (less or equal)
+- `~` (major.minor compatible)
 
-You can optionally specify a version with `=` (e.g. `tokio=1.48`) or with an operator that follows
-Cargo's comparison requirements:
+Features: `+<FEATURE>` (repeatable).
+`+` alone disables defaults.
+`++name` does both (disables defaults and adds the feature).
+Version must precede features.
 
-- `==`: Exact version (e.g. `tokio==1.48`).
-- `>`: Maximal version (e.g. `tokio>1.48`).
-- `<`: Minimal version (e.g. `tokio<1.48`).
-- `>=`: Maximal or equal version (e.g. `tokio>=1.48`).
-- `<=`: Minimal or equal version (e.g. `tokio<=1.48`).
-- `~`: Minimal version with some ability to update (e.g. `tokio~1`).
+Examples:
+    anyhow
+    tokio=1.48
+    clap+derive
+    anyhow=1.0.100+backtrace
 
-Features can be enabled by appending them with `+` (e.g. `clap+derive` or `clap+derive+cargo`.
-To disable default features, prefix the first feature with an additional `+`(e.g. `ratatui++termion`
-or `ratatui++termion+serde`).
+    https://github.com/rust-random/rand#thread_rng
+    ssh://git@github.com/serde-rs/serde.git
 
-# Examples
-
-```sh
-cargo temp anyhow
-cargo temp tokio=1.48
-cargo temp clap+derive
-cargo temp https://github.com/rust-random/rand#thread_rng
-cargo temp ssh://git@github.com/ratatui/ratatui.git#latest++termion
-```"
+    ./my-local-crate
+    ../shared-lib"
     ))]
     pub dependencies: Vec<Dependency>,
 
