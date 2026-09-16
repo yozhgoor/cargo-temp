@@ -14,20 +14,20 @@ include = ["src/**/*.rs", "README.md", "LICENSE.Apache-2.0", "LICENSE.MIT", "con
 
 [dependencies]
 anyhow = "1"
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.6", features = ["derive"] }
 env_logger = "0.11"
 log = "0.4"
 serde = { version = "1", features = ["derive"] }
 tempfile = "3"
-toml = "0.9"
-regex = "1.12"
+toml = "1.1"
+regex = "1.13"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 xdg = "3"
 
 [target.'cfg(windows)'.dependencies]
-dirs = "6"
+dirs = "7"
 CreateProcessW = "0.1"
 
 [dev-dependencies]
