@@ -82,7 +82,7 @@ impl SubProcess {
 
         if !self.foreground {
             match process.spawn().ok() {
-                Some(child) => Some(child).filter(|_| !self.keep_on_exit),
+                Some(child) => (!self.keep_on_exit).then_some(child),
                 None => {
                     log::error!("an error occurred within the subprocess");
                     None
